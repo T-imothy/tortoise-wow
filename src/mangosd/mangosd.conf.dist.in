@@ -296,6 +296,17 @@ Continents.MachineDriven.CriticalRefreshInterval = 250
 #     Default: 500
 
 Continents.MachineDriven.MaxCatchUpDiff = 500
+
+# Continents.MachineDriven.AutonomousActiveStride
+#     Number of continent player-update passes across which autonomous active
+#     characters are distributed. Active means combat, taxi, transport,
+#     teleport or queued battleground state without a nearby real player.
+#     Characters near or grouped with a real player always remain full-rate.
+#     A value of 2 matches the default 500ms playerbot reaction cadence under
+#     load while preventing thousands of combat bots from bursting together.
+#     Default: 2
+
+Continents.MachineDriven.AutonomousActiveStride = 2
 MapUpdate.ReduceGridActivationDist.Tick = 190
 MapUpdate.IncreaseGridActivationDist.Tick = 130
 MapUpdate.MinGridActivationDistance = 57

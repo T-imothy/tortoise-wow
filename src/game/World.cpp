@@ -1337,6 +1337,7 @@ void World::LoadConfigSettingsFromFile(bool reload)
     setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_MAX_STRIDE_MULTIPLIER, "Continents.MachineDriven.MaxStrideMultiplier", 4, 1, 20);
     setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_CRITICAL_REFRESH_INTERVAL, "Continents.MachineDriven.CriticalRefreshInterval", 250, 0, 5000);
     setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_MAX_CATCHUP_DIFF, "Continents.MachineDriven.MaxCatchUpDiff", 500, 0, 5000);
+    setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_AUTONOMOUS_ACTIVE_STRIDE, "Continents.MachineDriven.AutonomousActiveStride", 2, 1, 20);
     setConfig(CONFIG_UINT32_MAPUPDATE_TICK_LOWER_GRID_ACTIVATION_DISTANCE, "MapUpdate.ReduceGridActivationDist.Tick", 0);
     setConfig(CONFIG_UINT32_MAPUPDATE_TICK_INCREASE_GRID_ACTIVATION_DISTANCE, "MapUpdate.IncreaseGridActivationDist.Tick", 0);
     setConfig(CONFIG_UINT32_MAPUPDATE_MIN_GRID_ACTIVATION_DISTANCE, "MapUpdate.MinGridActivationDistance", 0);

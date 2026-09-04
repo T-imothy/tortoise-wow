@@ -770,6 +770,7 @@ inline void Map::UpdateActiveCellsAsynch(uint32 now, uint32 diff)
     // rescanning every simulated character and re-running classification.
     for (Player* player : m_responsivePlayers)
         MarkCellsAroundObject(player);
+    MarkScheduledPlayerCells(m_autonomousActivePlayers, m_autonomousActiveStride);
     MarkScheduledPlayerCells(m_activeZoneBackgroundPlayers, m_activeZoneBackgroundStride);
     MarkScheduledPlayerCells(m_hibernatedBackgroundPlayers, m_hibernatedBackgroundStride);
 
@@ -806,6 +807,7 @@ inline void Map::UpdateActiveCellsSynch(uint32 now, uint32 diff)
         for (size_t index = start; index < players.size(); index += stride)
             UpdateCellsAroundObject(now, diff, players[index]);
     };
+    updateScheduledCells(m_autonomousActivePlayers, m_autonomousActiveStride);
     updateScheduledCells(m_activeZoneBackgroundPlayers, m_activeZoneBackgroundStride);
     updateScheduledCells(m_hibernatedBackgroundPlayers, m_hibernatedBackgroundStride);
 
@@ -869,8 +871,9 @@ bool Map::ShouldUpdateBotCells(Player const* player) const
     if (!IsContinent() || !IsMachineDrivenPlayer(player) || IsResponsivePlayer(player))
         return true;
 
-    uint32 const stride = m_hasRealPlayers && HasActiveZone(player->GetZoneId()) ?
-        m_activeZoneBackgroundStride : m_hibernatedBackgroundStride;
+    uint32 const stride = IsAutonomousActivePlayer(player) ? m_autonomousActiveStride :
+        (m_hasRealPlayers && HasActiveZone(player->GetZoneId()) ?
+            m_activeZoneBackgroundStride : m_hibernatedBackgroundStride);
     return (_botCellUpdateSequence % stride) == (player->GetGUIDLow() % stride);
 }
 
@@ -885,6 +888,7 @@ void Map::RefreshRealPlayerActivity()
     m_moduleCriticalPlayers.clear();
     m_responsivePlayers.clear();
     m_interactivePlayers.clear();
+    m_autonomousActivePlayers.clear();
     m_activeZoneBackgroundPlayers.clear();
     m_hibernatedBackgroundPlayers.clear();
     m_realPlayerPopulation = 0;
@@ -949,6 +953,8 @@ void Map::RefreshRealPlayerActivity()
         (sWorld.getConfig(CONFIG_UINT32_INACTIVE_PLAYERS_SKIP_UPDATES) + 1) * multiplier);
     m_hibernatedBackgroundStride = std::max<uint32>(1,
         (sWorld.getConfig(CONFIG_UINT32_HIBERNATED_PLAYERS_SKIP_UPDATES) + 1) * multiplier);
+    m_autonomousActiveStride = std::max<uint32>(1,
+        sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_AUTONOMOUS_ACTIVE_STRIDE));
 
     for (auto const& ref : m_mapRefManager)
     {
@@ -972,6 +978,8 @@ void Map::RefreshRealPlayerActivity()
             if (machineDriven)
                 ++m_responsiveBotPopulation;
         }
+        else if (IsAutonomousActivePlayer(player))
+            m_autonomousActivePlayers.push_back(player);
         else if (m_hasRealPlayers && HasActiveZone(player->GetZoneId()))
             m_activeZoneBackgroundPlayers.push_back(player);
         else
@@ -987,10 +995,15 @@ bool Map::IsMachineDrivenPlayer(Player const* player) const
 bool Map::IsResponsivePlayer(Player const* player) const
 {
     return player && (!IsMachineDrivenPlayer(player) ||
-        m_moduleCriticalPlayers.find(player->GetGUIDLow()) != m_moduleCriticalPlayers.end() ||
-        player->IsInCombat() || player->InBattleGround() || player->InBattleGroundQueue() ||
+        m_moduleCriticalPlayers.find(player->GetGUIDLow()) != m_moduleCriticalPlayers.end());
+}
+
+bool Map::IsAutonomousActivePlayer(Player const* player) const
+{
+    return player && IsMachineDrivenPlayer(player) &&
+        (player->IsInCombat() || player->InBattleGround() || player->InBattleGroundQueue() ||
         player->IsTaxiFlying() || player->IsBeingTeleported() || player->GetTransport() ||
-        player->GetSession()->HasRecentPacket(PACKET_PROCESS_SPELLS));
+        (player->GetSession() && player->GetSession()->HasRecentPacket(PACKET_PROCESS_SPELLS)));
 }
 
 
@@ -1126,6 +1139,7 @@ void Map::UpdatePlayers(bool responsiveOnly)
                 m_playerPerfHibernated += deferred;
         };
 
+        updateScheduled(m_autonomousActivePlayers, m_autonomousActiveStride, false);
         updateScheduled(m_activeZoneBackgroundPlayers, m_activeZoneBackgroundStride, false);
         updateScheduled(m_hibernatedBackgroundPlayers, m_hibernatedBackgroundStride, true);
     }
@@ -1138,14 +1152,15 @@ void Map::UpdatePlayers(bool responsiveOnly)
         // only while a real player is present; suppress idle-bot instance spam.
         if (IsContinent() || m_playerPerfRealUpdates)
             sLog.out(LOG_PERFORMANCE,
-                "PLAYER_UPDATE_SUMMARY map=%u inst=%u real_updates=%llu real_ms=%.2f bot_updates=%llu bot_ms=%.2f deferred=%llu hibernated=%llu population(real=%u responsive_bots=%u interactive_bots=%u active_bg=%zu hibernated_bg=%zu) stride(active=%u hibernated=%u)",
+                "PLAYER_UPDATE_SUMMARY map=%u inst=%u real_updates=%llu real_ms=%.2f bot_updates=%llu bot_ms=%.2f deferred=%llu hibernated=%llu population(real=%u responsive_bots=%u interactive_bots=%u autonomous_active=%zu active_bg=%zu hibernated_bg=%zu) stride(autonomous=%u active=%u hibernated=%u)",
                 GetId(), GetInstanceId(),
                 static_cast<unsigned long long>(m_playerPerfRealUpdates), m_playerPerfRealMicros / 1000.0,
                 static_cast<unsigned long long>(m_playerPerfBotUpdates), m_playerPerfBotMicros / 1000.0,
                 static_cast<unsigned long long>(m_playerPerfDeferred),
                 static_cast<unsigned long long>(m_playerPerfHibernated),
                 m_realPlayerPopulation, m_responsiveBotPopulation, m_interactiveBotPopulation,
-                m_activeZoneBackgroundPlayers.size(), m_hibernatedBackgroundPlayers.size(),
+                m_autonomousActivePlayers.size(), m_activeZoneBackgroundPlayers.size(), m_hibernatedBackgroundPlayers.size(),
+                m_autonomousActiveStride,
                 m_activeZoneBackgroundStride, m_hibernatedBackgroundStride);
         m_playerPerfReportStart = now;
         m_playerPerfRealUpdates = m_playerPerfBotUpdates = 0;
@@ -3251,11 +3266,10 @@ void Map::UpdateVisibilityForRelocations()
             Unit* unit = *t[it];
             Player* player = unit->ToPlayer();
 
-            // Background playerbots do not need client-visibility relocation
-            // work on every movement pass. Use the same deterministic cadence
-            // as their cell/player updates. A bot in a player's interest range,
-            // combat, a player group, an instance/BG, or on transport is marked
-            // responsive and therefore always processed.
+            // Machine-driven players do not need client-visibility relocation
+            // work on every movement pass. Real-player-interactive bots remain
+            // full-rate; autonomous active and background bots use their own
+            // deterministic scheduler cadence.
             if (!player || ShouldUpdateBotCells(player))
                 unit->ProcessRelocationVisibilityUpdates();
 

@@ -916,6 +916,7 @@ class Map : public GridRefManager<NGridType>
         void RefreshRealPlayerActivity();
         bool IsMachineDrivenPlayer(Player const* player) const;
         bool IsResponsivePlayer(Player const* player) const;
+        bool IsAutonomousActivePlayer(Player const* player) const;
 
         struct ModuleCriticalCacheEntry
         {
@@ -930,10 +931,12 @@ class Map : public GridRefManager<NGridType>
         std::unordered_map<uint32, ModuleCriticalCacheEntry> m_moduleCriticalCache;
         std::vector<Player*> m_responsivePlayers;
         std::vector<Player*> m_interactivePlayers;
+        std::vector<Player*> m_autonomousActivePlayers;
         std::vector<Player*> m_activeZoneBackgroundPlayers;
         std::vector<Player*> m_hibernatedBackgroundPlayers;
         uint32 m_activeZoneBackgroundStride = 1;
         uint32 m_hibernatedBackgroundStride = 1;
+        uint32 m_autonomousActiveStride = 1;
         uint32 m_realPlayerPopulation = 0;
         uint32 m_responsiveBotPopulation = 0;
         uint32 m_interactiveBotPopulation = 0;
