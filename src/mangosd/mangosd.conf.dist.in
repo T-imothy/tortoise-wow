@@ -278,6 +278,24 @@ Continents.MachineDriven.TargetDiff = 100
 #     Default: 4
 
 Continents.MachineDriven.MaxStrideMultiplier = 4
+
+# Continents.MachineDriven.CriticalRefreshInterval
+#     Milliseconds between expensive module-level proximity/group checks for
+#     autonomous characters. Immediate combat, taxi, transport, teleport and
+#     battleground state is still evaluated every map pass. Set to 0 to check
+#     every pass.
+#     Default: 250
+
+Continents.MachineDriven.CriticalRefreshInterval = 250
+
+# Continents.MachineDriven.MaxCatchUpDiff
+#     Maximum deferred map-time delivered to an autonomous character in one
+#     update. Wall-clock player timers still receive their true elapsed time;
+#     this only prevents background AI/movement from replaying a multi-second
+#     backlog in one map tick. Set to 0 for no limit.
+#     Default: 500
+
+Continents.MachineDriven.MaxCatchUpDiff = 500
 MapUpdate.ReduceGridActivationDist.Tick = 190
 MapUpdate.IncreaseGridActivationDist.Tick = 130
 MapUpdate.MinGridActivationDistance = 57

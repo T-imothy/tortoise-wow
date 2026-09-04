@@ -380,6 +380,7 @@ class Map : public GridRefManager<NGridType>
         inline void UpdateActiveCellsAsynch(uint32 now, uint32 diff);
         inline void UpdateActiveCellsCallback(uint32 diff, uint32 now, uint32 threadId, uint32 totalThreads, uint32 step);
         inline void UpdateCells(uint32 diff);
+        void MarkScheduledPlayerCells(std::vector<Player*> const& players, uint32 stride);
         bool ShouldUpdateBotCells(Player const* player) const;
         void UpdateSync(const uint32);
         void UpdatePlayers(bool responsiveOnly = false);
@@ -915,12 +916,25 @@ class Map : public GridRefManager<NGridType>
         void RefreshRealPlayerActivity();
         bool IsMachineDrivenPlayer(Player const* player) const;
         bool IsResponsivePlayer(Player const* player) const;
-        uint32 GetPlayerUpdateStride(Player const* player) const;
+
+        struct ModuleCriticalCacheEntry
+        {
+            uint32 lastCheck = 0;
+            bool critical = false;
+        };
 
         bool m_hasRealPlayers = false;
         std::unordered_set<uint32> m_realPlayerZones;
         std::unordered_set<uint32> m_machineDrivenPlayers;
         std::unordered_set<uint32> m_moduleCriticalPlayers;
+        std::unordered_map<uint32, ModuleCriticalCacheEntry> m_moduleCriticalCache;
+        std::vector<Player*> m_responsivePlayers;
+        std::vector<Player*> m_activeZoneBackgroundPlayers;
+        std::vector<Player*> m_hibernatedBackgroundPlayers;
+        uint32 m_activeZoneBackgroundStride = 1;
+        uint32 m_hibernatedBackgroundStride = 1;
+        uint32 m_realPlayerPopulation = 0;
+        uint32 m_responsiveBotPopulation = 0;
 
         uint32 m_playerPerfReportStart = 0;
         uint64 m_playerPerfRealUpdates = 0;

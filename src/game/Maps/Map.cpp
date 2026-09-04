@@ -765,13 +765,13 @@ inline void Map::UpdateActiveCellsAsynch(uint32 now, uint32 diff)
 {
     resetMarkedCells();
 
-    // Mark all cells that need update
-    for (m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
-    {
-        Player* player = m_mapRefIter->getSource();
-        if (ShouldUpdateBotCells(player))
-            MarkCellsAroundObject(player);
-    }
+    // Responsive players are always active. Background players are already
+    // partitioned by the scheduler, so visit only the due slice instead of
+    // rescanning every simulated character and re-running classification.
+    for (Player* player : m_responsivePlayers)
+        MarkCellsAroundObject(player);
+    MarkScheduledPlayerCells(m_activeZoneBackgroundPlayers, m_activeZoneBackgroundStride);
+    MarkScheduledPlayerCells(m_hibernatedBackgroundPlayers, m_hibernatedBackgroundStride);
 
     for (m_activeNonPlayersIter = m_activeNonPlayers.begin(); m_activeNonPlayersIter != m_activeNonPlayers.end(); ++m_activeNonPlayersIter)
         MarkCellsAroundObject(*m_activeNonPlayersIter);
@@ -793,14 +793,21 @@ inline void Map::UpdateActiveCellsAsynch(uint32 now, uint32 diff)
 inline void Map::UpdateActiveCellsSynch(uint32 now, uint32 diff)
 {
     resetMarkedCells();
-    // the player iterator is stored in the map object
-    // to make sure calls to Map::Remove don't invalidate it
-    for (m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
+    for (Player* player : m_responsivePlayers)
+        UpdateCellsAroundObject(now, diff, player);
+
+    auto updateScheduledCells = [this, now, diff](std::vector<Player*> const& players, uint32 stride)
     {
-        Player* plr = m_mapRefIter->getSource();
-        if (ShouldUpdateBotCells(plr))
-            UpdateCellsAroundObject(now, diff, plr);
-    }
+        if (players.empty())
+            return;
+
+        stride = std::max<uint32>(1, stride);
+        size_t const start = static_cast<size_t>(_botCellUpdateSequence % stride);
+        for (size_t index = start; index < players.size(); index += stride)
+            UpdateCellsAroundObject(now, diff, players[index]);
+    };
+    updateScheduledCells(m_activeZoneBackgroundPlayers, m_activeZoneBackgroundStride);
+    updateScheduledCells(m_hibernatedBackgroundPlayers, m_hibernatedBackgroundStride);
 
     // non-player active objects
     for (m_activeNonPlayersIter = m_activeNonPlayers.begin(); m_activeNonPlayersIter != m_activeNonPlayers.end();)
@@ -843,6 +850,17 @@ inline void Map::UpdateCells(uint32 map_diff)
     unitsMvtUpdate.clear();
 }
 
+void Map::MarkScheduledPlayerCells(std::vector<Player*> const& players, uint32 stride)
+{
+    if (players.empty())
+        return;
+
+    stride = std::max<uint32>(1, stride);
+    size_t const start = static_cast<size_t>(_botCellUpdateSequence % stride);
+    for (size_t index = start; index < players.size(); index += stride)
+        MarkCellsAroundObject(players[index]);
+}
+
 bool Map::ShouldUpdateBotCells(Player const* player) const
 {
     if (!player || !player->IsInWorld())
@@ -851,33 +869,102 @@ bool Map::ShouldUpdateBotCells(Player const* player) const
     if (!IsContinent() || !IsMachineDrivenPlayer(player) || IsResponsivePlayer(player))
         return true;
 
-    uint32 const stride = GetPlayerUpdateStride(player);
+    uint32 const stride = m_hasRealPlayers && HasActiveZone(player->GetZoneId()) ?
+        m_activeZoneBackgroundStride : m_hibernatedBackgroundStride;
     return (_botCellUpdateSequence % stride) == (player->GetGUIDLow() % stride);
 }
 
 void Map::RefreshRealPlayerActivity()
 {
+    uint32 const now = WorldTimer::getMSTime();
+    uint32 const criticalRefresh = sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_CRITICAL_REFRESH_INTERVAL);
+
     m_hasRealPlayers = false;
     m_realPlayerZones.clear();
     m_machineDrivenPlayers.clear();
     m_moduleCriticalPlayers.clear();
+    m_responsivePlayers.clear();
+    m_activeZoneBackgroundPlayers.clear();
+    m_hibernatedBackgroundPlayers.clear();
+    m_realPlayerPopulation = 0;
+    m_responsiveBotPopulation = 0;
 
     for (auto const& ref : m_mapRefManager)
     {
-        Player const* player = ref.getSource();
+        Player* player = ref.getSource();
         if (!player || !player->IsInWorld())
             continue;
 
         if (Script_IsMachineDriven(player))
         {
-            m_machineDrivenPlayers.insert(player->GetGUIDLow());
-            if (Script_IsUpdateCritical(player))
-                m_moduleCriticalPlayers.insert(player->GetGUIDLow());
+            uint32 const guid = player->GetGUIDLow();
+            m_machineDrivenPlayers.insert(guid);
+
+            auto cacheResult = m_moduleCriticalCache.emplace(guid, ModuleCriticalCacheEntry());
+            ModuleCriticalCacheEntry& cached = cacheResult.first->second;
+            if (cacheResult.second && criticalRefresh)
+                cached.lastCheck = now - (guid % criticalRefresh);
+
+            if (!criticalRefresh || WorldTimer::getMSTimeDiff(cached.lastCheck, now) >= criticalRefresh)
+            {
+                cached.critical = Script_IsUpdateCritical(player);
+                cached.lastCheck = now;
+            }
+
+            if (cached.critical)
+                m_moduleCriticalPlayers.insert(guid);
             continue;
         }
 
         m_hasRealPlayers = true;
         m_realPlayerZones.insert(player->GetZoneId());
+        ++m_realPlayerPopulation;
+    }
+
+    // Prevent stale GUID state from accumulating across a long-running realm.
+    if (m_moduleCriticalCache.size() > m_machineDrivenPlayers.size() + 64)
+    {
+        for (auto itr = m_moduleCriticalCache.begin(); itr != m_moduleCriticalCache.end();)
+        {
+            if (m_machineDrivenPlayers.find(itr->first) == m_machineDrivenPlayers.end())
+                itr = m_moduleCriticalCache.erase(itr);
+            else
+                ++itr;
+        }
+    }
+
+    uint32 multiplier = 1;
+    if (sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_ADAPTIVE_STRIDE))
+    {
+        uint32 const target = sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_TARGET_DIFF);
+        uint32 const maxMultiplier = sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_MAX_STRIDE_MULTIPLIER);
+        uint32 const average = sWorld.GetAverageDiff();
+        multiplier = std::min<uint32>(maxMultiplier,
+            std::max<uint32>(1, (average + target - 1) / target));
+    }
+
+    m_activeZoneBackgroundStride = std::max<uint32>(1,
+        (sWorld.getConfig(CONFIG_UINT32_INACTIVE_PLAYERS_SKIP_UPDATES) + 1) * multiplier);
+    m_hibernatedBackgroundStride = std::max<uint32>(1,
+        (sWorld.getConfig(CONFIG_UINT32_HIBERNATED_PLAYERS_SKIP_UPDATES) + 1) * multiplier);
+
+    for (auto const& ref : m_mapRefManager)
+    {
+        Player* player = ref.getSource();
+        if (!player || !player->IsInWorld())
+            continue;
+
+        bool const machineDriven = IsMachineDrivenPlayer(player);
+        if (!IsContinent() || !machineDriven || IsResponsivePlayer(player))
+        {
+            m_responsivePlayers.push_back(player);
+            if (machineDriven)
+                ++m_responsiveBotPopulation;
+        }
+        else if (m_hasRealPlayers && HasActiveZone(player->GetZoneId()))
+            m_activeZoneBackgroundPlayers.push_back(player);
+        else
+            m_hibernatedBackgroundPlayers.push_back(player);
     }
 }
 
@@ -890,36 +977,9 @@ bool Map::IsResponsivePlayer(Player const* player) const
 {
     return player && (!IsMachineDrivenPlayer(player) ||
         m_moduleCriticalPlayers.find(player->GetGUIDLow()) != m_moduleCriticalPlayers.end() ||
-        player->IsInCombat() || player->HasScheduledEvent() ||
+        player->IsInCombat() || player->InBattleGround() || player->InBattleGroundQueue() ||
+        player->IsTaxiFlying() || player->IsBeingTeleported() || player->GetTransport() ||
         player->GetSession()->HasRecentPacket(PACKET_PROCESS_SPELLS));
-}
-
-uint32 Map::GetPlayerUpdateStride(Player const* player) const
-{
-    if (!IsContinent() || !IsMachineDrivenPlayer(player) || IsResponsivePlayer(player))
-        return 1;
-
-    bool const nearRealActivity = m_hasRealPlayers && HasActiveZone(player->GetZoneId());
-    uint32 const skipped = nearRealActivity ?
-        sWorld.getConfig(CONFIG_UINT32_INACTIVE_PLAYERS_SKIP_UPDATES) :
-        sWorld.getConfig(CONFIG_UINT32_HIBERNATED_PLAYERS_SKIP_UPDATES);
-    uint32 stride = std::max<uint32>(1, skipped + 1);
-
-    // Scale only autonomous background characters when the world loop falls
-    // behind. Real clients and module-critical characters always returned 1
-    // above, so combat, instances, battlegrounds, groups with a player,
-    // transports and nearby-player interaction remain full-rate.
-    if (sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_ADAPTIVE_STRIDE))
-    {
-        uint32 const target = sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_TARGET_DIFF);
-        uint32 const maxMultiplier = sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_MAX_STRIDE_MULTIPLIER);
-        uint32 const average = sWorld.GetAverageDiff();
-        uint32 const multiplier = std::min<uint32>(maxMultiplier,
-            std::max<uint32>(1, (average + target - 1) / target));
-        stride *= multiplier;
-    }
-
-    return stride;
 }
 
 
@@ -982,31 +1042,18 @@ void Map::UpdatePlayers(bool responsiveOnly)
     if (diff < sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_UPDATE_PLAYERS_DIFF))
         return;
 
-    if (!responsiveOnly)
-        ++_playerUpdateSequence;
-
-    for (m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
+    uint32 const maxCatchUpDiff = sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_MAX_CATCHUP_DIFF);
+    auto updatePlayer = [this, now, maxCatchUpDiff](Player* plr, bool machineDriven, uint32 logicalDiff)
     {
-        Player* plr = m_mapRefIter->getSource();
         if (!plr || !plr->IsInWorld())
-            continue;
-        bool const machineDriven = IsMachineDrivenPlayer(plr);
-        bool const responsive = IsResponsivePlayer(plr);
-        uint32 const stride = GetPlayerUpdateStride(plr);
-        bool const dueUpdate = stride == 1 ||
-            (!responsiveOnly && (_playerUpdateSequence % stride) == (plr->GetGUIDLow() % stride));
-        if ((responsiveOnly && !responsive) || !dueUpdate)
-        {
-            plr->AddSkippedUpdateTime(diff);
-            ++m_playerPerfDeferred;
-            if (machineDriven && stride > sWorld.getConfig(CONFIG_UINT32_INACTIVE_PLAYERS_SKIP_UPDATES) + 1)
-                ++m_playerPerfHibernated;
-            continue;
-        }
+            return;
 
         auto const updateStart = std::chrono::steady_clock::now();
         WorldObject::UpdateHelper helper(plr);
-        helper.UpdateRealTime(now, diff + plr->GetSkippedUpdateTime());
+        if (machineDriven)
+            helper.UpdateRealTimeBounded(now, maxCatchUpDiff);
+        else
+            helper.UpdateRealTime(now, logicalDiff);
         plr->ResetSkippedUpdateTime();
         uint64 const elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
             std::chrono::steady_clock::now() - updateStart).count();
@@ -1020,6 +1067,56 @@ void Map::UpdatePlayers(bool responsiveOnly)
             ++m_playerPerfRealUpdates;
             m_playerPerfRealMicros += elapsed;
         }
+    };
+
+    // The responsive pass can run several times while the continent workers
+    // synchronize. Iterate only the cached real/critical set; the old path
+    // rescanned every background bot and also accumulated its skipped time on
+    // every wait-loop pass, causing oversized catch-up bursts.
+    if (responsiveOnly)
+    {
+        for (Player* plr : m_responsivePlayers)
+        {
+            bool const machineDriven = IsMachineDrivenPlayer(plr);
+            updatePlayer(plr, machineDriven, diff + plr->GetSkippedUpdateTime());
+        }
+    }
+    else
+    {
+        ++_playerUpdateSequence;
+
+        for (Player* plr : m_responsivePlayers)
+        {
+            bool const machineDriven = IsMachineDrivenPlayer(plr);
+            updatePlayer(plr, machineDriven, diff + plr->GetSkippedUpdateTime());
+        }
+
+        auto updateScheduled = [this, diff, &updatePlayer](std::vector<Player*> const& players,
+                                                           uint32 stride, bool hibernated)
+        {
+            if (players.empty())
+                return;
+
+            stride = std::max<uint32>(1, stride);
+            size_t const start = static_cast<size_t>(_playerUpdateSequence % stride);
+            uint64 updated = 0;
+            for (size_t index = start; index < players.size(); index += stride)
+            {
+                Player* plr = players[index];
+                if (!plr || !plr->IsInWorld())
+                    continue;
+                updatePlayer(plr, true, diff);
+                ++updated;
+            }
+
+            uint64 const deferred = players.size() > updated ? players.size() - updated : 0;
+            m_playerPerfDeferred += deferred;
+            if (hibernated)
+                m_playerPerfHibernated += deferred;
+        };
+
+        updateScheduled(m_activeZoneBackgroundPlayers, m_activeZoneBackgroundStride, false);
+        updateScheduled(m_hibernatedBackgroundPlayers, m_hibernatedBackgroundStride, true);
     }
     _lastPlayersUpdate = now;
 
@@ -1030,12 +1127,15 @@ void Map::UpdatePlayers(bool responsiveOnly)
         // only while a real player is present; suppress idle-bot instance spam.
         if (IsContinent() || m_playerPerfRealUpdates)
             sLog.out(LOG_PERFORMANCE,
-                "PLAYER_UPDATE_SUMMARY map=%u inst=%u real_updates=%llu real_ms=%.2f bot_updates=%llu bot_ms=%.2f deferred=%llu hibernated=%llu",
+                "PLAYER_UPDATE_SUMMARY map=%u inst=%u real_updates=%llu real_ms=%.2f bot_updates=%llu bot_ms=%.2f deferred=%llu hibernated=%llu population(real=%u responsive_bots=%u active_bg=%zu hibernated_bg=%zu) stride(active=%u hibernated=%u)",
                 GetId(), GetInstanceId(),
                 static_cast<unsigned long long>(m_playerPerfRealUpdates), m_playerPerfRealMicros / 1000.0,
                 static_cast<unsigned long long>(m_playerPerfBotUpdates), m_playerPerfBotMicros / 1000.0,
                 static_cast<unsigned long long>(m_playerPerfDeferred),
-                static_cast<unsigned long long>(m_playerPerfHibernated));
+                static_cast<unsigned long long>(m_playerPerfHibernated),
+                m_realPlayerPopulation, m_responsiveBotPopulation,
+                m_activeZoneBackgroundPlayers.size(), m_hibernatedBackgroundPlayers.size(),
+                m_activeZoneBackgroundStride, m_hibernatedBackgroundStride);
         m_playerPerfReportStart = now;
         m_playerPerfRealUpdates = m_playerPerfBotUpdates = 0;
         m_playerPerfRealMicros = m_playerPerfBotMicros = 0;

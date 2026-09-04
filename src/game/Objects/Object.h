@@ -798,6 +798,23 @@ class WorldObject : public Object
                     m_obj->m_updateTracker.ResetTo(now);
                 }
 
+                // Preserve true wall-clock time for player timers while
+                // bounding the map/AI time replayed after a deferred update.
+                void UpdateRealTime(uint32 now, uint32 time_diff, uint32 max_time_diff)
+                {
+                    uint32 const bounded_diff = max_time_diff ? std::min(time_diff, max_time_diff) : time_diff;
+                    m_obj->Update(m_obj->m_updateTracker.timeElapsed(now), bounded_diff);
+                    m_obj->m_updateTracker.ResetTo(now);
+                }
+
+                void UpdateRealTimeBounded(uint32 now, uint32 max_time_diff)
+                {
+                    uint32 const elapsed = m_obj->m_updateTracker.timeElapsed(now);
+                    uint32 const bounded_diff = max_time_diff ? std::min(elapsed, max_time_diff) : elapsed;
+                    m_obj->Update(elapsed, bounded_diff);
+                    m_obj->m_updateTracker.ResetTo(now);
+                }
+
             private:
                 UpdateHelper(const UpdateHelper&);
                 UpdateHelper& operator=(const UpdateHelper&) = delete;
