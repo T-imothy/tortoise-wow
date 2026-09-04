@@ -24,6 +24,7 @@
 #include "DBCStructure.h"
 #include "GridDefines.h"
 #include "Maps/GridMapDefines.h"
+#include "TerrainTileUsage.h"
 #include "Object.h"
 #include "SharedDefines.h"
 #include <memory>
@@ -193,6 +194,10 @@ class TerrainInfo : public Referencable<AtomicLong>
 
         GridMap* m_GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         int16 m_GridRef[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
+        TerrainTileUsage m_gridUsage[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
+        std::atomic<uint32> m_gridLoads{0};
+        std::atomic<uint32> m_gridLoadMs{0};
+        std::atomic<uint32> m_gridLoadMaxMs{0};
 
         // global garbage collection timer
         ShortIntervalTimer i_timer;

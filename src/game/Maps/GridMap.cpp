@@ -691,6 +691,7 @@ GridMap* TerrainInfo::Load(const uint32 x, const uint32 y)
 
     // reference grid as a first step
     RefGrid(x, y);
+    m_gridUsage[x][y].MarkAccessed();
 
     // quick check if GridMap already loaded
     GridMap* pMap = m_GridMaps[x][y];
@@ -723,6 +724,8 @@ void TerrainInfo::CleanUpGrids(const uint32 diff)
     if (!i_timer.Passed())
         return;
 
+    uint32 retainedByQueries = 0;
+    uint32 unloaded = 0;
     for (int y = 0; y < MAX_NUMBER_OF_GRIDS; ++y)
     {
         for (int x = 0; x < MAX_NUMBER_OF_GRIDS; ++x)
@@ -730,9 +733,16 @@ void TerrainInfo::CleanUpGrids(const uint32 diff)
             const int16& iRef = m_GridRef[x][y];
             GridMap* pMap = m_GridMaps[x][y];
 
-            // delete those GridMap objects which have refcount = 0
-            if (pMap && iRef == 0)
+            bool const mayUnload = m_gridUsage[x][y].ShouldUnload(iRef != 0);
+            if (pMap && iRef == 0 && !mayUnload)
+                ++retainedByQueries;
+
+            // A height/area query does not acquire a world-grid reference.
+            // Evict only after an entire interval without either kind of use;
+            // otherwise thousands of bots immediately reload these files.
+            if (pMap && mayUnload)
             {
+                ++unloaded;
                 m_GridMaps[x][y] = nullptr;
                 // delete grid data if reference count == 0
                 pMap->unloadData();
@@ -746,6 +756,13 @@ void TerrainInfo::CleanUpGrids(const uint32 diff)
             }
         }
     }
+
+    uint32 const loads = m_gridLoads.exchange(0, std::memory_order_relaxed);
+    uint32 const loadMs = m_gridLoadMs.exchange(0, std::memory_order_relaxed);
+    uint32 const loadMaxMs = m_gridLoadMaxMs.exchange(0, std::memory_order_relaxed);
+    if (sWorld.getConfig(CONFIG_UINT32_PERFLOG_SLOW_MAP_UPDATE) && (loads || unloaded || retainedByQueries))
+        sLog.out(LOG_PERFORMANCE, "TERRAIN_CACHE map=%u loads=%u load_ms=%u max_load_ms=%u evicted=%u retained_by_queries=%u",
+            m_mapId, loads, loadMs, loadMaxMs, unloaded, retainedByQueries);
 
     i_timer.Reset();
 }
@@ -1141,6 +1158,11 @@ GridMap* TerrainInfo::GetGrid(const float x, const float y)
     int gx = (int)(32 - y / SIZE_OF_GRIDS);                 // grid x
     int gy = (int)(32 - x / SIZE_OF_GRIDS);                 // grid y
 
+    if (gx < 0 || gy < 0 || gx >= MAX_NUMBER_OF_GRIDS || gy >= MAX_NUMBER_OF_GRIDS)
+        return nullptr;
+
+    m_gridUsage[gx][gy].MarkAccessed();
+
     // quick check if GridMap already loaded
     GridMap* pMap = m_GridMaps[gx][gy];
     if (!pMap)
@@ -1158,6 +1180,7 @@ GridMap* TerrainInfo::LoadMapAndVMap(const uint32 x, const uint32 y)
 
         if (!m_GridMaps[x][y])
         {
+            uint32 const loadStart = WorldTimer::getMSTime();
             GridMap* map = new GridMap();
 
             // map file name
@@ -1193,6 +1216,13 @@ GridMap* TerrainInfo::LoadMapAndVMap(const uint32 x, const uint32 y)
 
             // load navmesh
             MMAP::MMapFactory::createOrGetMMapManager()->loadMap(m_mapId, x, y);
+
+            uint32 const loadMs = WorldTimer::getMSTimeDiffToNow(loadStart);
+            m_gridLoads.fetch_add(1, std::memory_order_relaxed);
+            m_gridLoadMs.fetch_add(loadMs, std::memory_order_relaxed);
+            // Actual loads are serialized by m_mutex.
+            if (loadMs > m_gridLoadMaxMs.load(std::memory_order_relaxed))
+                m_gridLoadMaxMs.store(loadMs, std::memory_order_relaxed);
         }
     }
 

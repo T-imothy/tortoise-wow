@@ -495,6 +495,8 @@ void WorldSession::ProcessPackets(PacketFilter& updater)
             }
 
             uint32 packetTime = WorldTimer::getMSTime();
+            uint32 const queueWaitMs = packet->GetPacketTime() ?
+                WorldTimer::getMSTimeDiff(packet->GetPacketTime(), packetTime) : 0;
             switch (opHandle.status)
             {
                 case STATUS_LOGGEDIN:
@@ -558,6 +560,26 @@ void WorldSession::ProcessPackets(PacketFilter& updater)
             packetTime = WorldTimer::getMSTimeDiffToNow(packetTime);
             if (sWorld.getConfig(CONFIG_UINT32_PERFLOG_SLOW_PACKET) && packetTime > sWorld.getConfig(CONFIG_UINT32_PERFLOG_SLOW_PACKET))
                 sLog.out(LOG_PERFORMANCE, "Slow packet opcode %s: %ums. Account %u on IP %s", opHandle.name, packetTime, GetAccountId(), GetRemoteAddress().c_str());
+
+            // Handler duration alone hides time spent waiting for the map tick.
+            // Report gameplay input only, at most once per second per client.
+            bool const gameplayInput = packet->GetOpcode() == CMSG_LOOT ||
+                packet->GetOpcode() == CMSG_AUTOSTORE_LOOT_ITEM ||
+                packet->GetOpcode() == CMSG_LOOT_MONEY ||
+                packet->GetOpcode() == CMSG_LOOT_RELEASE ||
+                packet->GetOpcode() == CMSG_ATTACKSWING ||
+                packet->GetOpcode() == CMSG_ATTACKSTOP ||
+                packet->GetOpcode() == CMSG_CAST_SPELL;
+            uint32 const reportNow = WorldTimer::getMSTime();
+            if (gameplayInput && sWorld.getConfig(CONFIG_UINT32_PERFLOG_SLOW_PACKET) &&
+                (queueWaitMs >= 250 || packetTime >= 250) &&
+                WorldTimer::getMSTimeDiff(m_lastGameplayDelayReportMs, reportNow) >= 1000)
+            {
+                m_lastGameplayDelayReportMs = reportNow;
+                sLog.out(LOG_PERFORMANCE, "GAMEPLAY_INPUT_DELAY opcode=%s queue_ms=%u handler_ms=%u map=%u player=%u",
+                    opHandle.name, queueWaitMs, packetTime, _player ? _player->GetMapId() : 0,
+                    _player ? _player->GetGUIDLow() : 0);
+            }
         }
         catch (ByteBufferException &)
         {

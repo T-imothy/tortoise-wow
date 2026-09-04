@@ -1055,6 +1055,10 @@ void Map::UpdateSessionsMovementAndSpellsIfNeeded()
 
     ProcessSessionPackets(PACKET_PROCESS_MOVEMENT);
     ProcessSessionPackets(PACKET_PROCESS_SPELLS);
+    // Loot, inventory and NPC interactions use the MAP queue. They must also
+    // be serviced at these safe map-thread checkpoints, including while this
+    // continent waits for a slower continent to finish its update.
+    ProcessSessionPackets(PACKET_PROCESS_MAP);
     m_lastMvtSpellsUpdate = WorldTimer::getMSTime();
 }
 
@@ -1192,6 +1196,7 @@ void Map::DoUpdate(uint32 maxDiff)
 void Map::Update(uint32 t_diff)
 {
     XScopeStatTimer ScopeStatTimer{ UpdateTimer };
+    uint32 const fullUpdateStart = WorldTimer::getMSTime();
     RefreshRealPlayerActivity();
     ScriptRegistry<AllMapScript>::ForEach([&](AllMapScript* script)
     {
@@ -1199,6 +1204,7 @@ void Map::Update(uint32 t_diff)
     });
 
     uint32 updateMapTime = WorldTimer::getMSTime();
+    uint32 const preparationTime = WorldTimer::getMSTimeDiff(fullUpdateStart, updateMapTime);
     _dynamicTree.update(t_diff);
 
     UpdateSessionsMovementAndSpellsIfNeeded();
@@ -1262,6 +1268,7 @@ void Map::Update(uint32 t_diff)
         }
         additionnalWaitTime = WorldTimer::getMSTimeDiffToNow(additionnalWaitTime);
     }
+    uint32 const tailStart = WorldTimer::getMSTime();
     // Don't unload grids if it's battleground, since we may have manually added GOs,creatures, those doesn't load from DB at grid re-load !
     // This isn't really bother us, since as soon as we have instanced BG-s, the whole map unloads as the BG gets ended
     if (!IsBattleGround())
@@ -1300,14 +1307,21 @@ void Map::Update(uint32 t_diff)
 
     m_weatherSystem->UpdateWeathers(t_diff);
 
+    uint32 const tailTime = WorldTimer::getMSTimeDiffToNow(tailStart);
+    uint32 const fullUpdateTime = WorldTimer::getMSTimeDiffToNow(fullUpdateStart);
+    // The old measurement excluded both activity classification and grid/script
+    // maintenance. Include their cost when deciding whether to report a stall,
+    // but preserve updateMapTime for the existing adaptive-distance policy.
+    uint32 const workTime = preparationTime + updateMapTime + tailTime;
     bool packetBroadcastSlow = sWorld.GetBroadcaster()->IsMapSlow(GetInstanceId());
-    if (sWorld.getConfig(CONFIG_UINT32_PERFLOG_SLOW_MAP_UPDATE) && updateMapTime > sWorld.getConfig(CONFIG_UINT32_PERFLOG_SLOW_MAP_UPDATE))
+    if (sWorld.getConfig(CONFIG_UINT32_PERFLOG_SLOW_MAP_UPDATE) && workTime > sWorld.getConfig(CONFIG_UINT32_PERFLOG_SLOW_MAP_UPDATE))
         sLog.out(LOG_PERFORMANCE, "Update single map %3u inst %2u: %3ums "
             "[sess %3ums|players %3ums|cells %3ums|sendObjUpdates %3ums"
-            "|relocations %3ums|players2 %3ums|wait%2u %3ums] %s",
+            "|relocations %3ums|players2 %3ums|wait%2u %3ums|prepare %3ums|tail %3ums|total %3ums] %s",
             GetId(), GetInstanceId(), updateMapTime,
                  sessionsUpdateTime, playersUpdateTime, activeCellsUpdateTime, objectsUpdateTime,
                  visibilityUpdateTime, playersUpdateTime2, additionnalUpdateCounts, additionnalWaitTime,
+                 preparationTime, tailTime, fullUpdateTime,
                 packetBroadcastSlow ? "SLOWBCAST" : "");
     // Continent only
     if (IsContinent())
