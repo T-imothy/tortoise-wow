@@ -1165,6 +1165,13 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
 
         currentAllowedBotCount -= currentBots.size();
 
+        // Never build the entire population in one world tick. The old code
+        // selected up to all 4,000 bots and wrapped every event mutation in a
+        // single transaction, blocking player traffic and deadlocking with
+        // concurrent bot-login callbacks. Admit a small activation batch;
+        // subsequent manager passes continue filling the target population.
+        uint32 const activationBatch = std::max<uint32>(1, sPlayerbotAIConfig.randomBotsMaxLoginsPerInterval * 2);
+        currentAllowedBotCount = std::min(currentAllowedBotCount, activationBatch);
         int32 neededAddBots = currentAllowedBotCount;
 
     // BOTPROBE - temporary. Bots below level 20 are almost never online (2.4%)
@@ -1177,9 +1184,6 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
 #define BOTPROBE(b, r) do { botProbe[(b)][(r)]++; } while (0)
 
         currentAllowedBotCount = currentAllowedBotCount*2;      
-
-        CharacterDatabase.AllowAsyncTransactions();
-        CharacterDatabase.BeginTransaction();
 
         bool enoughBotsForCriteria = true;
 
@@ -1392,8 +1396,6 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
                 showLoginWarning = false;
             }
         }
-
-        CharacterDatabase.CommitTransaction();
 
         if (currentAllowedBotCount)
             currentAllowedBotCount = std::max(int64(GetEventValue(0, "bot_count")) - int64(currentBots.size()), int64(0));
@@ -3568,22 +3570,32 @@ std::string RandomPlayerbotMgr::GetEventData(uint32 bot, std::string event)
 
 uint32 RandomPlayerbotMgr::SetEventValue(uint32 bot, std::string event, uint32 value, uint32 validIn, std::string data)
 {
-    CharacterDatabase.PExecute("DELETE FROM ai_playerbot_random_bots WHERE owner = 0 AND bot = '%u' AND event = '%s'",
-            bot, event.c_str());
     if (value)
     {
+        uint32 const now = (uint32)time(0);
         if (data != "")
         {
+            std::string safeData = data;
+            CharacterDatabase.escape_string(safeData);
             CharacterDatabase.PExecute(
-                "INSERT INTO ai_playerbot_random_bots (owner, bot, `time`, validIn, event, `value`, `data`) VALUES ('%u', '%u', '%u', '%u', '%s', '%u', '%s')",
-                0, bot, (uint32)time(0), validIn, event.c_str(), value, data.c_str());
+                "INSERT INTO ai_playerbot_random_bots (owner, bot, `time`, validIn, event, `value`, `data`) "
+                "VALUES ('%u', '%u', '%u', '%u', '%s', '%u', '%s') "
+                "ON DUPLICATE KEY UPDATE `time`=VALUES(`time`), validIn=VALUES(validIn), `value`=VALUES(`value`), `data`=VALUES(`data`)",
+                0, bot, now, validIn, event.c_str(), value, safeData.c_str());
         }
         else
         {
             CharacterDatabase.PExecute(
-                "INSERT INTO ai_playerbot_random_bots (owner, bot, `time`, validIn, event, `value`) VALUES ('%u', '%u', '%u', '%u', '%s', '%u')",
-                0, bot, (uint32)time(0), validIn, event.c_str(), value);
+                "INSERT INTO ai_playerbot_random_bots (owner, bot, `time`, validIn, event, `value`, `data`) "
+                "VALUES ('%u', '%u', '%u', '%u', '%s', '%u', NULL) "
+                "ON DUPLICATE KEY UPDATE `time`=VALUES(`time`), validIn=VALUES(validIn), `value`=VALUES(`value`), `data`=NULL",
+                0, bot, now, validIn, event.c_str(), value);
         }
+    }
+    else
+    {
+        CharacterDatabase.PExecute("DELETE FROM ai_playerbot_random_bots WHERE owner = 0 AND bot = '%u' AND event = '%s'",
+            bot, event.c_str());
     }
 
     CachedEvent e(value, (uint32)time(0), validIn, data);
