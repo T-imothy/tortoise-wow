@@ -77,7 +77,7 @@ std::future<void> ThreadPool::processWorkload(workload_t &&workload, Callable pr
 
 ThreadPool::Status ThreadPool::status() const
 {
-    return m_status;
+    return m_status.load(std::memory_order_acquire);
 }
 
 size_t ThreadPool::size() const
@@ -93,7 +93,7 @@ std::vector<std::exception_ptr> ThreadPool::taskErrors() const
 void ThreadPool::worker::waitForWork()
 {
     std::shared_lock<std::shared_mutex> lock(pool->m_mutex); //locked!
-    while(!busy && pool->status() != Status::TERMINATING) //wait for work
+    while(!busy.load(std::memory_order_acquire) && pool->status() != Status::TERMINATING) //wait for work
         pool->m_waitForWork.wait(lock);
 }
 
@@ -180,7 +180,7 @@ void ThreadPool::worker::loop_wrapper()
 
 void ThreadPool::worker::prepare(ThreadPool::Callable pre, ThreadPool::Callable post)
 {
-    busy = true;
+    busy.store(true, std::memory_order_release);
     this->pre = pre;
     this->post = post;
 }
@@ -201,7 +201,7 @@ void ThreadPool::worker::loop()
         if (post)
             post();
 
-        busy = false;
+        busy.store(false, std::memory_order_release);
         int remaning = --(pool->m_active);
         if (!remaning)
         {

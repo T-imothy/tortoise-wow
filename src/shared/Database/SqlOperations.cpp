@@ -110,10 +110,15 @@ bool SqlQuery::Execute(SqlConnection *conn)
 void SqlResultQueue::Update(uint32 timeout)
 {
     uint32 begin = WorldTimer::getMSTime();
+    // Do not turn an async-result burst into an unbounded world tick. Thread-
+    // safe callbacks still run in parallel, but are admitted in bounded
+    // batches; untouched callbacks remain queued for the following tick.
+    static int const MAX_CALLBACK_BATCH = 16;
     /// execute the callbacks waiting in the synchronization queue
     MaNGOS::IQueryCallback* callback = NULL;
     int n = 0;
-    while (next(callback))
+    while (n < MAX_CALLBACK_BATCH &&
+        (!timeout || WorldTimer::getMSTimeDiffToNow(begin) < timeout) && next(callback))
     {
         if (!callback->IsThreadSafe())
         {
@@ -132,13 +137,12 @@ void SqlResultQueue::Update(uint32 timeout)
     }
     std::future<void> job = m_callbackThreads->processWorkload();
     MaNGOS::IQueryCallback* s = NULL;
-    while (_threadUnsafeWaitingQueries.next(s))
+    while ((!timeout || WorldTimer::getMSTimeDiffToNow(begin) < timeout) &&
+        _threadUnsafeWaitingQueries.next(s))
     {
         s->Execute();
         delete s;
         --numUnsafeQueries;
-        if (timeout && WorldTimer::getMSTimeDiffToNow(begin) > timeout)
-            break;
     }
 
     if (numUnsafeQueries > 1000) // Bottleneck here
@@ -159,7 +163,10 @@ SqlResultQueue::SqlResultQueue(const char* Name) :
 {
     char PoolName[128];
     sprintf(PoolName, "SqlCallback %s", Name);
-    m_callbackThreads.reset(new ThreadPool(6, PoolName));
+    // Each database owns one result queue, so this pool is multiplied by the
+    // number of databases. Two workers keep callbacks parallel without the
+    // previous 6-per-database oversubscription on a four-vCPU realm.
+    m_callbackThreads.reset(new ThreadPool(2, PoolName));
     m_callbackThreads->start<SqlResultQueueWorker>();
 }
 
@@ -176,7 +183,7 @@ void SqlResultQueue::CancelAll()
     }
 }
 
-bool SqlQueryHolder::Execute(MaNGOS::IQueryCallback * callback, Database *database, SqlResultQueue *queue)
+bool SqlQueryHolder::Execute(MaNGOS::IQueryCallback * callback, Database *database, SqlResultQueue *queue, bool highPriority)
 {
     if(!callback || !database || !queue)
         return false;
@@ -185,7 +192,10 @@ bool SqlQueryHolder::Execute(MaNGOS::IQueryCallback * callback, Database *databa
     /// which will in turn resync on execution (via the queue) and call back
     SqlQueryHolderEx *holderEx = new SqlQueryHolderEx(this, callback, queue, serialId);
 
-    database->AddToSerialDelayQueue(holderEx);
+    if (highPriority)
+        database->AddToPrioritySerialDelayQueue(holderEx);
+    else
+        database->AddToSerialDelayQueue(holderEx);
     return true;
 }
 

@@ -598,6 +598,17 @@ void Database::AddToSerialDelayQueue(SqlOperation *op)
     m_threadsBodies[worker]->addSerialOperation(op);
 }
 
+void Database::AddToPrioritySerialDelayQueue(SqlOperation* op)
+{
+    if (op->GetSerialId() == 0 || m_numAsyncWorkers == 0)
+    {
+        AddToPriorityDelayQueue(op);
+        return;
+    }
+    const int worker = op->GetSerialId() % m_numAsyncWorkers;
+    m_threadsBodies[worker]->addPrioritySerialOperation(op);
+}
+
 bool Database::HasAsyncQuery()
 {
     bool hasQuery = !m_delayQueue->empty_unsafe();

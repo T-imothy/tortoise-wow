@@ -38,9 +38,52 @@ bool ReachAreaTriggerAction::Execute(Event& event)
         return true;
     }
 
-    MotionMaster &mm = *bot->GetMotionMaster();
-	mm.MovePoint(atEntry->mapid, atEntry->x, atEntry->y, atEntry->z, FORCED_MOVEMENT_RUN);
-    const float distance = sqrt(bot->GetDistance(atEntry->x, atEntry->y, atEntry->z, DIST_CALC_NONE));
+    if (::IsPointInAreaTriggerZone(atEntry, bot->GetMapId(), bot->GetPositionX(),
+        bot->GetPositionY(), bot->GetPositionZ(), 0.5f))
+    {
+        WorldPacket triggerPacket(CMSG_AREATRIGGER);
+        triggerPacket << triggerId;
+        triggerPacket.rpos(0);
+        bot->GetSession()->HandleAreaTriggerOpcode(triggerPacket);
+        return true;
+    }
+
+    // Use the real navmesh path to the official trigger. Never accept a
+    // straight-line shortcut through instance geometry; an incomplete path is
+    // valid only when its actual endpoint lies inside the trigger volume.
+    PathFinder path(bot);
+    if (!path.calculate(atEntry->x, atEntry->y, atEntry->z, false, false))
+    {
+        context->GetValue<LastMovement&>("last area trigger")->Get().clear();
+        ai->StopMoving();
+        ai->TellError(requester, "I can't safely reach the instance portal");
+        return true;
+    }
+
+    PathType const pathType = path.getPathType();
+    PointsArray portalPath = path.getPath();
+    Vector3 const pathEnd = path.getActualEndPosition();
+    const bool safePath = !(pathType & (PATHFIND_NOPATH | PATHFIND_SHORTCUT | PATHFIND_NOT_USING_PATH)) &&
+        portalPath.size() >= 2 && ::IsPointInAreaTriggerZone(atEntry, bot->GetMapId(),
+            pathEnd.x, pathEnd.y, pathEnd.z, 0.5f);
+    if (!safePath)
+    {
+        context->GetValue<LastMovement&>("last area trigger")->Get().clear();
+        ai->StopMoving();
+        ai->TellError(requester, "I can't safely reach the instance portal");
+        return true;
+    }
+
+    float distance = 0.0f;
+    for (size_t i = 1; i < portalPath.size(); ++i)
+        distance += (portalPath[i] - portalPath[i - 1]).magnitude();
+
+    MotionMaster& mm = *bot->GetMotionMaster();
+#ifdef MANGOSBOT_TWO
+    mm.MovePath(portalPath, FORCED_MOVEMENT_RUN, false);
+#else
+    mm.MovePath(portalPath, FORCED_MOVEMENT_RUN, false, false);
+#endif
     const float duration = 1000.0f * distance / bot->GetSpeed(MOVE_RUN) + sPlayerbotAIConfig.reactDelay;
     ai->TellError(requester, "Wait for me");
     SetDuration(duration);

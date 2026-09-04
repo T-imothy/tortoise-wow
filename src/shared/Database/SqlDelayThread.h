@@ -24,6 +24,7 @@
 
 #include "LockedQueue.h"
 
+#include <atomic>
 #include <string>
 
 class Database;
@@ -36,10 +37,12 @@ class SqlDelayThread
 
     private:
         SqlQueue m_sqlQueue;                                ///< Queue of SQL statements
+        SqlQueue m_priorityQueue;                           ///< Real-client/login work
         Database *m_dbEngine;                               ///< Pointer to used Database engine
         SqlQueue m_serialDelayQueue;
+        SqlQueue m_prioritySerialDelayQueue;
         SqlConnection *m_dbConnection;                     ///< Pointer to DB connection
-        volatile bool m_running;
+        std::atomic<bool> m_running;
         // BY VALUE, not a pointer. The caller hands this down from a local
         // std::string in Master::_StartDB (name.c_str()), which dies the
         // moment that function returns - after which the delay thread was
@@ -57,6 +60,8 @@ class SqlDelayThread
         ///< Put sql statement to delay queue
         bool Delay(SqlOperation* sql) { m_sqlQueue.add(sql); return true; }
         void addSerialOperation(SqlOperation *op);
+        void addPriorityOperation(SqlOperation* op) { m_priorityQueue.add(op); }
+        void addPrioritySerialOperation(SqlOperation* op) { m_prioritySerialDelayQueue.add(op); }
         bool HasAsyncQuery();
 
         virtual void Stop();                                ///< Stop event

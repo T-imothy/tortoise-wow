@@ -9,6 +9,8 @@
 #include "playerbot/BotState.h"
 
 #include <functional>
+#include <atomic>
+#include <unordered_map>
 
 namespace ai
 {
@@ -81,6 +83,12 @@ namespace ai
 		void PrintStrategies(Player* requester, const std::string& engineType);
         std::string GetLastAction() { return lastAction; }
         const Action* GetLastExecutedAction() const { return lastExecutedAction; }
+        static uint64 GetSuppressedImpossibleActions();
+        static uint64 GetSuppressedFailedActions();
+        static uint64 GetActionFailureCacheEntries();
+        static uint64 GetActionFailureCachePeakEntries();
+        static uint64 GetExpiredActionFailureEntries();
+        static uint64 GetEvictedActionFailureEntries();
 
     public:
 	    virtual bool DoNextAction(Unit*, int depth, bool minimal, bool isStunned);
@@ -115,6 +123,20 @@ namespace ai
     private:
         void LogAction(const char* format, ...);
         void LogValues();
+        std::string GetFailureKey(Action* action, const Event& event, ActionResult reason) const;
+        bool IsFailureBackedOff(Action* action, const Event& event, ActionResult reason) const;
+        void RecordFailure(Action* action, const Event& event, ActionResult reason);
+        void ClearFailures(Action* action, const Event& event);
+        void PruneActionFailures(uint32 now, bool enforceLimit = false);
+        void ClearActionFailures();
+        static void UpdateActionFailureCachePeak(uint64 value);
+
+        struct FailureState
+        {
+            uint32 failures = 0;
+            uint32 retryAfter = 0;
+            uint32 lastFailure = 0;
+        };
         // Cheap change-detector for the attached strategy set. A strategy
         // change that leaves the token unchanged is a no-op and must not call
         // Init(), because Init() -> Reset() empties the action queue.
@@ -149,6 +171,14 @@ namespace ai
         ActionExecutionListeners actionExecutionListeners;
         BotState state;
         Action* lastExecutedAction;
+        std::unordered_map<std::string, FailureState> actionFailures;
+        uint32 lastActionFailurePrune = 0;
+        static std::atomic<uint64> suppressedImpossibleActions;
+        static std::atomic<uint64> suppressedFailedActions;
+        static std::atomic<uint64> actionFailureCacheEntries;
+        static std::atomic<uint64> actionFailureCachePeakEntries;
+        static std::atomic<uint64> expiredActionFailureEntries;
+        static std::atomic<uint64> evictedActionFailureEntries;
         // True while DoNextAction is walking `queue`. Reset() must not drain
         // the queue in that window; it sets reinitPending instead and
         // DoNextAction re-inits once the walk is over.

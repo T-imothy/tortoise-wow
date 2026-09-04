@@ -143,6 +143,16 @@ bool PlayerbotAIConfig::Initialize()
     dispelAuraDuration = config.GetIntDefault("AiPlayerbot.DispelAuraDuration", 2000);
     reactDelay = (uint32) config.GetIntDefault("AiPlayerbot.ReactDelay", 100);
     passiveDelay = (uint32) config.GetIntDefault("AiPlayerbot.PassiveDelay", 4000);
+    valueCacheCleanupInterval = (uint32)std::max<int32>(1000, config.GetIntDefault("AiPlayerbot.ValueCacheCleanupInterval", 60000));
+    failedActionRetryBase = (uint32)std::max<int32>(0, config.GetIntDefault("AiPlayerbot.FailedActionRetryBase", 250));
+    failedActionRetryMax = (uint32)std::max<int32>(failedActionRetryBase,
+        config.GetIntDefault("AiPlayerbot.FailedActionRetryMax", 2000));
+    failedActionCacheTtl = (uint32)std::max<int32>(1000, config.GetIntDefault("AiPlayerbot.FailedActionCacheTtl", 30000));
+    failedActionCacheMaxEntries = (uint32)std::max<int32>(8, config.GetIntDefault("AiPlayerbot.FailedActionCacheMaxEntries", 64));
+    idleBotUpdateSkip = (uint32)std::max<int32>(1, config.GetIntDefault("AiPlayerbot.IdleBotUpdateSkip", 4));
+    idleBotMaxTimerAdvanceMs = (uint32)std::max<int32>(100, config.GetIntDefault("AiPlayerbot.IdleBotMaxTimerAdvanceMs", 1000));
+    diagnosticsEnabled = config.GetBoolDefault("AiPlayerbot.Diagnostics.Enabled", true);
+    diagnosticsInterval = (uint32)std::max<int32>(5000, config.GetIntDefault("AiPlayerbot.Diagnostics.Interval", 30000));
     repeatDelay = (uint32) config.GetIntDefault("AiPlayerbot.RepeatDelay", 5000);
     errorDelay = (uint32) config.GetIntDefault("AiPlayerbot.ErrorDelay", 5000);
     rpgDelay = (uint32) config.GetIntDefault("AiPlayerbot.RpgDelay", 3000);
@@ -223,7 +233,7 @@ bool PlayerbotAIConfig::Initialize()
     jumpChase = config.GetBoolDefault("AiPlayerbot.JumpChase", true);
     useKnockback = config.GetBoolDefault("AiPlayerbot.UseKnockback", true);
 
-    iterationsPerTick = config.GetIntDefault("AiPlayerbot.IterationsPerTick", 100);
+    iterationsPerTick = config.GetIntDefault("AiPlayerbot.IterationsPerTick", 10);
 
     allowGuildBots = config.GetBoolDefault("AiPlayerbot.AllowGuildBots", true);
     allowMultiAccountAltBots = config.GetBoolDefault("AiPlayerbot.AllowMultiAccountAltBots", true);

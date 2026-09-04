@@ -975,6 +975,15 @@ AiPlayerbot.ReactDelay = 500
 
 # Inactivity delay
 AiPlayerbot.PassiveDelay = 10000
+AiPlayerbot.ValueCacheCleanupInterval = 60000
+AiPlayerbot.FailedActionRetryBase = 250
+AiPlayerbot.FailedActionRetryMax = 2000
+AiPlayerbot.FailedActionCacheTtl = 30000
+AiPlayerbot.FailedActionCacheMaxEntries = 64
+AiPlayerbot.IdleBotUpdateSkip = 4
+AiPlayerbot.IdleBotMaxTimerAdvanceMs = 1000
+AiPlayerbot.Diagnostics.Enabled = 1
+AiPlayerbot.Diagnostics.Interval = 30000
 
 # Minimum delay between repeating actions (chat messages, emotes etc)
 AiPlayerbot.RepeatDelay = 5000

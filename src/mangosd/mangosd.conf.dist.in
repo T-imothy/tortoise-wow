@@ -196,7 +196,7 @@ GridCleanUpDelay = 300000
 
 # MapUpdateInterval. Map update interval.
 
-MapUpdateInterval = 50
+MapUpdateInterval = 100
 
 # ChangeWeatherInterval. Weather update interval.
 
@@ -219,8 +219,8 @@ PlayerSave.Stats.SaveOnlyOnLogout = 1
 # Enable/Disable to load all terrain data on server startup.
 # Recommended value: 1. Else, can cause crashes if 'MapUpdate.Threads' > 1
 
-Terrain.Preload.Continents = 0
-Terrain.Preload.Instances  = 0
+Terrain.Preload.Continents = 1
+Terrain.Preload.Instances  = 1
 
 # vmap.enableLOS | vmap.enableHeight. Enable/Disable VMaps support for line of sight and height calculation.
 
@@ -297,11 +297,17 @@ MapUpdate.Empty.UpdateTime = 60000
 
 # MapUpdate.Instanced.UpdateThreads. Per-map threading.
 
-MapUpdate.Instanced.UpdateThreads = 4
+MapUpdate.Instanced.UpdateThreads = 2
+
+# MapUpdate.Continents.UpdateThreads
+# Bounded global worker count for all active continent partitions. Keeping
+# this below the number of partitions prevents nested thread multiplication.
+
+MapUpdate.Continents.UpdateThreads = 2
 
 # Per-map subthreads. (Not for instanced maps)
 
-MapUpdate.ObjectsUpdate.MaxThreads = 2
+MapUpdate.ObjectsUpdate.MaxThreads = 1
 MapUpdate.ObjectsUpdate.Timeout = 80
 MapUpdate.VisibilityUpdate.MaxThreads = 1
 MapUpdate.VisibilityUpdate.Timeout = 100
@@ -323,12 +329,12 @@ MapUpdate.Continents.MTCells.SafeDistance = 600
 
 # Continents.MotionUpdate.Threads. Parallelized execution of cells from same map.
 
-Continents.MotionUpdate.Threads = 1
+Continents.MotionUpdate.Threads = 0
 
 # AsyncTasks.Threads | AsyncQueriesTickTimeout. Number of threads for async tasks. (/who, list AH items ...)
 
 AsyncTasks.Threads = 2
-AsyncQueriesTickTimeout = 15000
+AsyncQueriesTickTimeout = 5
 
 # Movement.RelocationVmapsCheckDelay
 # Movement.MaxPointsPerPacket
@@ -2006,7 +2012,7 @@ OutdoorPvp.EPEnabled = 1
 
 # Network.Threads. Number of threads for network, recommend 1 thread per 1000 connections.
 
-Network.Threads = 4
+Network.Threads = 2
 
 # Network.OutKBuff. The size of the output kernel buffer used ( SO_SNDBUF socket option, tcp manual ).
 

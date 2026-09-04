@@ -127,7 +127,11 @@ public:
     bool allowGuildBots;
     bool allowMultiAccountAltBots;
     uint32 globalCoolDown, reactDelay, maxWaitForMove, expireActionTime, dispelAuraDuration, passiveDelay, repeatDelay,
-        errorDelay, rpgDelay, sitDelay, returnDelay, lootDelay;
+        errorDelay, rpgDelay, sitDelay, returnDelay, lootDelay, valueCacheCleanupInterval,
+        failedActionRetryBase, failedActionRetryMax, failedActionCacheTtl, failedActionCacheMaxEntries;
+    uint32 idleBotUpdateSkip, idleBotMaxTimerAdvanceMs;
+    bool diagnosticsEnabled;
+    uint32 diagnosticsInterval;
     float sightDistance, spellDistance, reactDistance, grindDistance, lootDistance, groupMemberLootDistance, groupMemberLootDistanceWithActiveMaster,
         gatheringDistance, groupMemberGatheringDistance, groupMemberGatheringDistanceWithActiveMaster, shootDistance,
         fleeDistance, tooCloseDistance, meleeDistance, followDistance, raidFollowDistance, wanderMinDistance, wanderMaxDistance, whisperDistance, contactDistance,

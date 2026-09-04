@@ -189,6 +189,8 @@ class Database
         template<class Class, typename ParamType1>
             bool AsyncPQuery(Class *object, void (Class::*method)(QueryResult*, ParamType1), ParamType1 param1, const char *format,...) ATTR_PRINTF(5,6);
         template<class Class, typename ParamType1>
+            bool AsyncPQueryPriority(Class *object, void (Class::*method)(QueryResult*, ParamType1), ParamType1 param1, const char *format,...) ATTR_PRINTF(5,6);
+        template<class Class, typename ParamType1>
             bool AsyncPQueryUnsafe(Class *object, void (Class::*method)(QueryResult*, ParamType1), ParamType1 param1, const char *format,...) ATTR_PRINTF(5,6);
         template<class Class, typename ParamType1, typename ParamType2>
             bool AsyncPQuery(Class *object, void (Class::*method)(QueryResult*, ParamType1, ParamType2), ParamType1 param1, ParamType2 param2, const char *format,...) ATTR_PRINTF(6,7);
@@ -214,6 +216,8 @@ class Database
             bool DelayQueryHolder(Class *object, void (Class::*method)(QueryResult*, SqlQueryHolder*), SqlQueryHolder *holder);
         template<class Class>
             bool DelayQueryHolderUnsafe(Class *object, void (Class::*method)(QueryResult*, SqlQueryHolder*), SqlQueryHolder *holder);
+        template<class Class>
+            bool DelayQueryHolderUnsafePriority(Class *object, void (Class::*method)(QueryResult*, SqlQueryHolder*), SqlQueryHolder *holder);
         template<class Class, typename ParamType1>
             bool DelayQueryHolder(Class *object, void (Class::*method)(QueryResult*, SqlQueryHolder*, ParamType1), SqlQueryHolder *holder, ParamType1 param1);
 
@@ -270,6 +274,13 @@ class Database
         void AllowAsyncTransactions() { m_bAllowAsyncTransactions = true; }
         inline void AddToDelayQueue(SqlOperation* op) { m_delayQueue->add(op); }
         inline bool NextDelayedOperation(SqlOperation*& op) { return m_delayQueue->next(op); }
+        inline void AddToPriorityDelayQueue(SqlOperation* op)
+        {
+            if (m_numAsyncWorkers)
+                m_threadsBodies[0]->addPriorityOperation(op);
+            else
+                AddToDelayQueue(op);
+        }
 
         inline void AddToSerialDelayQueue(int workerId, SqlOperation* op) { m_threadsBodies[workerId]->addSerialOperation(op); }
         bool NextSerialDelayedOperation(int workerId, SqlOperation*& op);
@@ -277,6 +288,7 @@ class Database
         bool HasAsyncQuery();
 
         void AddToSerialDelayQueue(SqlOperation *op);
+        void AddToPrioritySerialDelayQueue(SqlOperation* op);
 
         // Frees data, cancels scheduled queries, closes connection
         void StopServer();

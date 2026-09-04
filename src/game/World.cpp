@@ -1058,7 +1058,7 @@ void World::LoadConfigSettingsFromFile(bool reload)
     //setConfig(CONFIG_UINT32_LOGIN_REGION_QUEUE_LEVEL_THRESHOLD, "LoginVIPQueueLevelThreshold", 55);
     setConfig(CONFIG_UINT32_LOGIN_QUEUE_GRACE_PERIOD_SECS, "LoginQueue.GracePeriodSecs", 0);
     setConfig(CONFIG_UINT32_CHARACTER_SCREEN_MAX_IDLE_TIME, "CharacterScreenMaxIdleTime", 0);
-    setConfig(CONFIG_UINT32_ASYNC_QUERIES_TICK_TIMEOUT, "AsyncQueriesTickTimeout", 0);
+    setConfig(CONFIG_UINT32_ASYNC_QUERIES_TICK_TIMEOUT, "AsyncQueriesTickTimeout", 5);
     setConfigMinMax(CONFIG_UINT32_COMPRESSION, "Compression", 1, 1, 9);
     setConfig(CONFIG_BOOL_ADDON_CHANNEL, "AddonChannel", true);
     setConfig(CONFIG_BOOL_CLEAN_CHARACTER_DB, "CleanCharacterDB", true);
@@ -1317,6 +1317,7 @@ void World::LoadConfigSettingsFromFile(bool reload)
     setConfigMinMax(CONFIG_UINT32_MAP_VISIBILITYUPDATE_THREADS, "MapUpdate.VisibilityUpdate.MaxThreads", 4, 1, 20);
     setConfigMinMax(CONFIG_UINT32_MAP_VISIBILITYUPDATE_TIMEOUT, "MapUpdate.VisibilityUpdate.Timeout", 100, 10, 2000);
     setConfigMinMax(CONFIG_UINT32_MAPUPDATE_INSTANCED_UPDATE_THREADS, "MapUpdate.Instanced.UpdateThreads", 2, 0, 20);
+    setConfigMinMax(CONFIG_UINT32_MAPUPDATE_CONTINENT_UPDATE_THREADS, "MapUpdate.Continents.UpdateThreads", 2, 1, 20);
     setConfigMinMax(CONFIG_UINT32_MTCELLS_THREADS, "MapUpdate.Continents.MTCells.Threads", 0, 0, 20);
     setConfigMinMax(CONFIG_UINT32_MTCELLS_SAFEDISTANCE, "MapUpdate.Continents.MTCells.SafeDistance", 1066, 0, 34112);
     setConfigMinMax(CONFIG_UINT32_MAPUPDATE_UPDATE_PACKETS_DIFF, "MapUpdate.UpdatePacketsDiff", 100, 1, 10000);

@@ -25,6 +25,8 @@
 #include "playerbot/PlayerbotAIConfig.h"
 #include "playerbot/AiFactory.h"
 #include "playerbot/strategy/actions/ChangeTalentsAction.h"
+#include "playerbot/strategy/Engine.h"
+#include "PacketBroadcast/PlayerBroadcaster.h"
 #include "ahbot/AhBot.h"
 #include "BotDiagnostics.h"
 #include "playerbot/BotSlots.h"
@@ -52,7 +54,31 @@ class PlayerbotWorldScript : public WorldScript
                 return;
             sRandomPlayerbotMgr.UpdateAI(diff);
             auctionbot.Update();
+
+            if (sPlayerbotAIConfig.diagnosticsEnabled)
+            {
+                m_diagnosticsElapsed += diff;
+                if (m_diagnosticsElapsed >= sPlayerbotAIConfig.diagnosticsInterval)
+                {
+                    m_diagnosticsElapsed = 0;
+                    sLog.outString("PB_DIAG online=%u failure_cache=%llu failure_peak=%llu failure_expired=%llu failure_evicted=%llu suppressed_impossible=%llu suppressed_failed=%llu transition_requests=%llu stale_updates=%llu movement_coalesced=%llu movement_dropped=%llu",
+                        sRandomPlayerbotMgr.GetPlayerbotsAmount(),
+                        static_cast<unsigned long long>(Engine::GetActionFailureCacheEntries()),
+                        static_cast<unsigned long long>(Engine::GetActionFailureCachePeakEntries()),
+                        static_cast<unsigned long long>(Engine::GetExpiredActionFailureEntries()),
+                        static_cast<unsigned long long>(Engine::GetEvictedActionFailureEntries()),
+                        static_cast<unsigned long long>(Engine::GetSuppressedImpossibleActions()),
+                        static_cast<unsigned long long>(Engine::GetSuppressedFailedActions()),
+                        static_cast<unsigned long long>(PlayerbotAI::ConsumeTransitionRequests()),
+                        static_cast<unsigned long long>(PlayerbotAI::ConsumeDiscardedTransitionWork()),
+                        static_cast<unsigned long long>(PlayerBroadcaster::ConsumeCoalescedPackets()),
+                        static_cast<unsigned long long>(PlayerBroadcaster::ConsumeDroppedPackets()));
+                }
+            }
         }
+
+    private:
+        uint32 m_diagnosticsElapsed = 0;
 };
 
 class PlayerbotServerScript : public ServerScript

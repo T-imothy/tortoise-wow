@@ -66,6 +66,8 @@ uint64 extractGuid(WorldPacket& packet);
 std::string &trim(std::string &s);
 
 std::set<std::string> PlayerbotAI::unsecuredCommands;
+std::atomic<uint64> PlayerbotAI::discardedTransitionWork{0};
+std::atomic<uint64> PlayerbotAI::transitionRequests{0};
 
 uint32 PlayerbotChatHandler::extractQuestId(std::string str)
 {
@@ -274,6 +276,13 @@ void PlayerbotAI::RevalidateMasterPointer()
 
 void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 {
+    std::unique_lock<std::mutex> updateLock(updateExecutionMutex, std::try_to_lock);
+    if (!updateLock.owns_lock())
+    {
+        RecordDiscardedTransitionWork();
+        return;
+    }
+
     AiObjectContext* context = aiObjectContext;
     std::string mapString = WorldPosition(bot).isInstance() ? "I" : std::to_string(bot->GetMapId());
     auto pmo = sPerformanceMonitor.start(PERF_MON_TOTAL, "PlayerbotAI::UpdateAI " + mapString, nullptr, bot->GetMapId(), bot->GetInstanceId());
@@ -289,6 +298,45 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     // (set in SetMaster, see PlayerbotAI.h) is the safe lookup key —
     // we never deref the cached `master` pointer in this check.
     RevalidateMasterPointer();
+
+    if (urgentTransitionPending.exchange(false, std::memory_order_acq_rel))
+        PrepareForUrgentTransition();
+
+    // A master's instance transfer temporarily owns this bot's AI. Ordinary
+    // actions must not replace the validated approach or restart it every tick.
+    if (ProcessPendingTransition())
+        return;
+
+    // Spread inactive random-bot AI across ticks. Combat, battlegrounds and
+    // player-owned followers remain full-rate. Elapsed time is accumulated so
+    // AI timers do not run slow merely because background work was deferred.
+    const bool foregroundBot = IsRealPlayer() || HasRealPlayerMaster() ||
+        sServerFacade.IsInCombat(bot) || bot->InBattleGround();
+    if (!foregroundBot && sPlayerbotAIConfig.idleBotUpdateSkip > 1)
+    {
+        deferredIdleUpdateMs = std::min<uint32>(deferredIdleUpdateMs + elapsed,
+            sPlayerbotAIConfig.idleBotMaxTimerAdvanceMs);
+        const uint32 slot = (WorldTimer::getMSTime() / 100 + bot->GetGUIDLow()) %
+            sPlayerbotAIConfig.idleBotUpdateSkip;
+        if (slot != 0)
+            return;
+        elapsed = deferredIdleUpdateMs;
+        deferredIdleUpdateMs = 0;
+        minimal = true;
+    }
+    else if (deferredIdleUpdateMs)
+    {
+        elapsed = std::min<uint32>(elapsed + deferredIdleUpdateMs,
+            sPlayerbotAIConfig.idleBotMaxTimerAdvanceMs);
+        deferredIdleUpdateMs = 0;
+    }
+
+    valueCacheCleanupElapsed += elapsed;
+    if (valueCacheCleanupElapsed >= sPlayerbotAIConfig.valueCacheCleanupInterval)
+    {
+        valueCacheCleanupElapsed %= sPlayerbotAIConfig.valueCacheCleanupInterval;
+        aiObjectContext->ClearExpiredValues();
+    }
 
     if(aiInternalUpdateDelay > elapsed)
     {
@@ -1314,6 +1362,10 @@ void PlayerbotAI::HandleTeleportAck()
     if (IsRealPlayer() && bot->IsBeingTeleportedFar())
         return;
 
+    transitionGeneration.fetch_add(1, std::memory_order_acq_rel);
+    urgentTransitionPending.store(false, std::memory_order_release);
+    ClearPendingTransition();
+
     StopMoving();
 
 	if (bot->IsBeingTeleportedNear())
@@ -2113,7 +2165,195 @@ int32 PlayerbotAI::CalculateGlobalCooldown(uint32 spellid)
 
 void PlayerbotAI::HandleMasterIncomingPacket(const WorldPacket& packet)
 {
+    if (packet.GetOpcode() == CMSG_AREATRIGGER)
+    {
+        WorldPacket triggerPacket(packet);
+        triggerPacket.rpos(0);
+        uint32 triggerId = 0;
+        triggerPacket >> triggerId;
+        AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(triggerId);
+
+        // Only a real, nearby transfer trigger may preempt this bot. The
+        // master's packet is forwarded to every owned bot, including remote
+        // bots which must not cancel their current work.
+        if (sObjectMgr.GetAreaTrigger(triggerId) && atEntry && bot &&
+            bot->GetMapId() == atEntry->mapid &&
+            bot->GetDistance(atEntry->x, atEntry->y, atEntry->z) <= sPlayerbotAIConfig.sightDistance)
+        {
+            RequestUrgentTransition(triggerId);
+            return;
+        }
+    }
+
     masterIncomingPacketHandlers.AddPacket(packet);
+}
+
+void PlayerbotAI::RequestUrgentTransition(uint32 triggerId)
+{
+    const uint32 now = WorldTimer::getMSTime();
+    AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(triggerId);
+    {
+        std::lock_guard<std::mutex> lock(pendingTransitionMutex);
+        pendingTransition.triggerId = triggerId;
+        pendingTransition.sourceMapId = bot->GetMapId();
+        pendingTransition.sourceInstanceId = bot->GetInstanceId();
+        pendingTransition.startedAtMs = now;
+        pendingTransition.lastAttemptAtMs = 0;
+        pendingTransition.lastProgressAtMs = now;
+        pendingTransition.attempts = 0;
+        pendingTransition.lastDistance = atEntry ? bot->GetDistance(atEntry->x, atEntry->y, atEntry->z) : 0.0f;
+    }
+    transitionGeneration.fetch_add(1, std::memory_order_acq_rel);
+    urgentTransitionPending.store(true, std::memory_order_release);
+    transitionRequests.fetch_add(1, std::memory_order_relaxed);
+}
+
+void PlayerbotAI::PrepareForUrgentTransition()
+{
+    ResetAIInternalUpdateDelay();
+    isWaiting = false;
+    if (reactionEngine)
+        reactionEngine->Reset();
+    if (!bot || !bot->IsInWorld() || bot->IsBeingTeleported())
+        return;
+
+    if (bot->IsSitState())
+        bot->SetStandState(UNIT_STAND_STATE_STAND);
+    InterruptSpell(true);
+    StopMoving();
+    aiObjectContext->GetValue<LastMovement&>("last movement")->Get().clear();
+    aiObjectContext->GetValue<LastMovement&>("last area trigger")->Get().clear();
+}
+
+bool PlayerbotAI::ProcessPendingTransition()
+{
+    static uint32 const TRANSITION_TIMEOUT_MS = 15000;
+    static uint32 const TRANSITION_RETRY_MS = 1000;
+    static uint32 const MAX_TRANSITION_ATTEMPTS = 6;
+
+    PendingTransitionState state;
+    {
+        std::lock_guard<std::mutex> lock(pendingTransitionMutex);
+        state = pendingTransition;
+    }
+    if (!state.triggerId)
+        return false;
+
+    const uint32 now = WorldTimer::getMSTime();
+    if (WorldTimer::getMSTimeDiff(state.startedAtMs, now) >= TRANSITION_TIMEOUT_MS)
+    {
+        ClearPendingTransition(state.triggerId, true);
+        return false;
+    }
+    if (!bot || (bot->IsInWorld() &&
+        (bot->GetMapId() != state.sourceMapId || bot->GetInstanceId() != state.sourceInstanceId)))
+    {
+        ClearPendingTransition(state.triggerId);
+        return false;
+    }
+    if (!bot->IsInWorld() || bot->IsBeingTeleported())
+        return true;
+
+    AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(state.triggerId);
+    AreaTrigger const* areaTrigger = sObjectMgr.GetAreaTrigger(state.triggerId);
+    if (!atEntry || !areaTrigger || bot->GetMapId() != atEntry->mapid ||
+        bot->GetDistance(atEntry->x, atEntry->y, atEntry->z) > sPlayerbotAIConfig.sightDistance)
+    {
+        ClearPendingTransition(state.triggerId, true);
+        return false;
+    }
+
+    const bool retryDue = !state.lastAttemptAtMs ||
+        WorldTimer::getMSTimeDiff(state.lastAttemptAtMs, now) >= TRANSITION_RETRY_MS;
+    if (!retryDue)
+        return true;
+
+    const bool insideTrigger = ::IsPointInAreaTriggerZone(atEntry, bot->GetMapId(),
+        bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), 0.5f);
+    LastMovement& movement = aiObjectContext->GetValue<LastMovement&>("last area trigger")->Get();
+    const bool approachingTrigger = movement.lastAreaTrigger == state.triggerId &&
+        (!bot->IsStopped() || bot->GetMotionMaster()->GetCurrentMovementGeneratorType() != IDLE_MOTION_TYPE);
+    if (!insideTrigger && approachingTrigger)
+    {
+        const float distance = bot->GetDistance(atEntry->x, atEntry->y, atEntry->z);
+        if (distance + 0.5f < state.lastDistance)
+        {
+            std::lock_guard<std::mutex> lock(pendingTransitionMutex);
+            if (pendingTransition.triggerId == state.triggerId)
+            {
+                pendingTransition.lastDistance = distance;
+                pendingTransition.lastProgressAtMs = now;
+            }
+            return true;
+        }
+        if (WorldTimer::getMSTimeDiff(state.lastProgressAtMs, now) < TRANSITION_RETRY_MS)
+            return true;
+    }
+    if (state.attempts >= MAX_TRANSITION_ATTEMPTS)
+    {
+        ClearPendingTransition(state.triggerId, true);
+        return false;
+    }
+
+    {
+        std::lock_guard<std::mutex> lock(pendingTransitionMutex);
+        if (pendingTransition.triggerId != state.triggerId)
+            return pendingTransition.triggerId != 0;
+        pendingTransition.lastAttemptAtMs = now;
+        pendingTransition.lastProgressAtMs = now;
+        pendingTransition.lastDistance = bot->GetDistance(atEntry->x, atEntry->y, atEntry->z);
+        ++pendingTransition.attempts;
+    }
+
+    WorldPacket triggerPacket(CMSG_AREATRIGGER);
+    triggerPacket << state.triggerId;
+    triggerPacket.rpos(0);
+    if (insideTrigger)
+        bot->GetSession()->HandleAreaTriggerOpcode(triggerPacket);
+    else
+        DoSpecificAction("reach area trigger", Event("transition retry", triggerPacket), true);
+    return true;
+}
+
+void PlayerbotAI::ClearPendingTransition(uint32 expectedTriggerId, bool stopMovement)
+{
+    bool cleared = false;
+    {
+        std::lock_guard<std::mutex> lock(pendingTransitionMutex);
+        if (!expectedTriggerId || pendingTransition.triggerId == expectedTriggerId)
+        {
+            pendingTransition = PendingTransitionState();
+            cleared = true;
+        }
+    }
+    if (!cleared || !stopMovement || !bot || !bot->IsInWorld() || bot->IsBeingTeleported())
+        return;
+    StopMoving();
+    aiObjectContext->GetValue<LastMovement&>("last movement")->Get().clear();
+    aiObjectContext->GetValue<LastMovement&>("last area trigger")->Get().clear();
+    ResetAIInternalUpdateDelay();
+}
+
+bool PlayerbotAI::IsTransitionContextCurrent(uint32 generation, uint32 mapId, uint32 instanceId) const
+{
+    return bot && bot->IsInWorld() && !bot->IsBeingTeleported() &&
+        transitionGeneration.load(std::memory_order_acquire) == generation &&
+        bot->GetMapId() == mapId && bot->GetInstanceId() == instanceId;
+}
+
+void PlayerbotAI::RecordDiscardedTransitionWork()
+{
+    discardedTransitionWork.fetch_add(1, std::memory_order_relaxed);
+}
+
+uint64 PlayerbotAI::ConsumeDiscardedTransitionWork()
+{
+    return discardedTransitionWork.exchange(0, std::memory_order_acq_rel);
+}
+
+uint64 PlayerbotAI::ConsumeTransitionRequests()
+{
+    return transitionRequests.exchange(0, std::memory_order_acq_rel);
 }
 
 void PlayerbotAI::HandleMasterOutgoingPacket(const WorldPacket& packet)

@@ -186,7 +186,7 @@ void WorldSession::HandleCharEnum(QueryResult * result)
 void WorldSession::HandleCharEnumOpcode(WorldPacket & /*recv_data*/)
 {
     /// get all the data necessary for loading all characters (along with their pets) on the account
-    CharacterDatabase.AsyncPQuery(&chrHandler, &CharacterHandler::HandleCharEnumCallback, GetAccountId(),
+    CharacterDatabase.AsyncPQueryPriority(&chrHandler, &CharacterHandler::HandleCharEnumCallback, GetAccountId(),
                                   //           0               1                2                3                 4                  5                       6                        7
                                   "SELECT characters.guid, characters.name, characters.race, characters.class, characters.gender, characters.playerBytes, characters.playerBytes2, characters.level, "
                                   //   8                9               10                     11                     12                     13                    14
@@ -503,7 +503,7 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket & recv_data)
         return;
     }
     m_playerLoading = true;
-    CharacterDatabase.DelayQueryHolderUnsafe(&chrHandler, &CharacterHandler::HandlePlayerLoginCallback, holder);
+    CharacterDatabase.DelayQueryHolderUnsafePriority(&chrHandler, &CharacterHandler::HandlePlayerLoginCallback, holder);
 }
 
 //This is what most initial priority is given.
@@ -548,7 +548,7 @@ void WorldSession::LoginPlayer(ObjectGuid loginPlayerGuid)
         return;
     }
     m_playerLoading = true;
-    CharacterDatabase.DelayQueryHolderUnsafe(&chrHandler, &CharacterHandler::HandlePlayerLoginCallback, holder);
+    CharacterDatabase.DelayQueryHolderUnsafePriority(&chrHandler, &CharacterHandler::HandlePlayerLoginCallback, holder);
 }
 
 // Post-login event that fixes other players/bots rendering "naked" (base/underwear model) to a

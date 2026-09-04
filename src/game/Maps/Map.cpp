@@ -166,6 +166,19 @@ Map::Map(uint32 id, time_t expiry, uint32 InstanceId)
         int motionThreads = sWorld.getConfig(CONFIG_UINT32_CONTINENTS_MOTIONUPDATE_THREADS);
         int objectThreads = std::max((int)sWorld.getConfig(CONFIG_UINT32_MAP_OBJECTSUPDATE_THREADS) - 1, 0);
         int visibilityThreads = std::max((int)sWorld.getConfig(CONFIG_UINT32_MAP_VISIBILITYUPDATE_THREADS) - 1, 0);
+        int cellThreads = std::max((int)sWorld.getConfig(CONFIG_UINT32_MTCELLS_THREADS) - 1, 0);
+
+        // Partitioned continents already execute through MapManager's bounded
+        // global pool. Spawning another set of pools for every partition causes
+        // severe oversubscription on small servers and makes update ordering
+        // harder to reason about.
+        if (sWorld.getConfig(CONFIG_BOOL_CONTINENTS_INSTANCIATE))
+        {
+            motionThreads = 0;
+            objectThreads = 0;
+            visibilityThreads = 0;
+            cellThreads = 0;
+        }
 #ifdef ENABLE_ELUNA
         if (sElunaConfig->IsElunaEnabled() && (motionThreads || objectThreads || visibilityThreads))
         {
@@ -178,7 +191,7 @@ Map::Map(uint32 id, time_t expiry, uint32 InstanceId)
         m_motionThreads.reset(new ThreadPool(motionThreads, "MotionUpdate"));
         m_objectThreads.reset(new ThreadPool(objectThreads, "ObjectUpdate"));
         m_visibilityThreads.reset(new ThreadPool(visibilityThreads, "Visibility"));
-        m_cellThreads.reset(new ThreadPool(std::max((int)sWorld.getConfig(CONFIG_UINT32_MTCELLS_THREADS) - 1, 0), "CellUpdate"));
+        m_cellThreads.reset(new ThreadPool(cellThreads, "CellUpdate"));
         m_visibilityThreads->start<ThreadPool::MySQL<ThreadPool::MultiQueue>>();
         m_cellThreads->start();
         m_motionThreads->start();

@@ -10,6 +10,8 @@
 #include "BotState.h"
 #include "PlayerTalentSpec.h"
 #include <stack>
+#include <atomic>
+#include <mutex>
 #include "strategy/IterateItemsMask.h"
 #include "RandomPlayerbotMgr.h"
 
@@ -379,6 +381,11 @@ public:
     void HandleMasterIncomingPacket(const WorldPacket& packet);
     void HandleMasterOutgoingPacket(const WorldPacket& packet);
 	void HandleTeleportAck();
+    uint32 GetTransitionGeneration() const { return transitionGeneration.load(std::memory_order_acquire); }
+    bool IsTransitionContextCurrent(uint32 generation, uint32 mapId, uint32 instanceId) const;
+    static void RecordDiscardedTransitionWork();
+    static uint64 ConsumeDiscardedTransitionWork();
+    static uint64 ConsumeTransitionRequests();
     void ChangeEngine(BotState type);
     void DoNextAction(bool minimal = false);
     bool CanDoSpecificAction(const std::string& name, bool isUseful = true, bool isPossible = true);
@@ -796,6 +803,10 @@ public:
 private:
     bool UpdateAIReaction(uint32 elapsed, bool minimal, bool isStunned);
     void UpdateFaceTarget(uint32 elapsed, bool minimal);
+    void RequestUrgentTransition(uint32 triggerId);
+    void PrepareForUrgentTransition();
+    bool ProcessPendingTransition();
+    void ClearPendingTransition(uint32 expectedTriggerId = 0, bool stopMovement = false);
 
 protected:
 	Player* bot;
@@ -819,6 +830,26 @@ protected:
     PacketHandlingHelper botOutgoingPacketHandlers;
     PacketHandlingHelper masterIncomingPacketHandlers;
     PacketHandlingHelper masterOutgoingPacketHandlers;
+    // Bot AI is mutable and must never be entered by two map/manager paths at
+    // once during login or a map transfer.
+    std::mutex updateExecutionMutex;
+    std::atomic<uint32> transitionGeneration{1};
+    std::atomic<bool> urgentTransitionPending{false};
+    struct PendingTransitionState
+    {
+        uint32 triggerId = 0;
+        uint32 sourceMapId = 0;
+        uint32 sourceInstanceId = 0;
+        uint32 startedAtMs = 0;
+        uint32 lastAttemptAtMs = 0;
+        uint32 lastProgressAtMs = 0;
+        uint32 attempts = 0;
+        float lastDistance = 0.0f;
+    };
+    std::mutex pendingTransitionMutex;
+    PendingTransitionState pendingTransition;
+    static std::atomic<uint64> discardedTransitionWork;
+    static std::atomic<uint64> transitionRequests;
     CompositeChatFilter chatFilter;
     PlayerbotSecurity security;
     std::map<std::string, time_t> whispers;
@@ -839,6 +870,8 @@ protected:
     bool shouldLogOut = false;
     bool m_recordMessages = false;
     bool m_recordIncommingMessages = false;
+    uint32 deferredIdleUpdateMs = 0;
+    uint32 valueCacheCleanupElapsed = 0;
     std::vector<std::string> m_recordedMessages;
     Event lastEvent;
 
