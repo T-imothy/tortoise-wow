@@ -54,8 +54,8 @@ AiPlayerbot.PreQuests = 0
 AiPlayerbot.RandomBotAutoCreate = 1
 
 # Random bot count
-AiPlayerbot.MinRandomBots = 1000
-AiPlayerbot.MaxRandomBots = 1000
+AiPlayerbot.MinRandomBots = 4000
+AiPlayerbot.MaxRandomBots = 4000
 AiPlayerbot.RandomBotMinLevel = 5
 AiPlayerbot.RandomBotMaxLevel = 60
 
@@ -1078,10 +1078,10 @@ AiPlayerbot.NonCombatStrategies = +grind,+loot,+custom::say,+return,+delayed rol
 
 # Intervals
 AiPlayerbot.RandomBotUpdateInterval = 1000
-AiPlayerbot.RandomBotsMaxLoginsPerInterval = 8
+AiPlayerbot.RandomBotsMaxLoginsPerInterval = 60
 # Maximum existing random bots whose lifecycle/maintenance state may be
 # processed in one manager pass. Keep this bounded on large populations.
-AiPlayerbot.RandomBotsPerInterval = 64
+AiPlayerbot.RandomBotsPerInterval = 60
 AiPlayerbot.RandomBotCountChangeMinInterval = 1800
 AiPlayerbot.RandomBotCountChangeMaxInterval = 7200
 #AiPlayerbot.MinRandomBotInWorldTime = 3600
