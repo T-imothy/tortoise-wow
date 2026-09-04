@@ -929,12 +929,14 @@ class Map : public GridRefManager<NGridType>
         std::unordered_set<uint32> m_moduleCriticalPlayers;
         std::unordered_map<uint32, ModuleCriticalCacheEntry> m_moduleCriticalCache;
         std::vector<Player*> m_responsivePlayers;
+        std::vector<Player*> m_interactivePlayers;
         std::vector<Player*> m_activeZoneBackgroundPlayers;
         std::vector<Player*> m_hibernatedBackgroundPlayers;
         uint32 m_activeZoneBackgroundStride = 1;
         uint32 m_hibernatedBackgroundStride = 1;
         uint32 m_realPlayerPopulation = 0;
         uint32 m_responsiveBotPopulation = 0;
+        uint32 m_interactiveBotPopulation = 0;
 
         uint32 m_playerPerfReportStart = 0;
         uint64 m_playerPerfRealUpdates = 0;

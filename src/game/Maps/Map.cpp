@@ -884,10 +884,12 @@ void Map::RefreshRealPlayerActivity()
     m_machineDrivenPlayers.clear();
     m_moduleCriticalPlayers.clear();
     m_responsivePlayers.clear();
+    m_interactivePlayers.clear();
     m_activeZoneBackgroundPlayers.clear();
     m_hibernatedBackgroundPlayers.clear();
     m_realPlayerPopulation = 0;
     m_responsiveBotPopulation = 0;
+    m_interactiveBotPopulation = 0;
 
     for (auto const& ref : m_mapRefManager)
     {
@@ -955,6 +957,15 @@ void Map::RefreshRealPlayerActivity()
             continue;
 
         bool const machineDriven = IsMachineDrivenPlayer(player);
+        bool const interactive = !machineDriven ||
+            m_moduleCriticalPlayers.find(player->GetGUIDLow()) != m_moduleCriticalPlayers.end();
+        if (interactive)
+        {
+            m_interactivePlayers.push_back(player);
+            if (machineDriven)
+                ++m_interactiveBotPopulation;
+        }
+
         if (!IsContinent() || !machineDriven || IsResponsivePlayer(player))
         {
             m_responsivePlayers.push_back(player);
@@ -1069,13 +1080,13 @@ void Map::UpdatePlayers(bool responsiveOnly)
         }
     };
 
-    // The responsive pass can run several times while the continent workers
-    // synchronize. Iterate only the cached real/critical set; the old path
-    // rescanned every background bot and also accumulated its skipped time on
-    // every wait-loop pass, causing oversized catch-up bursts.
+    // This pass can run after cells/visibility and repeatedly while continent
+    // workers synchronize. It exists to keep real clients responsive, not to
+    // give thousands of autonomous combat bots extra Player::Update calls.
+    // Only real players and bots interacting with a real player are admitted.
     if (responsiveOnly)
     {
-        for (Player* plr : m_responsivePlayers)
+        for (Player* plr : m_interactivePlayers)
         {
             bool const machineDriven = IsMachineDrivenPlayer(plr);
             updatePlayer(plr, machineDriven, diff + plr->GetSkippedUpdateTime());
@@ -1127,13 +1138,13 @@ void Map::UpdatePlayers(bool responsiveOnly)
         // only while a real player is present; suppress idle-bot instance spam.
         if (IsContinent() || m_playerPerfRealUpdates)
             sLog.out(LOG_PERFORMANCE,
-                "PLAYER_UPDATE_SUMMARY map=%u inst=%u real_updates=%llu real_ms=%.2f bot_updates=%llu bot_ms=%.2f deferred=%llu hibernated=%llu population(real=%u responsive_bots=%u active_bg=%zu hibernated_bg=%zu) stride(active=%u hibernated=%u)",
+                "PLAYER_UPDATE_SUMMARY map=%u inst=%u real_updates=%llu real_ms=%.2f bot_updates=%llu bot_ms=%.2f deferred=%llu hibernated=%llu population(real=%u responsive_bots=%u interactive_bots=%u active_bg=%zu hibernated_bg=%zu) stride(active=%u hibernated=%u)",
                 GetId(), GetInstanceId(),
                 static_cast<unsigned long long>(m_playerPerfRealUpdates), m_playerPerfRealMicros / 1000.0,
                 static_cast<unsigned long long>(m_playerPerfBotUpdates), m_playerPerfBotMicros / 1000.0,
                 static_cast<unsigned long long>(m_playerPerfDeferred),
                 static_cast<unsigned long long>(m_playerPerfHibernated),
-                m_realPlayerPopulation, m_responsiveBotPopulation,
+                m_realPlayerPopulation, m_responsiveBotPopulation, m_interactiveBotPopulation,
                 m_activeZoneBackgroundPlayers.size(), m_hibernatedBackgroundPlayers.size(),
                 m_activeZoneBackgroundStride, m_hibernatedBackgroundStride);
         m_playerPerfReportStart = now;
