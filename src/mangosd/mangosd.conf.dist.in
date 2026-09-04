@@ -257,6 +257,27 @@ Continents.InactivePlayers.SkipUpdates = 5
 # and real-player-controlled bots always bypass this limit.
 
 Continents.HibernatedPlayers.SkipUpdates = 19
+
+# Continents.MachineDriven.AdaptiveStride
+#     Dynamically multiplies the update stride of autonomous background
+#     characters when the average world tick exceeds TargetDiff. Human players
+#     and latency-sensitive bots (near/controlled by a player, combat, groups,
+#     instances, battlegrounds, taxi/transport and teleport) remain full-rate.
+#     Default: 1 (enabled)
+
+Continents.MachineDriven.AdaptiveStride = 1
+
+# Continents.MachineDriven.TargetDiff
+#     Target average world tick in milliseconds used by AdaptiveStride.
+#     Default: 100
+
+Continents.MachineDriven.TargetDiff = 100
+
+# Continents.MachineDriven.MaxStrideMultiplier
+#     Maximum background stride multiplier under sustained load.
+#     Default: 4
+
+Continents.MachineDriven.MaxStrideMultiplier = 4
 MapUpdate.ReduceGridActivationDist.Tick = 190
 MapUpdate.IncreaseGridActivationDist.Tick = 130
 MapUpdate.MinGridActivationDistance = 57

@@ -913,11 +913,14 @@ class Map : public GridRefManager<NGridType>
         uint32 _lastCellsUpdate;
 
         void RefreshRealPlayerActivity();
+        bool IsMachineDrivenPlayer(Player const* player) const;
         bool IsResponsivePlayer(Player const* player) const;
         uint32 GetPlayerUpdateStride(Player const* player) const;
 
         bool m_hasRealPlayers = false;
         std::unordered_set<uint32> m_realPlayerZones;
+        std::unordered_set<uint32> m_machineDrivenPlayers;
+        std::unordered_set<uint32> m_moduleCriticalPlayers;
 
         uint32 m_playerPerfReportStart = 0;
         uint64 m_playerPerfRealUpdates = 0;

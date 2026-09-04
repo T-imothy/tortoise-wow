@@ -848,7 +848,7 @@ bool Map::ShouldUpdateBotCells(Player const* player) const
     if (!player || !player->IsInWorld())
         return false;
 
-    if (!IsContinent() || !Script_IsMachineDriven(player) || IsResponsivePlayer(player))
+    if (!IsContinent() || !IsMachineDrivenPlayer(player) || IsResponsivePlayer(player))
         return true;
 
     uint32 const stride = GetPlayerUpdateStride(player);
@@ -859,35 +859,67 @@ void Map::RefreshRealPlayerActivity()
 {
     m_hasRealPlayers = false;
     m_realPlayerZones.clear();
+    m_machineDrivenPlayers.clear();
+    m_moduleCriticalPlayers.clear();
 
     for (auto const& ref : m_mapRefManager)
     {
         Player const* player = ref.getSource();
-        if (!player || !player->IsInWorld() || Script_IsMachineDriven(player))
+        if (!player || !player->IsInWorld())
             continue;
+
+        if (Script_IsMachineDriven(player))
+        {
+            m_machineDrivenPlayers.insert(player->GetGUIDLow());
+            if (Script_IsUpdateCritical(player))
+                m_moduleCriticalPlayers.insert(player->GetGUIDLow());
+            continue;
+        }
 
         m_hasRealPlayers = true;
         m_realPlayerZones.insert(player->GetZoneId());
     }
 }
 
+bool Map::IsMachineDrivenPlayer(Player const* player) const
+{
+    return player && m_machineDrivenPlayers.find(player->GetGUIDLow()) != m_machineDrivenPlayers.end();
+}
+
 bool Map::IsResponsivePlayer(Player const* player) const
 {
-    return player && (!Script_IsMachineDriven(player) || Script_IsUpdateCritical(player) ||
+    return player && (!IsMachineDrivenPlayer(player) ||
+        m_moduleCriticalPlayers.find(player->GetGUIDLow()) != m_moduleCriticalPlayers.end() ||
         player->IsInCombat() || player->HasScheduledEvent() ||
         player->GetSession()->HasRecentPacket(PACKET_PROCESS_SPELLS));
 }
 
 uint32 Map::GetPlayerUpdateStride(Player const* player) const
 {
-    if (!IsContinent() || !Script_IsMachineDriven(player) || IsResponsivePlayer(player))
+    if (!IsContinent() || !IsMachineDrivenPlayer(player) || IsResponsivePlayer(player))
         return 1;
 
     bool const nearRealActivity = m_hasRealPlayers && HasActiveZone(player->GetZoneId());
     uint32 const skipped = nearRealActivity ?
         sWorld.getConfig(CONFIG_UINT32_INACTIVE_PLAYERS_SKIP_UPDATES) :
         sWorld.getConfig(CONFIG_UINT32_HIBERNATED_PLAYERS_SKIP_UPDATES);
-    return std::max<uint32>(1, skipped + 1);
+    uint32 stride = std::max<uint32>(1, skipped + 1);
+
+    // Scale only autonomous background characters when the world loop falls
+    // behind. Real clients and module-critical characters always returned 1
+    // above, so combat, instances, battlegrounds, groups with a player,
+    // transports and nearby-player interaction remain full-rate.
+    if (sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_ADAPTIVE_STRIDE))
+    {
+        uint32 const target = sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_TARGET_DIFF);
+        uint32 const maxMultiplier = sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_MAX_STRIDE_MULTIPLIER);
+        uint32 const average = sWorld.GetAverageDiff();
+        uint32 const multiplier = std::min<uint32>(maxMultiplier,
+            std::max<uint32>(1, (average + target - 1) / target));
+        stride *= multiplier;
+    }
+
+    return stride;
 }
 
 
@@ -910,6 +942,8 @@ void Map::ProcessSessionPackets(PacketProcessing type)
         if (plr && plr->IsInWorld())
         {
             WorldSession* pSession = plr->GetSession();
+            if (!pSession->GetSocket())
+                continue;
             MapSessionFilter updater(pSession);
             updater.SetProcessType(type);
             pSession->ProcessPackets(updater);
@@ -956,7 +990,7 @@ void Map::UpdatePlayers(bool responsiveOnly)
         Player* plr = m_mapRefIter->getSource();
         if (!plr || !plr->IsInWorld())
             continue;
-        bool const machineDriven = Script_IsMachineDriven(plr);
+        bool const machineDriven = IsMachineDrivenPlayer(plr);
         bool const responsive = IsResponsivePlayer(plr);
         uint32 const stride = GetPlayerUpdateStride(plr);
         bool const dueUpdate = stride == 1 ||
@@ -1049,6 +1083,12 @@ void Map::Update(uint32 t_diff)
         if (plr && plr->IsInWorld())
         {
             WorldSession * pSession = plr->GetSession();
+            // Synthetic playerbot sessions have no socket and cannot have
+            // inbound packets. Updating them here still ran idle/analyser work
+            // for every bot on every map pass. Their AI remains driven from the
+            // PlayerScript update below.
+            if (!pSession->GetSocket() && !pSession->GetMasterPlayer())
+                continue;
             MapSessionFilter updater(pSession);
 
             pSession->Update(updater);
@@ -3093,11 +3133,21 @@ void Map::UpdateVisibilityForRelocations()
         t.emplace_back(it);
     std::atomic<int> ait(0);
     uint32 timeout = sWorld.getConfig(CONFIG_UINT32_MAP_VISIBILITYUPDATE_TIMEOUT);
-    auto f = [&t, &ait, beginTime=now, timeout](){
+    auto f = [this, &t, &ait, beginTime=now, timeout](){
         int it = ait++;
         while (it < t.size())
         {
-            (*t[it])->ProcessRelocationVisibilityUpdates();
+            Unit* unit = *t[it];
+            Player* player = unit->ToPlayer();
+
+            // Background playerbots do not need client-visibility relocation
+            // work on every movement pass. Use the same deterministic cadence
+            // as their cell/player updates. A bot in a player's interest range,
+            // combat, a player group, an instance/BG, or on transport is marked
+            // responsive and therefore always processed.
+            if (!player || ShouldUpdateBotCells(player))
+                unit->ProcessRelocationVisibilityUpdates();
+
             if (WorldTimer::getMSTimeDiffToNow(beginTime) > timeout)
                 break;
             it = ait++;

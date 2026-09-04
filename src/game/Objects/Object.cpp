@@ -2594,7 +2594,11 @@ struct WorldObjectChangeAccumulator
         // send self fields changes in another way, otherwise
         // with new camera system when player's camera too far from player, camera wouldn't receive packets and changes from player
         if (i_object.isType(TYPEMASK_PLAYER))
-            i_object.BuildUpdateDataForPlayer((Player*)&i_object, i_updateDatas);
+        {
+            Player* player = static_cast<Player*>(&i_object);
+            if (player->GetSession() && player->GetSession()->GetSocket())
+                i_object.BuildUpdateDataForPlayer(player, i_updateDatas);
+        }
     }
 
     void Visit(CameraMapType &m)
@@ -2602,7 +2606,12 @@ struct WorldObjectChangeAccumulator
         for (const auto& iter : m)
         {
             Player* owner = iter.getSource()->GetOwner();
-            if (owner != &i_object && owner->IsInVisibleList_Unsafe(&i_object))
+            // A socketless playerbot consumes game state directly from the
+            // server and has no handler for SMSG_(COMPRESSED_)UPDATE_OBJECT.
+            // Do not spend CPU serialising and compressing client-only field
+            // updates that WorldSession would discard immediately.
+            if (owner != &i_object && owner->GetSession() && owner->GetSession()->GetSocket() &&
+                owner->IsInVisibleList_Unsafe(&i_object))
                 i_object.BuildUpdateDataForPlayer(owner, i_updateDatas);
         }
     }

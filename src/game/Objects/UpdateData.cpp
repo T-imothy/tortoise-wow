@@ -145,6 +145,12 @@ bool UpdateData::BuildPacket(WorldPacket *packet, UpdatePacket const* updPacket,
 
 void UpdateData::Send(WorldSession* session, bool hasTransport)
 {
+    if (!session || !session->GetSocket())
+    {
+        Clear();
+        return;
+    }
+
     WorldPacket data;
     if (m_datas.empty() && !m_outOfRangeGUIDs.empty())
     {
