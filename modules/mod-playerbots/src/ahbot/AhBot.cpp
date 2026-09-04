@@ -62,6 +62,11 @@ void AhBot::Init()
 
     availableItems.Init();
 
+    // The constructor initializes this to zero. Without setting it here the
+    // first Update() starts a full auction scan immediately, despite the log
+    // claiming it was deferred, competing directly with bot admission.
+    nextAICheckTime = time(0) + sAhBotConfig.updateInterval;
+
     sLog.outString("[AhBot] Initialization complete. First auction check in %d seconds.", sAhBotConfig.updateInterval);
 }
 

@@ -126,7 +126,10 @@ class SqlResultQueue : public LockedQueue<MaNGOS::IQueryCallback* , std::mutex>
         ~SqlResultQueue();
         void CancelAll();
         void Update(uint32 maxTime);
+        void Add(MaNGOS::IQueryCallback* callback, bool highPriority = false);
         typedef LockedQueue<MaNGOS::IQueryCallback*, std::mutex> CallbackQueue;
+        CallbackQueue _priorityWaitingQueries;
+        CallbackQueue _priorityThreadUnsafeWaitingQueries;
         CallbackQueue _threadUnsafeWaitingQueries;
         uint32 numUnsafeQueries;
         std::unique_ptr<ThreadPool> m_callbackThreads;
@@ -139,10 +142,12 @@ class SqlQuery : public SqlOperation
         MaNGOS::IQueryCallback * m_callback;
         SqlResultQueue * m_queue;
     public:
-        SqlQuery(const char *sql, MaNGOS::IQueryCallback * callback, SqlResultQueue * queue)
-            : m_sql(mangos_strdup(sql)), m_callback(callback), m_queue(queue) {}
+        SqlQuery(const char *sql, MaNGOS::IQueryCallback * callback, SqlResultQueue * queue, bool highPriority = false)
+            : m_sql(mangos_strdup(sql)), m_callback(callback), m_queue(queue), m_highPriority(highPriority) {}
         ~SqlQuery() { char* tofree = const_cast<char*>(m_sql); delete [] tofree; }
         bool Execute(SqlConnection *conn);
+    private:
+        bool m_highPriority;
 };
 
 class SqlQueryHolder
@@ -174,9 +179,10 @@ class SqlQueryHolderEx : public SqlOperation
         SqlQueryHolder * m_holder;
         MaNGOS::IQueryCallback * m_callback;
         SqlResultQueue * m_queue;
+        bool m_highPriority;
     public:
-        SqlQueryHolderEx(SqlQueryHolder *holder, MaNGOS::IQueryCallback * callback, SqlResultQueue * queue, uint32 id)
-            : SqlOperation(id), m_holder(holder), m_callback(callback), m_queue(queue) {}
+        SqlQueryHolderEx(SqlQueryHolder *holder, MaNGOS::IQueryCallback * callback, SqlResultQueue * queue, uint32 id, bool highPriority = false)
+            : SqlOperation(id), m_holder(holder), m_callback(callback), m_queue(queue), m_highPriority(highPriority) {}
         bool Execute(SqlConnection *conn);
 };
 #endif                                                      //__SQLOPERATIONS_H

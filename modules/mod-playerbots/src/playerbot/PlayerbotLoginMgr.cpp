@@ -180,7 +180,9 @@ bool PlayerLoginInfo::SendHolder()
         return false;
     }
 
-    CharacterDatabase.DelayQueryHolder(this, &PlayerLoginInfo::HandlePlayerBotLoginCallback, holder);
+    // This callback only marks the holder ready. Keep it on the world thread:
+    // the former callback-pool write raced LoginBot() reading holderState.
+    CharacterDatabase.DelayQueryHolderUnsafe(this, &PlayerLoginInfo::HandlePlayerBotLoginCallback, holder);
 
     return true;
 }

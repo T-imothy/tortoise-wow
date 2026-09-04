@@ -188,7 +188,7 @@ Database::AsyncPQueryPriority(Class *object, void (Class::*method)(QueryResult*,
     ASYNC_PQUERY_BODY(format, szQuery)
     ASYNC_QUERY_BODY(szQuery)
     AddToPriorityDelayQueue(new SqlQuery(szQuery,
-        new MaNGOS::QueryCallback<Class, ParamType1>(object, method, (QueryResult*)nullptr, param1), m_pResultQueue));
+        new MaNGOS::QueryCallback<Class, ParamType1>(object, method, (QueryResult*)nullptr, param1), m_pResultQueue, true));
     return true;
 }
 template<class Class, typename ParamType1>

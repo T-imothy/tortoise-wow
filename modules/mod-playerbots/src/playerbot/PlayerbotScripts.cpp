@@ -52,8 +52,17 @@ class PlayerbotWorldScript : public WorldScript
         {
             if (!sPlayerbotAIConfig.enabled)
                 return;
+            uint32 const botBegin = WorldTimer::getMSTime();
             sRandomPlayerbotMgr.UpdateAI(diff);
+            uint32 const botElapsed = WorldTimer::getMSTimeDiffToNow(botBegin);
+            if (botElapsed >= 1000)
+                sLog.outError("PB_STALL stage=playerbot_update elapsed_ms=%u online=%u", botElapsed, sRandomPlayerbotMgr.GetPlayerbotsAmount());
+
+            uint32 const ahBegin = WorldTimer::getMSTime();
             auctionbot.Update();
+            uint32 const ahElapsed = WorldTimer::getMSTimeDiffToNow(ahBegin);
+            if (ahElapsed >= 1000)
+                sLog.outError("PB_STALL stage=auctionbot_update elapsed_ms=%u online=%u", ahElapsed, sRandomPlayerbotMgr.GetPlayerbotsAmount());
 
             if (sPlayerbotAIConfig.diagnosticsEnabled)
             {

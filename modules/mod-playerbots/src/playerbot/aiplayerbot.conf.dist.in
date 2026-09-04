@@ -1288,7 +1288,7 @@ AiPlayerbot.LLMDefaultPromptsFile = llm_character_card.txt
 # AiPlayerbot.LLMResponseStartPattern = ("content":\s*")
 
 # Enable the alternative asynchronous login system.
-AiPlayerbot.AsyncBotLogin = 0
+AiPlayerbot.AsyncBotLogin = 1
 
 # Dramatically speeds up initial and future bot logins but takes 2gb/1000 accounts and might prevent player login during the initial bot login period.
 # !!warning heavy db usage at start!!
