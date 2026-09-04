@@ -728,7 +728,14 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool minimal)
     if (time(nullptr) > (OfflineGroupBotsTimer + 5) && players.size())
         AddOfflineGroupBots();
 
-    uint32 updateBots = sPlayerbotAIConfig.randomBotsPerInterval == 0 ? UINT32_MAX : sPlayerbotAIConfig.randomBotsPerInterval;
+    // Zero historically meant "process every bot in one world tick". That is
+    // tolerable around 1,000 bots but turns a 4,000-bot population into a long
+    // synchronous world-thread stall. Preserve the legacy unlimited behavior
+    // for smaller realms, while applying a fail-safe batch when the configured
+    // population is large. Operators can still choose an explicit batch size.
+    uint32 updateBots = sPlayerbotAIConfig.randomBotsPerInterval;
+    if (!updateBots)
+        updateBots = maxAllowedBotCount > 1000 ? 64 : UINT32_MAX;
 
     //Update bots
     for (auto bot : availableBots)

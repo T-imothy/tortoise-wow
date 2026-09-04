@@ -1079,6 +1079,9 @@ AiPlayerbot.NonCombatStrategies = +grind,+loot,+custom::say,+return,+delayed rol
 # Intervals
 AiPlayerbot.RandomBotUpdateInterval = 1000
 AiPlayerbot.RandomBotsMaxLoginsPerInterval = 8
+# Maximum existing random bots whose lifecycle/maintenance state may be
+# processed in one manager pass. Keep this bounded on large populations.
+AiPlayerbot.RandomBotsPerInterval = 64
 AiPlayerbot.RandomBotCountChangeMinInterval = 1800
 AiPlayerbot.RandomBotCountChangeMaxInterval = 7200
 #AiPlayerbot.MinRandomBotInWorldTime = 3600
@@ -1288,7 +1291,7 @@ AiPlayerbot.LLMDefaultPromptsFile = llm_character_card.txt
 # AiPlayerbot.LLMResponseStartPattern = ("content":\s*")
 
 # Enable the alternative asynchronous login system.
-AiPlayerbot.AsyncBotLogin = 1
+AiPlayerbot.AsyncBotLogin = 0
 
 # Dramatically speeds up initial and future bot logins but takes 2gb/1000 accounts and might prevent player login during the initial bot login period.
 # !!warning heavy db usage at start!!

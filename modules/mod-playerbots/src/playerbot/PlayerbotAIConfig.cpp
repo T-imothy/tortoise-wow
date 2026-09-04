@@ -370,10 +370,7 @@ bool PlayerbotAIConfig::Initialize()
     bExplicitDbStoreSave = config.GetBoolDefault("AiPlayerbot.ExplicitDbStoreSave", false);
 
     randomBotLoginWithPlayer = config.GetBoolDefault("AiPlayerbot.RandomBotLoginWithPlayer", false);
-    // The legacy admission path performs account-by-account character and
-    // event queries synchronously on the world thread. At large populations
-    // that makes the realm appear online while logins cannot progress.
-    asyncBotLogin = config.GetBoolDefault("AiPlayerbot.AsyncBotLogin", true);
+    asyncBotLogin = config.GetBoolDefault("AiPlayerbot.AsyncBotLogin", false);
     preloadHolders = config.GetBoolDefault("AiPlayerbot.PreloadHolders", false);
     
     freeRoomForNonSpareBots = config.GetIntDefault("AiPlayerbot.FreeRoomForNonSpareBots", 1);
