@@ -3,25 +3,12 @@
 #include "PlayerbotMgr.h"
 #include "PlayerbotAIConfig.h"
 #include "RandomPlayerbotMgr.h"
+#include "Handlers/LoginQueryHolder.h"
 
 using namespace ai;
 
 // Penqle's Singleton<> requires an explicit instantiation in a .cpp file.
 INSTANTIATE_SINGLETON_1(ai::PlayerBotLoginMgr);
-
-class LoginQueryHolder : public SqlQueryHolder
-{
-private:
-    uint32 m_accountId;
-    ObjectGuid m_guid;
-public:
-    LoginQueryHolder(uint32 accountId, ObjectGuid guid)
-        : m_accountId(accountId), m_guid(guid) {
-    }
-    ObjectGuid GetGuid() const { return m_guid; }
-    uint32 GetAccountId() const { return m_accountId; }
-    bool Initialize();
-};
 
 class PlayerbotLoginQueryHolder : public LoginQueryHolder
 {
@@ -177,8 +164,17 @@ bool PlayerLoginInfo::SendHolder()
     if (!lqh->Initialize())
     {
         delete holder;                                      // delete all unprocessed queries
+        holder = nullptr;
+        holderState = HolderState::HOLDER_EMPTY;
         return false;
     }
+
+    // The async login manager owns admission/backpressure, but the common
+    // PlayerbotHolder callback owns materializing the Player and attaching AI.
+    // Register this prepared holder so that callback can resolve it later.
+    // Without this handoff every async login was silently discarded as
+    // "not one of ours", which is why AsyncBotLogin produced zero bots.
+    sRandomPlayerbotMgr.RegisterPendingBotLogin(holder, guid, 0);
 
     // This callback only marks the holder ready. Keep it on the world thread:
     // the former callback-pool write raced LoginBot() reading holderState.
