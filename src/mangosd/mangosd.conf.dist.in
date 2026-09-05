@@ -307,6 +307,21 @@ Continents.MachineDriven.MaxCatchUpDiff = 500
 #     Default: 2
 
 Continents.MachineDriven.AutonomousActiveStride = 2
+
+# Bounded continent background scheduler. Humans, interacting bots, cells around
+# those players, active non-player objects, and instances remain unbudgeted.
+# Deferred players use a persistent fair cursor and wall-clock due times;
+# deferred cells use a deduplicated FIFO, not a new batch that drops old work.
+# Budgets are soft limits checked BETWEEN updates, never mid-script/combat.
+# One expensive update can exceed the limit. Count limits are additional caps.
+# Player cadence is MapUpdateInterval * the applicable existing stride.
+# MaxCatchUpDiff also bounds background creature AI catch-up, not wall timers.
+# Set either BudgetMs to 0 to use that subsystem's previous scheduler.
+Continents.MachineDriven.PlayerBudgetMs = 30
+Continents.MachineDriven.PlayerBatchSize = 4096
+Continents.MachineDriven.CellBudgetMs = 30
+Continents.MachineDriven.CellBatchSize = 8192
+
 MapUpdate.ReduceGridActivationDist.Tick = 190
 MapUpdate.IncreaseGridActivationDist.Tick = 130
 MapUpdate.MinGridActivationDistance = 57

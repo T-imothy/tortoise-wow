@@ -24,6 +24,7 @@
 */
 
 #include "World.h"
+#include "WorkMetrics.h"
 #include "Database/DatabaseEnv.h"
 #include "Config/Config.h"
 #include "CustomMerchantMgr.h"
@@ -1338,6 +1339,10 @@ void World::LoadConfigSettingsFromFile(bool reload)
     setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_CRITICAL_REFRESH_INTERVAL, "Continents.MachineDriven.CriticalRefreshInterval", 250, 0, 5000);
     setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_MAX_CATCHUP_DIFF, "Continents.MachineDriven.MaxCatchUpDiff", 500, 0, 5000);
     setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_AUTONOMOUS_ACTIVE_STRIDE, "Continents.MachineDriven.AutonomousActiveStride", 2, 1, 20);
+    setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_PLAYER_BUDGET_MS, "Continents.MachineDriven.PlayerBudgetMs", 30, 0, 1000);
+    setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_PLAYER_BATCH_SIZE, "Continents.MachineDriven.PlayerBatchSize", 4096, 1, 20000);
+    setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_CELL_BUDGET_MS, "Continents.MachineDriven.CellBudgetMs", 30, 0, 1000);
+    setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_CELL_BATCH_SIZE, "Continents.MachineDriven.CellBatchSize", 8192, 1, 65536);
     setConfig(CONFIG_UINT32_MAPUPDATE_TICK_LOWER_GRID_ACTIVATION_DISTANCE, "MapUpdate.ReduceGridActivationDist.Tick", 0);
     setConfig(CONFIG_UINT32_MAPUPDATE_TICK_INCREASE_GRID_ACTIVATION_DISTANCE, "MapUpdate.IncreaseGridActivationDist.Tick", 0);
     setConfig(CONFIG_UINT32_MAPUPDATE_MIN_GRID_ACTIVATION_DISTANCE, "MapUpdate.MinGridActivationDistance", 0);
@@ -2792,6 +2797,7 @@ void World::Update(uint32 diff)
     {
         script->OnUpdate(diff);
     });
+    WorkMetrics::Flush();
 }
 
 /// Send a packet to all players (except self if mentioned)

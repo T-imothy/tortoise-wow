@@ -23,6 +23,7 @@
 #include "DatabaseEnv.h"
 #include "Config/Config.h"
 #include "Database/SqlOperations.h"
+#include "WorkMetrics.h"
 
 #include <ctime>
 #include <iostream>
@@ -350,6 +351,15 @@ bool Database::PExecuteLog(const char * format,...)
     }
 
     return Execute(szQuery);
+}
+
+QueryResult* Database::Query(const char* sql)
+{
+    WorkMetrics::Probe wait(WorkMetrics::DatabaseWait);
+    SqlConnection::Lock guard(getQueryConnection());
+    wait.Finish();
+    WorkMetrics::Probe execution(WorkMetrics::DatabaseRead);
+    return guard->Query(sql);
 }
 
 QueryResult* Database::PQuery(const char *format,...)

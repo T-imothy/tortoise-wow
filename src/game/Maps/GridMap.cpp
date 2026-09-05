@@ -743,6 +743,7 @@ void TerrainInfo::CleanUpGrids(const uint32 diff)
             if (pMap && mayUnload)
             {
                 ++unloaded;
+                m_generation.fetch_add(1, std::memory_order_relaxed);
                 m_GridMaps[x][y] = nullptr;
                 // delete grid data if reference count == 0
                 pMap->unloadData();
@@ -1216,6 +1217,7 @@ GridMap* TerrainInfo::LoadMapAndVMap(const uint32 x, const uint32 y)
 
             // load navmesh
             MMAP::MMapFactory::createOrGetMMapManager()->loadMap(m_mapId, x, y);
+            m_generation.fetch_add(1, std::memory_order_relaxed);
 
             uint32 const loadMs = WorldTimer::getMSTimeDiffToNow(loadStart);
             m_gridLoads.fetch_add(1, std::memory_order_relaxed);

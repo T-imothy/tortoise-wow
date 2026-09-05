@@ -30,6 +30,7 @@
 #include "Cell.h"
 #include "Object.h"
 #include "Timer.h"
+#include "BoundedWork.h"
 #include "SharedDefines.h"
 #include "GridMap.h"
 #include "GameSystem/GridRefManager.h"
@@ -383,7 +384,8 @@ class Map : public GridRefManager<NGridType>
         void MarkScheduledPlayerCells(std::vector<Player*> const& players, uint32 stride);
         bool ShouldUpdateBotCells(Player const* player) const;
         void UpdateSync(const uint32);
-        void UpdatePlayers(bool responsiveOnly = false);
+          void UpdatePlayers(bool responsiveOnly = false);
+          void UpdateBudgetedCells(uint32 now, uint32 diff);
         void DoUpdate(uint32 maxDiff);
         virtual void Update(uint32);
         void UpdateSessionsMovementAndSpellsIfNeeded();
@@ -933,7 +935,13 @@ class Map : public GridRefManager<NGridType>
         std::vector<Player*> m_interactivePlayers;
         std::vector<Player*> m_autonomousActivePlayers;
         std::vector<Player*> m_activeZoneBackgroundPlayers;
-        std::vector<Player*> m_hibernatedBackgroundPlayers;
+          std::vector<Player*> m_hibernatedBackgroundPlayers;
+          std::vector<Player*> m_backgroundPlayers;
+          BoundedWork::Deadlines m_backgroundDeadlines;
+          BoundedWork::UniqueQueue m_backgroundCells;
+          size_t m_backgroundCursor = 0;
+          uint64 m_backgroundBudgetStops = 0;
+          uint64 m_backgroundCellsUpdated = 0;
         uint32 m_activeZoneBackgroundStride = 1;
         uint32 m_hibernatedBackgroundStride = 1;
         uint32 m_autonomousActiveStride = 1;

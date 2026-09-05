@@ -20,6 +20,7 @@
  */
 
 #include "Map.h"
+#include "WorkMetrics.h"
 #include <shared_mutex>
 #include "MapManager.h"
 #include "Player.h"
@@ -824,6 +825,65 @@ inline void Map::UpdateActiveCellsSynch(uint32 now, uint32 diff)
     }
 }
 
+void Map::UpdateBudgetedCells(uint32 now, uint32 diff)
+{
+    WorkMetrics::Probe foregroundCost(WorkMetrics::ForegroundCells);
+    resetMarkedCells();
+    // Update the complete visible interaction, including creatures and pets,
+    // before unrelated background cells. Never time-slice a cell traversal.
+    for (Player* player : m_responsivePlayers)
+        UpdateCellsAroundObject(now, diff, player);
+    for (m_activeNonPlayersIter = m_activeNonPlayers.begin(); m_activeNonPlayersIter != m_activeNonPlayers.end();)
+    {
+        WorldObject* object = *m_activeNonPlayersIter++;
+        UpdateCellsAroundObject(now, diff, object);
+    }
+    foregroundCost.Finish();
+
+    WorkMetrics::Probe enqueueCost(WorkMetrics::QueueCells);
+    auto enqueue = [this](std::vector<Player*> const& players, uint32 stride)
+    {
+        stride = std::max<uint32>(1, stride);
+        for (size_t i = _botCellUpdateSequence % stride; i < players.size(); i += stride)
+        {
+            Player const* player = players[i];
+            if (!player || !player->IsInWorld() || !player->IsPositionValid()) continue;
+            CellArea area = Cell::CalculateCellArea(player->GetPositionX(), player->GetPositionY(), player->GetGridActivationDistance());
+            for (uint32 x = area.low_bound.x_coord; x <= area.high_bound.x_coord; ++x)
+                for (uint32 y = area.low_bound.y_coord; y <= area.high_bound.y_coord; ++y)
+                {
+                    uint32 const id = y * TOTAL_NUMBER_OF_CELLS_PER_MAP + x;
+                    if (!isCellMarked(id)) m_backgroundCells.Push(id);
+                }
+        }
+    };
+    if (m_backgroundPlayers.empty()) m_backgroundCells.Clear();
+    enqueue(m_autonomousActivePlayers, m_autonomousActiveStride);
+    enqueue(m_activeZoneBackgroundPlayers, m_activeZoneBackgroundStride);
+    enqueue(m_hibernatedBackgroundPlayers, m_hibernatedBackgroundStride);
+    enqueueCost.Finish();
+
+    WorkMetrics::Probe backgroundCost(WorkMetrics::BackgroundCells);
+    BoundedWork::Budget budget(sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_CELL_BUDGET_MS),
+        sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_CELL_BATCH_SIZE));
+    size_t completed = 0;
+    MaNGOS::ObjectUpdater updater(diff, now, true, sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_MAX_CATCHUP_DIFF));
+    TypeContainerVisitor<MaNGOS::ObjectUpdater, GridTypeMapContainer> gridUpdate(updater);
+    TypeContainerVisitor<MaNGOS::ObjectUpdater, WorldTypeMapContainer> worldUpdate(updater);
+    while (m_backgroundCells.Size() && !budget.Exhausted(completed))
+    {
+        uint32 const id = m_backgroundCells.Pop();
+        if (isCellMarked(id)) continue;
+        markCell(id);
+        Cell cell(CellPair(id % TOTAL_NUMBER_OF_CELLS_PER_MAP, id / TOTAL_NUMBER_OF_CELLS_PER_MAP));
+        cell.SetNoCreate();
+        Visit(cell, gridUpdate);
+        Visit(cell, worldUpdate);
+        ++completed;
+    }
+    m_backgroundCellsUpdated += completed;
+}
+
 inline void Map::UpdateCells(uint32 map_diff)
 {
     uint32 now = WorldTimer::getMSTime();
@@ -835,17 +895,21 @@ inline void Map::UpdateCells(uint32 map_diff)
     ++_botCellUpdateSequence;
 
     /// update active cells around players and active objects
-    if (IsContinent() && m_cellThreads->status() == ThreadPool::Status::READY)
+    if (IsContinent() && sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_CELL_BUDGET_MS))
+        UpdateBudgetedCells(now, diff);
+    else if (IsContinent() && m_cellThreads->status() == ThreadPool::Status::READY)
         UpdateActiveCellsAsynch(now, diff);
     else
         UpdateActiveCellsSynch(now, diff);
 
     if (IsContinent() && m_motionThreads->status() == ThreadPool::Status::READY && !unitsMvtUpdate.empty())
     {
+        WorkMetrics::Probe motionCost(WorkMetrics::MotionBatch);
         for (auto it = unitsMvtUpdate.begin(); it != unitsMvtUpdate.end(); it++)
             m_motionThreads << [it,diff](){
                  if ((*it)->IsInWorld())
                     (*it)->GetMotionMaster()->UpdateMotionAsync(diff);
+                 WorkMetrics::Flush();
             };
         m_motionThreads->processWorkload().wait();
     }
@@ -891,6 +955,7 @@ void Map::RefreshRealPlayerActivity()
     m_autonomousActivePlayers.clear();
     m_activeZoneBackgroundPlayers.clear();
     m_hibernatedBackgroundPlayers.clear();
+    m_backgroundPlayers.clear();
     m_realPlayerPopulation = 0;
     m_responsiveBotPopulation = 0;
     m_interactiveBotPopulation = 0;
@@ -978,13 +1043,19 @@ void Map::RefreshRealPlayerActivity()
             if (machineDriven)
                 ++m_responsiveBotPopulation;
         }
-        else if (IsAutonomousActivePlayer(player))
-            m_autonomousActivePlayers.push_back(player);
-        else if (m_hasRealPlayers && HasActiveZone(player->GetZoneId()))
-            m_activeZoneBackgroundPlayers.push_back(player);
         else
-            m_hibernatedBackgroundPlayers.push_back(player);
+        {
+            m_backgroundPlayers.push_back(player);
+            if (IsAutonomousActivePlayer(player))
+                m_autonomousActivePlayers.push_back(player);
+            else if (m_hasRealPlayers && HasActiveZone(player->GetZoneId()))
+                m_activeZoneBackgroundPlayers.push_back(player);
+            else
+                m_hibernatedBackgroundPlayers.push_back(player);
+        }
     }
+    if (m_backgroundDeadlines.Size() > m_machineDrivenPlayers.size() + 64)
+        m_backgroundDeadlines.Prune([this](uint32 guid) { return m_machineDrivenPlayers.count(guid) != 0; });
 }
 
 bool Map::IsMachineDrivenPlayer(Player const* player) const
@@ -1143,9 +1214,35 @@ void Map::UpdatePlayers(bool responsiveOnly)
                 m_playerPerfHibernated += deferred;
         };
 
-        updateScheduled(m_autonomousActivePlayers, m_autonomousActiveStride, false);
-        updateScheduled(m_activeZoneBackgroundPlayers, m_activeZoneBackgroundStride, false);
-        updateScheduled(m_hibernatedBackgroundPlayers, m_hibernatedBackgroundStride, true);
+        uint32 const budgetMs = sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_PLAYER_BUDGET_MS);
+        if (IsContinent() && budgetMs)
+        {
+            BoundedWork::Budget budget(budgetMs, sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_PLAYER_BATCH_SIZE));
+            size_t const count = m_backgroundPlayers.size();
+            size_t visited = 0, updated = 0;
+            while (visited < count && !budget.Exhausted(updated))
+            {
+                m_backgroundCursor %= count;
+                Player* plr = m_backgroundPlayers[m_backgroundCursor++];
+                ++visited;
+                if (!plr || !plr->IsInWorld()) continue;
+                uint32 const stride = IsAutonomousActivePlayer(plr) ? m_autonomousActiveStride :
+                    (m_hasRealPlayers && HasActiveZone(plr->GetZoneId()) ? m_activeZoneBackgroundStride : m_hibernatedBackgroundStride);
+                uint32 const cadence = sWorld.getConfig(CONFIG_UINT32_INTERVAL_MAPUPDATE) * stride;
+                if (!m_backgroundDeadlines.Due(plr->GetGUIDLow(), now, cadence)) continue;
+                updatePlayer(plr, true, diff);
+                m_backgroundDeadlines.Served(plr->GetGUIDLow(), now);
+                ++updated;
+            }
+            m_playerPerfDeferred += count - updated;
+            if (visited < count) ++m_backgroundBudgetStops;
+        }
+        else
+        {
+            updateScheduled(m_autonomousActivePlayers, m_autonomousActiveStride, false);
+            updateScheduled(m_activeZoneBackgroundPlayers, m_activeZoneBackgroundStride, false);
+            updateScheduled(m_hibernatedBackgroundPlayers, m_hibernatedBackgroundStride, true);
+        }
     }
     _lastPlayersUpdate = now;
 
@@ -1166,6 +1263,11 @@ void Map::UpdatePlayers(bool responsiveOnly)
                 m_autonomousActivePlayers.size(), m_activeZoneBackgroundPlayers.size(), m_hibernatedBackgroundPlayers.size(),
                 m_autonomousActiveStride,
                 m_activeZoneBackgroundStride, m_hibernatedBackgroundStride);
+        if (IsContinent())
+            sLog.out(LOG_PERFORMANCE, "BACKGROUND_WORK map=%u player_budget_stops=%llu cells_updated=%llu pending_cells=%zu",
+                GetId(), static_cast<unsigned long long>(m_backgroundBudgetStops),
+                static_cast<unsigned long long>(m_backgroundCellsUpdated), m_backgroundCells.Size());
+        m_backgroundBudgetStops = m_backgroundCellsUpdated = 0;
         m_playerPerfReportStart = now;
         m_playerPerfRealUpdates = m_playerPerfBotUpdates = 0;
         m_playerPerfRealMicros = m_playerPerfBotMicros = 0;
@@ -1353,6 +1455,7 @@ void Map::Update(uint32 t_diff)
                 m_VisibleDistance = World::GetMaxVisibleDistanceOnContinents();
         }
     }
+    WorkMetrics::Flush();
     m_updateFinished = true;
 }
 

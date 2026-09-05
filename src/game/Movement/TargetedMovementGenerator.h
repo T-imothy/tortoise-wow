@@ -22,6 +22,8 @@
 #include "MovementGenerator.h"
 #include "FollowerReference.h"
 #include "PathFinder.h"
+#include "PathReuseContext.h"
+#include <memory>
 #include "Unit.h"
 
 class TargetedMovementGeneratorBase
@@ -74,6 +76,8 @@ class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, 
         float m_fTargetLastY;
         float m_fTargetLastZ;
         bool  m_bTargetOnTransport;
+        std::unique_ptr<PathFinder> m_path;
+        PathReuseContext m_pathContext;
 };
 
 template<class T>

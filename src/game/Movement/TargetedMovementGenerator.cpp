@@ -107,7 +107,15 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T &owner)
     m_bTargetOnTransport = transport;
     i_target->GetPosition(m_fTargetLastX, m_fTargetLastY, m_fTargetLastZ, transport);
 
-    PathFinder path(&owner);
+    PathReuseContext const context{owner.GetMapId(), owner.GetInstanceId(), owner.GetTerrain()->GetGeneration(),
+        uint32(owner.CanWalk()) | (uint32(owner.CanSwim()) << 1) | (uint32(owner.CanFly()) << 2),
+        transport ? transport->GetObjectGuid().GetRawValue() : 0};
+    if (!m_path || m_pathContext != context)
+    {
+        m_path = std::make_unique<PathFinder>(&owner);
+        m_pathContext = context;
+    }
+    PathFinder& path = *m_path;
 
     // allow pets following their master to cheat while generating paths
     bool petFollowing = (isPet && owner.HasUnitState(UNIT_STAT_FOLLOW));
