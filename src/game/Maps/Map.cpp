@@ -488,8 +488,7 @@ bool Map::Add(Player *player)
     // Inspired from the TrinityCore way.
     if (player->IsBeingTeleportedFar())
     {
-        std::unique_lock<std::shared_mutex> lock(player->m_visibleGUIDs_lock);
-        player->m_visibleGUIDs.clear();
+        player->ClearVisibleObjects();
     }
     NGridType* grid = getNGrid(cell.GridX(), cell.GridY());
     player->GetViewPoint().Event_AddedToWorld(&(*grid)(cell.CellX(), cell.CellY()));
@@ -534,8 +533,7 @@ void Map::ExistingPlayerLogin(Player* player)
         if (Player* other = GetPlayer(*it))
             other->m_broadcaster->RemoveListener(player);
     {
-        std::unique_lock<std::shared_mutex> lock(player->m_visibleGUIDs_lock);
-        player->m_visibleGUIDs.clear();
+        player->ClearVisibleObjects();
     }
 
     SendInitTransports(player);
@@ -1880,6 +1878,7 @@ void Map::Remove(Player *player, bool remove)
     if (p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
     {
         // invalid coordinates
+        player->ClearVisibleObjects();
         player->ResetMap();
 
         if (remove)
@@ -1924,6 +1923,7 @@ void Map::Remove(Player *player, bool remove)
         if (Player* other = GetPlayer(*it))
             other->m_broadcaster->RemoveListener(player);
 
+    player->ClearVisibleObjects();
     player->ResetMap();
     if (remove)
         DeleteFromWorld(player);

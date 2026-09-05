@@ -17,6 +17,7 @@
  */
 
 #include "MoveSplineInit.h"
+#include "DetailedWorkDiagnostics.h"
 #include <cmath>
 #include <atomic>
 #include "MoveSpline.h"
@@ -67,6 +68,7 @@ static std::atomic<uint32> splineCounter{1};
 
 int32 MoveSplineInit::Launch()
 {
+    DetailedWork::Scope launchWork(DetailedWork::SplineLaunch, unit.GetGUIDLow());
     float realSpeedRun = 0.0f;
     MoveSpline& move_spline = *unit.movespline;
 

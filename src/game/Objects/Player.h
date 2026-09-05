@@ -2156,6 +2156,7 @@ class Player final: public Unit
         mutable std::mutex m_visibleGobjsQuestAct_lock;
 
         bool IsInVisibleList(WorldObject const* u) const;
+        void ClearVisibleObjects();
         bool IsInVisibleList_Unsafe(WorldObject const* u) const { return this == u || m_visibleGUIDs.find(u->GetObjectGuid()) != m_visibleGUIDs.end(); }
         bool IsVisibleInGridForPlayer(Player const* pl) const override;
         bool IsVisibleGloballyFor(Player* pl) const;

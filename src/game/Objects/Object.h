@@ -33,6 +33,7 @@
 #include "DBCEnums.h"
 #include "Utilities/EventProcessor.h"
 #include "DynamicVisibilityMgr.h"
+#include "MovementViewerSet.h"
 
 #include <set>
 #include <string>
@@ -1011,6 +1012,13 @@ class WorldObject : public Object
         // Send to players who have object at client
         void SendObjectMessageToSet(WorldPacket *data, bool self, WorldObject const* except = nullptr) const;
         void SendMovementMessageToSet(WorldPacket data, bool self, WorldObject const* except = nullptr);
+        void AddMovementViewer(ObjectGuid guid) { if (IsCreature()) m_movementViewers.Add(guid); }
+        void RemoveMovementViewer(ObjectGuid guid) { if (IsCreature()) m_movementViewers.Remove(guid); }
+        void RemoveFromWorld() override
+        {
+            Object::RemoveFromWorld();
+            m_movementViewers.Clear();
+        }
 
         virtual void SendMessageToSetInRange(WorldPacket *data, float dist, bool self) const;
         void SendMessageToSetExcept(WorldPacket *data, Player const* skipped_receiver) const;
@@ -1245,6 +1253,7 @@ virtual uint32 GetLevel() const = 0;
         float m_visibilityModifier;
 
         Map * m_currMap;                                    //current object's Map location
+        MovementViewerSet<ObjectGuid> m_movementViewers;
 
         uint32 m_mapId;                                     // object at map with map_id
         uint32 m_InstanceId;                                // in map copy with instance id

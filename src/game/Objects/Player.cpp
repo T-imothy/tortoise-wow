@@ -20802,6 +20802,7 @@ void Player::UpdateVisibilityOf(WorldObject const* viewPoint, WorldObject* targe
             target->DestroyForPlayer(this);
             std::unique_lock<std::shared_mutex> lock(m_visibleGUIDs_lock);
             m_visibleGUIDs.erase(t_guid);
+            target->RemoveMovementViewer(GetObjectGuid());
             lock.unlock();
 
             if (Player* plTarget = target->ToPlayer())
@@ -20820,6 +20821,7 @@ void Player::UpdateVisibilityOf(WorldObject const* viewPoint, WorldObject* targe
             {
                 std::unique_lock<std::shared_mutex> lock(m_visibleGUIDs_lock);
                 m_visibleGUIDs.insert(target->GetObjectGuid());
+                target->AddMovementViewer(GetObjectGuid());
                 lock.unlock();
 
                 if (Player* plTarget = target->ToPlayer())
@@ -20873,6 +20875,22 @@ void RemoveBroadcastListener(Player* target, Player* me)
         target->m_broadcaster->RemoveListener(me);
 }
 
+void Player::ActivateBroadcastListeners(std::set<WorldObject*> const& visibleNow)
+{
+    // The caller sends the complete create/out-of-range UpdateData first.  Only
+    // then may the async movement broadcaster target this client; otherwise a
+    // busy player or bot can deliver SMSG_MONSTER_MOVE ahead of its create block.
+    for (WorldObject* object : visibleNow)
+    {
+        if (object)
+            object->AddMovementViewer(GetObjectGuid());
+        if (Player* target = object ? object->ToPlayer() : nullptr)
+            if (target->m_broadcaster)
+                target->m_broadcaster->AddListener(this);
+    }
+}
+
+
 template<class T>
 void Player::UpdateVisibilityOf(WorldObject const* viewPoint, T* target, UpdateData& data, std::set<WorldObject*>& visibleNow)
 {
@@ -20890,6 +20908,7 @@ void Player::UpdateVisibilityOf(WorldObject const* viewPoint, T* target, UpdateD
             target->BuildOutOfRangeUpdateBlock(&data);
             std::unique_lock<std::shared_mutex> lock(m_visibleGUIDs_lock);
             m_visibleGUIDs.erase(t_guid);
+            target->RemoveMovementViewer(GetObjectGuid());
             lock.unlock();
 
             RemoveBroadcastListener(target, this);
@@ -24380,6 +24399,23 @@ void Player::HandleStealthedUnitsDetection()
         {
             if (!IsInVisibleList_Unsafe(stealthedUnit))
             {
+                // LOCKED. Every other writer of m_visibleGUIDs takes the
+                // unique_lock; these two in the stealth sweep did not, and a
+                // reader on another thread holding the shared_lock then died
+                // inside _Hashtable::find - four times on 2026-08-29, always
+                // from Group::UpdatePlayerOutOfRange. A reader's lock is worth
+                // nothing while a writer ignores it. Narrow on purpose: the
+                // send below must not run under a write lock.
+                {
+                    std::unique_lock<std::shared_mutex> lock(m_visibleGUIDs_lock);
+                    m_visibleGUIDs.insert(stealthedUnit->GetObjectGuid());
+                }
+                stealthedUnit->SendCreateUpdateToPlayer(this);
+                stealthedUnit->AddMovementViewer(GetObjectGuid());
+
+                // Do not expose this socket to the asynchronous movement queue
+                // until the object's create block has been queued first.
+
                 if (Player* i_player = stealthedUnit->ToPlayer())
                     if (i_player->m_broadcaster)
                         i_player->m_broadcaster->AddListener(this);
@@ -24398,7 +24434,12 @@ void Player::HandleStealthedUnitsDetection()
                     if (i_player->m_broadcaster)
                         i_player->m_broadcaster->RemoveListener(this);
 
-                m_visibleGUIDs.erase(stealthedUnit->GetObjectGuid());
+                {
+                    std::unique_lock<std::shared_mutex> lock(m_visibleGUIDs_lock);
+                    m_visibleGUIDs.erase(stealthedUnit->GetObjectGuid());
+                    stealthedUnit->RemoveMovementViewer(GetObjectGuid());
+                }
+
             }
         }
     }
@@ -24412,6 +24453,17 @@ bool Player::IsInVisibleList(WorldObject const* u) const
     std::shared_lock<std::shared_mutex> lock(m_visibleGUIDs_lock);
     bool atClient = m_visibleGUIDs.find(u->GetObjectGuid()) != m_visibleGUIDs.end();
     return atClient; 
+}
+
+void Player::ClearVisibleObjects()
+{
+    std::unique_lock<std::shared_mutex> lock(m_visibleGUIDs_lock);
+    if (Map* map = FindMap())
+        for (ObjectGuid guid : m_visibleGUIDs)
+            if (guid.IsCreatureOrPet())
+                if (Creature* creature = map->GetAnyTypeCreature(guid))
+                    creature->RemoveMovementViewer(GetObjectGuid());
+    m_visibleGUIDs.clear();
 }
 
 

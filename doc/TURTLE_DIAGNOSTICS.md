@@ -2,6 +2,122 @@
 
 Purpose: explain server-side action latency at the configured population without logging every bot action. This is an instrumentation/removal inventory, not a claim of live performance validation.
 
+## September 5 baseline and remaining movement port
+
+Baseline commit: `3833da48e4c3d2b1ef7e905c6027257d1135d1f8`, branch
+`perf/6k-playerbot-scheduler`. It records the pre-existing work, including the
+measured-diff reporting candidate. It is a source baseline, not a statement
+that the running server has that binary. GitHub publication is separately gated
+on approval of the destination; a local commit is not a successful push.
+
+The follow-up changes are:
+
+- NPC movement uses an inverse viewer GUID index, following the CMaNGOS
+  `Unit::SendMessageToAllWhoSeeMeMove` / `GetClientGuidsIAmAt` approach. It no
+  longer searches camera cells for each NPC spline packet. Normal session
+  delivery remains in place for humans AND bots; no bot packet hooks are
+  discarded. Snapshot locks are released before map/session/visibility work.
+- Visibility creation registers viewers after create packets, including batched
+  and stealth creates. Out-of-range, destroy, stealth loss, relog, logout and
+  map removal unregister them. World removal/map changes clear the inverse
+  index; delivery re-resolves player GUIDs and checks current visibility.
+  The player broadcaster and transport-gameobject delivery remain native.
+- Packet compression uses one libdeflate workspace per sending thread rather
+  than allocating/freeing twice per packet. A compression-level change replaces
+  that thread's workspace; failure throws instead of dereferencing null. The
+  size bound covers every level, including reload between bound/compression.
+  Zlib format, bundle framing, root/walk/speed restoration packets and opcode
+  ordering are unchanged. Memory is bounded by the number of sending threads.
+- Random wandering retains path scratch capacity, as the reference generator
+  does. Each request resets old routes, topology pointers and movement filters;
+  it acquires the current thread's query anew. This deliberately does NOT carry
+  stale polygon references across tile/map changes. Turtle's destination,
+  steep-slope policy, flying paths and successful wander delay are retained.
+- Failed navmesh-query lookup now clears the previous mesh pointer.
+- TD15 adds `random_path`, `spline_launch`, `packet_compression` and
+  `movement_delivery` to the existing bounded `TW_WORK` diagnostics. They are
+  inclusive/nested measurements, not additive totals. Disable/remove together
+  with TD11 after acceptance.
+
+### Port coverage ledger
+
+References are the local ManTech TBC `b4354d59d`, WotLK `9f47f9a121`,
+Classic `5064f7682`, and unified Playerbots `811d6f1e` trees. The commit groups
+below distinguish already-recorded implementation from this follow-up; they
+are not claims of byte-for-byte code identity or measured performance parity.
+
+| Reference area / representative commits | Turtle implementation / disposition |
+|---|---|
+| VMangos compatibility, map workers, packet ownership (`578d1be99`, `472803b2d`) | Baseline: `MapManager`, `Map`, `WorldSession`; joined owners, native broadcaster integration and socket safety. Native transport/custom map hooks preserved. |
+| Parallel pathfinding and human-login priority (`865a694ea`) | Baseline: thread-owned queries, navmesh lifetime gate, DB priority completions and bounded bot admission. |
+| Arch 2 cell/map scheduling (`af9a06ba5`, `d4881c7e4`, `57655f6b6`) | Baseline: discovery snapshots, owner-thread application, staggered idle work, bounded batches and memory telemetry. |
+| Corrected idle-AI ownership / stale transitions (`03e066156`, `30c308969`) | Baseline: one serial AI batch per map on a separate joined pool; GUID/map/generation validation. No concurrently mutating independent bots on one map. |
+| Arch 3 core (`52270e962`) | Baseline: cell fallback/drain, adaptive idle budget/recovery/age promotion, memory admission guards, spline validation, watchdog/phase diagnostics and warning aggregation. Turtle retains facing/stop/custom spline cases. |
+| AI cache/retry work (`185b1f44`, `9e354d93`, `34a09916`, `014f532c`) | Baseline: map-owned cleanup, bounded failed-retry cache, lazy cache accounting and cancellation/retry control. |
+| Portal transitions (`0081875b`, `2ec313e4`, `f7086751`, `e7326160`) | Baseline: deferred urgent-transition request, deduplication, generation guards and owner-thread execution. |
+| Arch 3 bot capabilities/actions (`74372022`, `407f4cd5`) | Baseline: spellbook-revision capability cache, admission counting including pending work, trainer/loot/target/movement guards. Native Turtle spell content retained. |
+| Summon direction / stale graveyard (`811d6f1e`, `394afced`) | Baseline: explicit bot-to-requester summon, no implicit human hearthstone use, stale corpse/map guards. |
+| World-thread maintenance and service work | Baseline: resumable teleport filtering, static area index, weighted selection, occupancy snapshot, bounded auction completion and synthetic packet draining. These adapt the reference ownership model rather than copying its synchronous stalls. |
+| NPC movement recipient lookup | This follow-up: inverse visibility GUID index instead of repeated camera-cell traversal. |
+| Random-motion scratch reuse | This follow-up: retained scratch with fresh topology/filter context per request. |
+| Compression allocation churn | This follow-up: thread-owned reusable libdeflate workspace; wire behavior retained. |
+| Timings / input checkpoints | Baseline: measured max/current/average diff and map-owner human input checkpoints; follow-up TD15 separates movement costs. |
+
+Expansion-only spells, portable convenience items and expansion-specific SQL
+inside reference commits are not architecture ports and are not substituted for
+Turtle's data. No production database, population or configuration change is
+required by this follow-up. Static coverage and successful compilation cannot
+certify every gameplay path or establish CMaNGOS-level latency: live checks at
+the selected 6,000-bot workload remain necessary.
+
+New tests exercise compressor reuse/reload and zlib round trips across packet
+sizes, parallel independent contexts, invalid-level recovery, viewer uniqueness,
+removal/reset and concurrent snapshots. The source contract checks visibility
+lifecycle wiring and fresh path context. These are not a full client/server
+visibility or transport simulation.
+
+### TD16: real-character loading screen
+
+The human login request already uses `DelayQueryHolderUnsafePriority`.
+Admission priority does not make the later character/map initialization
+asynchronous or eliminate client asset-loading time. The previous logs recorded
+successful login but did not measure the phases leading to it.
+
+The follow-up emits `PLAYER_LOGIN_STAGE` for socket-backed human requests only,
+under the existing architecture diagnostic switch: request dispatch queue age,
+DB-results callback, existing-character resolution, character load, social load,
+initial packets, map/initial-object addition, corpse/pet work, cleared login flag,
+and completed login hooks. `stage_ms` is elapsed since the preceding marker;
+`since_request_ms` is elapsed since request handling began. The DB-results stage
+includes request preparation, DB queue/execution and callback dispatch; it is
+NOT a measurement of SQL execution alone. No passwords, IPs or character names
+are added; correlation uses account and character IDs.
+
+`PLAYER_CLIENT_SIGNAL signal=active_mover` records client control messages and
+their server queue age. `since_in_game_ms` is relative to the server's existing
+in-game timestamp, NOT an exact measurement of client loading duration. This
+message can also accompany possession/mover changes, so correlate it with a
+preceding login rather than labeling every instance a login completion.
+
+These probes do not alter queue priority, map loading, packets, login hooks or
+bot population. They are needed before attributing the reported loading-screen
+pause to SQL, map initialization, server queues or client-side work. Remove or
+disable with the other temporary diagnostics after validation.
+
+Validation for the movement/TD16 candidate: full Windows x64 Release build
+succeeded; a repeat build reported no pending work. The executable's `--version`
+smoke test exited successfully without starting the server. All 14 standalone
+tests passed in both ordinary and AddressSanitizer builds. Compressor/viewer
+tests each also passed ten consecutive runs in both builds. Live load-screen
+and 6,000-bot performance acceptance are still pending.
+
+- World executable SHA-256: `E135871E41008D525D4B073142D6433706A9017BD57A14CF0A5943BB353A2B6B`
+- Matching symbols SHA-256: `B9737EF7606FDAD9E7AE984B2CFD36E0442AD5E37BFC38E0A2C9FED406347831`
+
+The build's legacy `--version` revision is unavailable (1970 placeholder); use
+these hashes to identify the candidate. This update needs only the world EXE
+and matching PDB, not a login-server replacement, SQL or config edits.
+
 ## September 5 measured diff reporting correction
 
 `GetMaxDiff()` formerly returned a literal zero and `GetCurrentDiff()` a literal

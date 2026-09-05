@@ -64,7 +64,18 @@ void RandomMovementGenerator::_setRandomLocation(Creature &creature)
     DetailedWork::Scope launchWork(DetailedWork::RandomLaunch, creature.GetGUIDLow());
     creature.AddUnitState(UNIT_STAT_ROAMING_MOVE);
     Movement::MoveSplineInit init(creature, "RandomMovementGenerator");
-    init.MoveTo(destX, destY, destZ, MOVE_PATHFINDING | MOVE_EXCLUDE_STEEP_SLOPES);
+    // Like the reference generator, retain path scratch storage for subsequent
+    // wander requests. Reset topology/filter context every time: Turtle map
+    // workers and tiles can change, and old polygon references must not survive.
+    if (!i_path)
+        i_path = std::make_unique<PathFinder>(&creature);
+    i_path->ResetForNewRequest();
+    i_path->ExcludeSteepSlopes();
+    {
+        DetailedWork::Scope pathWork(DetailedWork::RandomPath, creature.GetGUIDLow());
+        i_path->calculate(destX, destY, destZ);
+    }
+    init.Move(i_path.get());
     init.SetWalk(true);
     init.Launch();
 

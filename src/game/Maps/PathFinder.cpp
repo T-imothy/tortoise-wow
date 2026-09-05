@@ -60,6 +60,21 @@ PathInfo::~PathInfo()
     //DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ PathInfo::~PathInfo() for %u \n", m_sourceUnit->GetGUID());
 }
 
+void PathInfo::ResetForNewRequest()
+{
+    clear();
+    m_type = PATHFIND_BLANK;
+    m_useStraightPath = false;
+    m_forceDestination = false;
+    m_pointPathLimit = MAX_POINT_PATH_LENGTH;
+    m_startPosition = m_endPosition = m_actualEndPosition = Vector3(0.f, 0.f, 0.f);
+    m_transport = nullptr;
+    m_navMesh = nullptr;
+    m_navMeshQuery = nullptr;
+    m_targetAllowedFlags = 0;
+    createFilter();
+}
+
 void PathInfo::setPathLengthLimit(float dist)
 {
     m_pointPathLimit = std::min<uint32>(MAX_POINT_PATH_LENGTH, uint32(dist / SMOOTH_PATH_STEP_SIZE));
@@ -89,8 +104,7 @@ bool PathInfo::calculate(Vector3 const& start, Vector3 dest, bool forceDest, boo
     else
         m_navMeshQuery = mmap->GetNavMeshQuery(m_sourceUnit->GetMapId());
 
-    if (m_navMeshQuery)
-        m_navMesh = m_navMeshQuery->getAttachedNavMesh();
+    m_navMesh = m_navMeshQuery ? m_navMeshQuery->getAttachedNavMesh() : nullptr;
 
     m_pathPoints.clear();
 

@@ -14,7 +14,8 @@ enum Kind { Manager, Sessions, TeleportAck, GhostRecovery, Activity, Memory,
     WalkHeight, AuctionPurchase, AuctionProposition, AuctionCleanup,
     BotPackets, BotCacheCleanup, BotNearby, BotRandomize, BotStrategy,
     TeleportPlan, TeleportFaction, TeleportShuffle, TeleportActive,
-    TeleportArea, TeleportCommit, BotRefresh, BotEventRead, Count };
+    TeleportArea, TeleportCommit, BotRefresh, BotEventRead,
+    RandomPath, SplineLaunch, PacketCompression, MovementDelivery, Count };
 inline char const* const names[] = {"manager", "sessions", "teleport_ack", "ghost_recovery",
     "activity", "memory", "login_manager", "population", "maintenance_batch", "maintenance_bot",
     "free_bots", "location_log", "facing", "auction_mirror", "auctions", "random_lock",
@@ -22,7 +23,8 @@ inline char const* const names[] = {"manager", "sessions", "teleport_ack", "ghos
     "random_nav", "walk_height", "auction_purchase", "auction_proposition", "auction_cleanup",
     "bot_packets", "bot_cache_cleanup", "bot_nearby", "bot_randomize", "bot_strategy",
     "teleport_plan", "teleport_faction", "teleport_shuffle", "teleport_active",
-    "teleport_area", "teleport_commit", "bot_refresh", "bot_event_read"};
+    "teleport_area", "teleport_commit", "bot_refresh", "bot_event_read",
+    "random_path", "spline_launch", "packet_compression", "movement_delivery"};
 static_assert(sizeof(names) / sizeof(*names) == Count, "work diagnostic names");
 struct Sample
 {
