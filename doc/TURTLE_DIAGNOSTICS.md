@@ -247,8 +247,40 @@ content/data replacements are deliberately not part of this execution-model port
 | TD08 | Map completion, DB/instance scripts and grid maintenance | Is post-simulation work delaying the next world tick? | Completion timing frame/scopes; keep all script and grid calls |
 | TD09 | Creature-only phase totals and one slowest creature per map/report window | Which part of Creature/Unit update explains the object simulation cost? | `CreatureProbe`, `CreatureProbe::Stage` calls, and the creature sample/phase fields in `ArchitectureDiagnostics.h` |
 | TD10 | World prelude, sessions, owner tasks, transports, map batch, services and remaining tail | Which world phase accounts for gaps outside map simulation? | `diagnosticPrelude` through `diagnosticTail` scopes in `World::Update` and corresponding enum/name entries |
+| TD11 | Maintenance, auction and movement suboperations (`TW_WORK`) | Which individual operation blocks its owner? | `DetailedWorkDiagnostics.h`, `DetailedWork::Scope` call sites and report storage |
+| TD12 | Teleport filter/commit, bot packets, cache/nearby/strategy work | Which part of maintenance stalls? | Corresponding `DetailedWork` kinds/names/scopes; keep resumable plans, indexes and packet handling |
+| TD13 | `TW_TELEPORT_PLANS`, `TW_WORLD_TASK_SLOW`, `TW_BOT_HANDLER_SLOW`, `PLAYERBOT_CACHE_MEMORY` | Are queues progressing, or is one callback/handler blocking? | Logging sites in `RandomPlayerbotMgr.cpp`, `World.cpp`, `WorldSession.cpp`; retain planner, handler, owner-queue and cache implementations |
+| TD14 | Foreground/interactive/script/aura/other NPC category counters | Which NPCs can safely defer? | Category counter calls and enum/name entries; keep the actual eligibility policy |
+| TD15 | Random path, spline launch, compression, movement delivery | Which part of moving NPCs remains expensive? | The four `DetailedWork` kinds/names/scopes; keep workspace reuse and viewer index |
+| TD16 | Human login stages and client active-mover signal | Where does the character loading-screen delay occur? | `LoginQueryHolder` request timestamp/accessors; `CharacterHandler.cpp` stage lambda/calls; `MovementHandler.cpp` client-signal logging |
+| TD17 | Watchdog phase breadcrumbs, thread/map/GUID slots | Where was execution when progress stopped? | `ExecutionWatch.h` phase scopes/setters and diagnostic dump integration in `Master.cpp`; preserve ordinary watchdog/crash reporting |
 
 Controls: `Diagnostics.Architecture.Enabled` and `Diagnostics.Architecture.IntervalMs`. Disable after collecting a matched loading and steady-state run. Histogram percentiles are approximate bucket upper bounds; nested timings are inclusive and must not be added together. Elapsed time is not CPU utilization.
+
+### Resource cost and final cleanup contract
+
+The switch suppresses the architecture scope timing/aggregation/output and TD16
+human-login output. It is NOT a promise of zero overhead: checks and some
+diagnostic fields remain, and `ExecutionWatch` breadcrumbs currently take their
+own clock readings/atomic stores independently of that switch. Bot-memory
+reports have the separate `AiPlayerbot.MemoryTelemetryInterval` setting. Track
+these separately when comparing diagnostic-on/off measurements.
+
+After matched loading/steady-state gameplay validation, first compare a run with
+temporary profiling disabled, then remove the diagnostic-only calls, storage,
+login timestamp fields, configuration keys and associated test assertions in a
+separate cleanup commit. Keep ordinary error/crash logs and rate-limited stall
+warnings. Verify no `TW_DIAG`, `TW_WORK`, `PLAYER_LOGIN_STAGE` or
+`PLAYER_CLIENT_SIGNAL` output remains in the cleaned build.
+
+Do not remove clocks used for real scheduling, time budgets, admission guards
+or gameplay timers. Some current operational budgets call
+`TurtleDiagnostics::Micros()`; move those callers to the ordinary monotonic
+clock helper before deleting the diagnostic header. Likewise keep the measured
+world-diff values used by adaptive scheduling, generation guards, synchronization,
+functional indexes/caches, normal packet delivery and gameplay regression tests.
+The cleanup build must pass those tests and repeat the same population/gameplay
+checks; do not obtain lower overhead by accidentally disabling the fixes.
 
 The staged configuration enables the temporary probes at a 30-second reporting interval and writes them to the existing `logs/perf.log`. It retains the 6,000-bot target, 1,000 random-bot accounts and activity value 10. All optional memory-admission thresholds remain zero (disabled). Configuration comparison against the production share confirmed that only the planned architecture keys differ.
 
