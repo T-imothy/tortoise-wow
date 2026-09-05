@@ -47,6 +47,7 @@
 #include <memory>
 #include <unordered_map>
 #include <atomic>
+#include <mutex>
 #include <thread>
 #include <any>
 
@@ -152,10 +153,6 @@ enum eConfigUInt32Values
     CONFIG_UINT32_MACHINE_DRIVEN_CRITICAL_REFRESH_INTERVAL,
     CONFIG_UINT32_MACHINE_DRIVEN_MAX_CATCHUP_DIFF,
     CONFIG_UINT32_MACHINE_DRIVEN_AUTONOMOUS_ACTIVE_STRIDE,
-    CONFIG_UINT32_MACHINE_DRIVEN_PLAYER_BUDGET_MS,
-    CONFIG_UINT32_MACHINE_DRIVEN_PLAYER_BATCH_SIZE,
-    CONFIG_UINT32_MACHINE_DRIVEN_CELL_BUDGET_MS,
-    CONFIG_UINT32_MACHINE_DRIVEN_CELL_BATCH_SIZE,
     CONFIG_UINT32_ITEM_INSTANTSAVE_QUALITY,
     CONFIG_UINT32_ITEM_RARELOOT_QUALITY,
     CONFIG_UINT32_WHISP_DIFF_ZONE_MIN_LEVEL,
@@ -184,6 +181,10 @@ enum eConfigUInt32Values
     CONFIG_UINT32_MTCELLS_THREADS,
     CONFIG_UINT32_MTCELLS_SAFEDISTANCE,
     CONFIG_UINT32_MAPUPDATE_INSTANCED_UPDATE_THREADS,
+    CONFIG_UINT32_MAPUPDATE_WORKER_THREADS,
+    CONFIG_UINT32_MAPUPDATE_IDLE_AI_BATCH,
+    CONFIG_UINT32_DB_CALLBACK_BUDGET_MS,
+    CONFIG_UINT32_WORLD_TASK_BUDGET_MS,
     CONFIG_UINT32_MAPUPDATE_UPDATE_PACKETS_DIFF,
     CONFIG_UINT32_MAPUPDATE_UPDATE_PLAYERS_DIFF,
     CONFIG_UINT32_MAPUPDATE_UPDATE_CELLS_DIFF,
@@ -893,7 +894,7 @@ private:
 class World
 {
     public:
-        static volatile uint32 m_worldLoopCounter;
+        static std::atomic<uint32> m_worldLoopCounter;
 
         friend class AccountDataWrapper;
         friend class BanAccountHandler;
@@ -1305,7 +1306,7 @@ class World
         bool configNoReload(bool reload, eConfigFloatValues index, char const* fieldname, float defvalue);
         bool configNoReload(bool reload, eConfigBoolValues index, char const* fieldname, bool defvalue);
 
-        static volatile bool m_stopEvent;
+        static std::atomic<bool> m_stopEvent;
         static uint8 m_ExitCode;
         uint32 m_ShutdownTimer = 0;
         uint32 m_ShutdownMask = 0;
@@ -1398,7 +1399,10 @@ class World
         std::unordered_map<uint32, std::unordered_set<time_t>> m_autoPDumpCharTimes;
         std::set<uint32> m_lockedCharacterGuids;
         std::thread m_asyncPacketsThread;
-        bool m_canProcessAsyncPackets;
+        std::atomic<bool> m_canProcessAsyncPackets;
+        // The reader must finish before sessions or their players are removed.
+        // Recursive because reconnect handling moves a session while updating it.
+        std::recursive_mutex m_sessionUpdateMutex;
         void ProcessAsyncPackets();
         std::thread m_shopThread;
 
@@ -1418,6 +1422,12 @@ class World
         std::unique_ptr<ChannelBroadcaster> m_ChannelBroadcaster;
 
         std::unique_ptr<ThreadPool> m_updateThreads;
+
+
+#ifdef ENABLE_ELUNA
+        ElunaInfo m_elunaInfo;
+#endif
+
 };
 
 extern uint32 realmID;

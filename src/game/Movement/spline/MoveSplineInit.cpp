@@ -17,6 +17,7 @@
  */
 
 #include "MoveSplineInit.h"
+#include <atomic>
 #include "MoveSpline.h"
 #include "packet_builder.h"
 #include "Unit.h"
@@ -59,7 +60,9 @@ void MoveSplineInit::Move(PathFinder const* pfinder)
         SetFly();
 }
 
-static thread_local uint32 splineCounter = 1;
+// A map can change workers between ticks. Per-thread counters can repeat an
+// ID for the same unit after that handoff, confusing client movement tracking.
+static std::atomic<uint32> splineCounter{1};
 
 int32 MoveSplineInit::Launch()
 {
@@ -122,7 +125,7 @@ int32 MoveSplineInit::Launch()
     if (!args.Validate(&unit))
         return 0;
 
-    args.splineId = splineCounter++;
+    args.splineId = splineCounter.fetch_add(1, std::memory_order_relaxed);
 
     /*if (Player* pPlayer = unit.ToPlayer())
         pPlayer->GetCheatData()->ResetJumpCounters();*/

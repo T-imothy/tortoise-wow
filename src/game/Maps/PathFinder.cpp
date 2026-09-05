@@ -23,7 +23,6 @@
 #include "Log.h"
 #include "Map.h"
 #include "Transport.h"
-#include "WorkMetrics.h"
 
 #include <array>
 #include <tuple>
@@ -75,7 +74,6 @@ bool PathInfo::calculate(float destX, float destY, float destZ, bool forceDest, 
 
 bool PathInfo::calculate(Vector3 const& start, Vector3 dest, bool forceDest, bool offsets)
 {
-    WorkMetrics::Probe cost(WorkMetrics::Path);
     // A m_navMeshQuery object is not thread safe, but a same PathInfo can be shared between threads.
     // So need to get a new one.
     MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
@@ -89,10 +87,12 @@ bool PathInfo::calculate(Vector3 const& start, Vector3 dest, bool forceDest, boo
     else
         m_navMeshQuery = mmap->GetNavMeshQuery(m_sourceUnit->GetMapId());
 
-    m_navMesh = m_navMeshQuery ? m_navMeshQuery->getAttachedNavMesh() : nullptr;
+    if (m_navMeshQuery)
+        m_navMesh = m_navMeshQuery->getAttachedNavMesh();
 
     m_pathPoints.clear();
 
+    Vector3 oldDest = getEndPosition();
     setEndPosition(dest);
     setStartPosition(start);
 
@@ -113,15 +113,18 @@ bool PathInfo::calculate(Vector3 const& start, Vector3 dest, bool forceDest, boo
 
     updateFilter();
 
-    // Rebuild points from the current position; blindly trimming an old point
-    // list can skip obstacles after knockback or teleport. BuildPolyPath reuses
-    // a valid corridor and searches only the changed suffix when possible.
-    for (uint32 i = 0; i < m_polyLength; ++i)
-        if (!m_navMeshQuery->isValidPolyRef(m_pathPolyRefs[i], &m_filter))
-        {
-            m_polyLength = 0;
-            break;
-        }
+    // check if destination moved - if not we can optimize something here
+    // we are following old, precalculated path?
+    float dist = m_sourceUnit->GetObjectBoundingRadius();
+    if (inRange(oldDest, dest, dist, dist) && m_pathPoints.size() > 2)
+    {
+        // our target is not moving - we just coming closer
+        // we are moving on precalculated path - enjoy the ride
+        //DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ PathFinder::calculate:: precalculated path\n");
+        m_pathPoints.erase(m_pathPoints.begin());
+        return false;
+    }
+    else
     {
         // target moved, so we need to update the poly path
         BuildPolyPath(start, dest);
@@ -284,10 +287,9 @@ void PathInfo::BuildPolyPath(const Vector3 &startPos, const Vector3 &endPos)
             }
         }
 
-        for (uint32 index = m_polyLength; index > pathStartIndex; --index)
-            if (m_pathPolyRefs[index - 1] == endPoly)
+        for (pathEndIndex = m_polyLength - 1; pathEndIndex > pathStartIndex; --pathEndIndex)
+            if (m_pathPolyRefs[pathEndIndex] == endPoly)
             {
-                pathEndIndex = index - 1;
                 endPolyFound = true;
                 break;
             }
@@ -332,20 +334,13 @@ void PathInfo::BuildPolyPath(const Vector3 &startPos, const Vector3 &endPos)
         {
             // we can hit offmesh connection as last poly - closestPointOnPoly() don't like that
             // try to recover by using prev polyref
-            if (prefixPolyLength <= 1)
-            {
-                // No predecessor exists. Drop the corridor and search afresh,
-                // rather than indexing before the array after decrementing.
-                m_polyLength = 0;
-                BuildPolyPath(startPos, endPos);
-                return;
-            }
             --prefixPolyLength;
             suffixStartPoly = m_pathPolyRefs[prefixPolyLength - 1];
             if (dtStatusFailed(m_navMeshQuery->closestPointOnPoly(suffixStartPoly, endPoint, suffixEndPoint, &PosOverBody)))
             {
-                m_polyLength = 0;
-                BuildPolyPath(startPos, endPos);
+                // suffixStartPoly is still invalid, error state
+                BuildShortcut();
+                m_type = PATHFIND_NOPATH;
                 return;
             }
         }
@@ -360,15 +355,14 @@ void PathInfo::BuildPolyPath(const Vector3 &startPos, const Vector3 &endPos)
                                 &m_filter,            // polygon search filter
                                 m_pathPolyRefs + prefixPolyLength - 1,    // [out] path
                                 (int*)&suffixPolyLength,
-                                MAX_PATH_LENGTH - prefixPolyLength + 1); // overlap occupies the preceding slot
+                                MAX_PATH_LENGTH - prefixPolyLength); // max number of polygons in output path
 
         if (!suffixPolyLength || dtStatusFailed(dtResult))
         {
-            // A failed suffix must not turn prefix=1 into a zero-length path
-            // which the code below would index at m_polyLength - 1.
-            m_polyLength = 0;
-            BuildPolyPath(startPos, endPos);
-            return;
+            // this is probably an error state, but we'll leave it
+            // and hopefully recover on the next Update
+            // we still need to copy our preffix
+            sLog.outError("%u's Path Build failed: 0 length path r=0x%x", m_sourceUnit->GetGUIDLow(), dtResult);
         }
 
         //DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++  m_polyLength=%u prefixPolyLength=%u suffixPolyLength=%u \n",m_polyLength, prefixPolyLength, suffixPolyLength);

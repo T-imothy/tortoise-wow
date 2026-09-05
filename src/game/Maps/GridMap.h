@@ -24,7 +24,6 @@
 #include "DBCStructure.h"
 #include "GridDefines.h"
 #include "Maps/GridMapDefines.h"
-#include "TerrainTileUsage.h"
 #include "Object.h"
 #include "SharedDefines.h"
 #include <memory>
@@ -168,7 +167,6 @@ class TerrainInfo : public Referencable<AtomicLong>
 
 
         void LoadAll();
-        uint32 GetGeneration() const { return m_generation.load(std::memory_order_relaxed); }
         // this method should be used only by TerrainManager
         // to cleanup unreferenced GridMap objects - they are too heavy
         // to destroy them dynamically, especially on highly populated servers
@@ -195,11 +193,6 @@ class TerrainInfo : public Referencable<AtomicLong>
 
         GridMap* m_GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         int16 m_GridRef[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
-        TerrainTileUsage m_gridUsage[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
-        std::atomic<uint32> m_gridLoads{0};
-        std::atomic<uint32> m_generation{0};
-        std::atomic<uint32> m_gridLoadMs{0};
-        std::atomic<uint32> m_gridLoadMaxMs{0};
 
         // global garbage collection timer
         ShortIntervalTimer i_timer;

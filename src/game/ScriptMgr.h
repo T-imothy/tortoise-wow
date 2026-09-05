@@ -1940,6 +1940,8 @@ class Player;
 bool Script_IsAIControlled(Player const* player);
 bool Script_IsMachineDriven(Player const* player);
 bool Script_IsUpdateCritical(Player const* player);
+bool Script_IsAIUpdateDue(Player* player, uint32 diff);
+void Script_UpdateAI(Player* player, uint32 diff, bool minimal);
 bool Script_HasAIFollowers(Player const* player);
 uint8 Script_GetAllowedRoles(Player const* player);
 void Script_SetForcedRole(Player* player, uint8 role);

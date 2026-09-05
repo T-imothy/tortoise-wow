@@ -30,7 +30,6 @@
 #include "Cell.h"
 #include "Object.h"
 #include "Timer.h"
-#include "BoundedWork.h"
 #include "SharedDefines.h"
 #include "GridMap.h"
 #include "GameSystem/GridRefManager.h"
@@ -384,8 +383,8 @@ class Map : public GridRefManager<NGridType>
         void MarkScheduledPlayerCells(std::vector<Player*> const& players, uint32 stride);
         bool ShouldUpdateBotCells(Player const* player) const;
         void UpdateSync(const uint32);
-          void UpdatePlayers(bool responsiveOnly = false);
-          void UpdateBudgetedCells(uint32 now, uint32 diff);
+        void UpdatePlayers(bool responsiveOnly = false);
+        void UpdatePlayerAI(bool responsiveOnly = false);
         void DoUpdate(uint32 maxDiff);
         virtual void Update(uint32);
         void UpdateSessionsMovementAndSpellsIfNeeded();
@@ -736,6 +735,7 @@ class Map : public GridRefManager<NGridType>
         void CrashUnload();
         bool IsUpdateFinished() const { return m_updateFinished; }
         void MarkNotUpdated() { m_updateFinished = false; }
+        void CompleteUpdate();
         void SetUpdateDiffMod(int32 d) { m_updateDiffMod = d; }
         uint32 GetUpdateDiffMod() const { return m_updateDiffMod; }
         void BindToInstanceOrRaid(Player* player, time_t objectResetTime, bool permBindToRaid);
@@ -869,6 +869,7 @@ class Map : public GridRefManager<NGridType>
         TransportsContainer _transports;
         bool m_unloading = false;
         bool m_crashed = false;
+        uint32 m_pendingUpdateDiff = 0;
         bool m_updateFinished = false;
         uint32 m_updateDiffMod;
         uint32 m_lastMvtSpellsUpdate = 0;
@@ -911,6 +912,10 @@ class Map : public GridRefManager<NGridType>
         uint32 _lastMapUpdate = 0;
         uint32 _lastPlayerLeftTime = 0;
         uint32 _lastPlayersUpdate;
+        uint32 m_lastAIUpdate = 0;
+        uint32 m_idleAICursorGuid = 0;
+        uint64 m_aiUpdates = 0, m_aiDeferred = 0, m_aiStale = 0;
+        std::bitset<TOTAL_NUMBER_OF_CELLS_PER_MAP*TOTAL_NUMBER_OF_CELLS_PER_MAP> m_realPlayerCells;
         uint64 _playerUpdateSequence = 0;
         uint64 _botCellUpdateSequence = 0;
         uint32 _lastCellsUpdate;
@@ -935,13 +940,7 @@ class Map : public GridRefManager<NGridType>
         std::vector<Player*> m_interactivePlayers;
         std::vector<Player*> m_autonomousActivePlayers;
         std::vector<Player*> m_activeZoneBackgroundPlayers;
-          std::vector<Player*> m_hibernatedBackgroundPlayers;
-          std::vector<Player*> m_backgroundPlayers;
-          BoundedWork::Deadlines m_backgroundDeadlines;
-          BoundedWork::UniqueQueue m_backgroundCells;
-          size_t m_backgroundCursor = 0;
-          uint64 m_backgroundBudgetStops = 0;
-          uint64 m_backgroundCellsUpdated = 0;
+        std::vector<Player*> m_hibernatedBackgroundPlayers;
         uint32 m_activeZoneBackgroundStride = 1;
         uint32 m_hibernatedBackgroundStride = 1;
         uint32 m_autonomousActiveStride = 1;

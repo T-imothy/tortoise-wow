@@ -24,7 +24,7 @@
 */
 
 #include "World.h"
-#include "WorkMetrics.h"
+#include "ExecutionWatch.h"
 #include "Database/DatabaseEnv.h"
 #include "Config/Config.h"
 #include "CustomMerchantMgr.h"
@@ -125,9 +125,9 @@ namespace HttpApi
 
 #include <chrono>
 
-volatile bool World::m_stopEvent = false;
+std::atomic<bool> World::m_stopEvent{false};
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
-volatile uint32 World::m_worldLoopCounter = 0;
+std::atomic<uint32> World::m_worldLoopCounter{0};
 
 float World::m_MaxVisibleDistanceOnContinents = DEFAULT_VISIBILITY_DISTANCE;
 float World::m_MaxVisibleDistanceInInstances = DEFAULT_VISIBILITY_INSTANCE;
@@ -221,6 +221,12 @@ AccountDataWrapper::~AccountDataWrapper()
 
 void World::InternalShutdown()
 {
+	// Stop the reader before the final session teardown (normal updates use
+	// m_sessionUpdateMutex to drain it before removing sessions).
+	if (m_asyncPacketsThread.joinable())
+	    m_asyncPacketsThread.join();
+
+
 	///- Empty the kicked session set
 	while (!m_sessions.empty())
 	{
@@ -343,6 +349,7 @@ bool World::HasOtherSessionForAccount(uint32 accountId, WorldSession const* excl
 
 void World::AddSession_(WorldSession* s)
 {
+    std::lock_guard<std::recursive_mutex> sessionLock(m_sessionUpdateMutex);
     MANGOS_ASSERT(s);
 
     //NOTE - Still there is race condition in WorldSession* being used in the Sockets
@@ -1325,6 +1332,10 @@ void World::LoadConfigSettingsFromFile(bool reload)
     setConfigMinMax(CONFIG_UINT32_MAP_OBJECTSUPDATE_TIMEOUT, "MapUpdate.ObjectsUpdate.Timeout", 100, 10, 2000);
     setConfigMinMax(CONFIG_UINT32_MAP_VISIBILITYUPDATE_THREADS, "MapUpdate.VisibilityUpdate.MaxThreads", 4, 1, 20);
     setConfigMinMax(CONFIG_UINT32_MAP_VISIBILITYUPDATE_TIMEOUT, "MapUpdate.VisibilityUpdate.Timeout", 100, 10, 2000);
+    setConfigMinMax(CONFIG_UINT32_MAPUPDATE_WORKER_THREADS, "MapUpdate.WorkerThreads", 4, 0, 32);
+    setConfigMinMax(CONFIG_UINT32_DB_CALLBACK_BUDGET_MS, "Database.CallbackBudgetMs", 5, 1, 100);
+    setConfigMinMax(CONFIG_UINT32_WORLD_TASK_BUDGET_MS, "World.AsyncWorkBudgetMs", 5, 1, 100);
+    setConfigMinMax(CONFIG_UINT32_MAPUPDATE_IDLE_AI_BATCH, "MapUpdate.IdleBotMaxUpdatesPerTick", 128, 1, 10000);
     setConfigMinMax(CONFIG_UINT32_MAPUPDATE_INSTANCED_UPDATE_THREADS, "MapUpdate.Instanced.UpdateThreads", 2, 0, 20);
     setConfigMinMax(CONFIG_UINT32_MTCELLS_THREADS, "MapUpdate.Continents.MTCells.Threads", 0, 0, 20);
     setConfigMinMax(CONFIG_UINT32_MTCELLS_SAFEDISTANCE, "MapUpdate.Continents.MTCells.SafeDistance", 1066, 0, 34112);
@@ -1339,10 +1350,6 @@ void World::LoadConfigSettingsFromFile(bool reload)
     setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_CRITICAL_REFRESH_INTERVAL, "Continents.MachineDriven.CriticalRefreshInterval", 250, 0, 5000);
     setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_MAX_CATCHUP_DIFF, "Continents.MachineDriven.MaxCatchUpDiff", 500, 0, 5000);
     setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_AUTONOMOUS_ACTIVE_STRIDE, "Continents.MachineDriven.AutonomousActiveStride", 2, 1, 20);
-    setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_PLAYER_BUDGET_MS, "Continents.MachineDriven.PlayerBudgetMs", 30, 0, 1000);
-    setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_PLAYER_BATCH_SIZE, "Continents.MachineDriven.PlayerBatchSize", 4096, 1, 20000);
-    setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_CELL_BUDGET_MS, "Continents.MachineDriven.CellBudgetMs", 30, 0, 1000);
-    setConfigMinMax(CONFIG_UINT32_MACHINE_DRIVEN_CELL_BATCH_SIZE, "Continents.MachineDriven.CellBatchSize", 8192, 1, 65536);
     setConfig(CONFIG_UINT32_MAPUPDATE_TICK_LOWER_GRID_ACTIVATION_DISTANCE, "MapUpdate.ReduceGridActivationDist.Tick", 0);
     setConfig(CONFIG_UINT32_MAPUPDATE_TICK_INCREASE_GRID_ACTIVATION_DISTANCE, "MapUpdate.IncreaseGridActivationDist.Tick", 0);
     setConfig(CONFIG_UINT32_MAPUPDATE_MIN_GRID_ACTIVATION_DISTANCE, "MapUpdate.MinGridActivationDistance", 0);
@@ -2516,8 +2523,19 @@ void World::ProcessAsyncPackets()
         do
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
-        } while (!m_canProcessAsyncPackets);
-        
+        } while (!m_canProcessAsyncPackets && !sWorld.IsStopped());
+
+        if (sWorld.IsStopped())
+            break;
+
+        // A stop flag alone does not drain a reader already inside a handler.
+        // Hold session lifetimes through this pass; the world pauses new passes
+        // before waiting for the lock, so it cannot be starved by chat traffic.
+        std::lock_guard<std::recursive_mutex> sessionLock(m_sessionUpdateMutex);
+        if (!m_canProcessAsyncPackets || sWorld.IsStopped())
+            continue;
+
+
         for (auto const& itr : m_sessions)
         {
             WorldSession* pSession = itr.second;
@@ -2545,6 +2563,8 @@ void TotalMoneyCallback(QueryResult* result, uint32 money)
 /// Update the World !
 void World::Update(uint32 diff)
 {
+    ExecutionWatch::ResetOnExit watchScope;
+    ExecutionWatch::Set(ExecutionWatch::WorldStart);
     XScopeStatTimer ScopeStatTimer(sPerfMonitor.WorldTick);
 
     ///- Update the different timers
@@ -2577,8 +2597,6 @@ void World::Update(uint32 diff)
         CharacterDatabase.AsyncPQuery(&TotalMoneyCallback, money, "SELECT ROUND(SUM(money) / 10000) FROM characters");
     }
 
-    m_canProcessAsyncPackets = false;
-
     if (m_timers[WUPDATE_COMMANDS].Passed())
     {
         m_timers[WUPDATE_COMMANDS].Reset();
@@ -2586,8 +2604,8 @@ void World::Update(uint32 diff)
     }
 
     /// <li> Handle session updates
+    ExecutionWatch::Set(ExecutionWatch::Sessions);
     UpdateSessions(diff);
-    m_canProcessAsyncPackets = true;
 
     /// <li> Update uptime table
     if (m_timers[WUPDATE_UPTIME].Passed())
@@ -2604,23 +2622,37 @@ void World::Update(uint32 diff)
 
     ///- Update objects (maps, transport, creatures,...)
     uint32 updateMapSystemTime = WorldTimer::getMSTime();
-    //TODO: find a better place for this
-    if (!m_updateThreads)
+    // Apply world-facing work only while no map owns gameplay state. The old
+    // pool ran shop inventory changes and session work concurrently with maps,
+    // then made every world tick wait for the entire batch.
+    ExecutionWatch::Set(ExecutionWatch::AsyncJoin);
     {
-        m_updateThreads = std::unique_ptr<ThreadPool>( new ThreadPool(
-                    getConfig(CONFIG_UINT32_ASYNC_TASKS_THREADS_COUNT),"WorldAsync",
-                    ThreadPool::ClearMode::UPPON_COMPLETION)
-                                             );
-        m_updateThreads->start<ThreadPool::MySQL<>>();
+        std::lock_guard<std::mutex> lock(m_asyncTaskQueueMutex);
+        _asyncTasks.swap(_asyncTasksBusy);
     }
-    std::unique_lock<std::mutex> lock(m_asyncTaskQueueMutex);
-    _asyncTasks.swap(_asyncTasksBusy);
-    std::future<void> job = m_updateThreads->processWorkload(_asyncTasksBusy);
-    _asyncTasks.clear();
-    lock.unlock();
+    uint32 const workBegin = WorldTimer::getMSTime();
+    size_t workDone = 0;
+    for (; workDone < _asyncTasksBusy.size() && workDone < 64; ++workDone)
+    {
+        if (workDone && WorldTimer::getMSTimeDiffToNow(workBegin) >= getConfig(CONFIG_UINT32_WORLD_TASK_BUDGET_MS))
+            break;
+        _asyncTasksBusy[workDone]();
+    }
+    uint32 const asyncWorkTime = WorldTimer::getMSTimeDiffToNow(workBegin);
+    if (workDone < _asyncTasksBusy.size())
+    {
+        std::lock_guard<std::mutex> lock(m_asyncTaskQueueMutex);
+        _asyncTasks.insert(_asyncTasks.begin(),
+            std::make_move_iterator(_asyncTasksBusy.begin() + workDone),
+            std::make_move_iterator(_asyncTasksBusy.end()));
+    }
+    _asyncTasksBusy.clear();
 
+    ExecutionWatch::Set(ExecutionWatch::Transports);
     sTransportMgr.Update(diff);
+    ExecutionWatch::Set(ExecutionWatch::Maps);
     sMapMgr.Update(diff);
+    ExecutionWatch::Set(ExecutionWatch::Battlegrounds);
     sBattleGroundMgr.Update(diff);
     sLFGMgr.Update(diff);
     sLFTMgr.Update(diff);
@@ -2639,13 +2671,9 @@ void World::Update(uint32 diff)
         }
     }
 
-    uint32 asyncWaitBegin = WorldTimer::getMSTime();
-    if (job.valid())
-        job.wait();
-
     updateMapSystemTime = WorldTimer::getMSTimeDiffToNow(updateMapSystemTime);
     if (getConfig(CONFIG_UINT32_PERFLOG_SLOW_MAPSYSTEM_UPDATE) && updateMapSystemTime > getConfig(CONFIG_UINT32_PERFLOG_SLOW_MAPSYSTEM_UPDATE))
-        sLog.out(LOG_PERFORMANCE, "Update map system: %ums [%ums for async]", updateMapSystemTime, WorldTimer::getMSTimeDiffToNow(asyncWaitBegin));
+        sLog.out(LOG_PERFORMANCE, "Update map system: %ums [%ums for owner work]", updateMapSystemTime, asyncWorkTime);
 
     ///- Sauvegarde des variables internes (table variables) : MaJ par rapport a la DB
     if (m_timers[WUPDATE_SAVE_VAR].Passed())
@@ -2656,6 +2684,7 @@ void World::Update(uint32 diff)
 
     // execute callbacks from sql queries that were queued recently
     uint32 asyncQueriesTime = WorldTimer::getMSTime();
+    ExecutionWatch::Set(ExecutionWatch::Callbacks);
     UpdateResultQueue();
     asyncQueriesTime = WorldTimer::getMSTimeDiffToNow(asyncQueriesTime);
     if (getConfig(CONFIG_UINT32_PERFLOG_SLOW_ASYNC_QUERIES) && asyncQueriesTime > getConfig(CONFIG_UINT32_PERFLOG_SLOW_ASYNC_QUERIES))
@@ -2797,7 +2826,6 @@ void World::Update(uint32 diff)
     {
         script->OnUpdate(diff);
     });
-    WorkMetrics::Flush();
 }
 
 /// Send a packet to all players (except self if mentioned)
@@ -3415,6 +3443,8 @@ void World::SendServerMessage(ServerMessageType type, const char *text, Player* 
 
 void World::UpdateSessions(uint32 diff)
 {
+    m_canProcessAsyncPackets = false;
+    std::lock_guard<std::recursive_mutex> sessionLock(m_sessionUpdateMutex);
     XScopeStatTimer ScopeStatTimer{sPerfMonitor.UpdateSession};
     ///- Update player limit if needed
     int32 hardPlayerLimit = getConfig(CONFIG_UINT32_PLAYER_HARD_LIMIT);
@@ -3606,8 +3636,9 @@ void World::UpdateSessions(uint32 diff)
             itr++;
         }
     }
-
     m_headlessSessionMgr->Update(diff);
+    m_canProcessAsyncPackets = true;
+
 }
 
 // This handles the issued and queued CLI/RA commands
@@ -3659,10 +3690,23 @@ void World::InitResultQueue()
 
 void World::UpdateResultQueue()
 {
-    //process async result queues
-    CharacterDatabase.ProcessResultQueue(getConfig(CONFIG_UINT32_ASYNC_QUERIES_TICK_TIMEOUT));
-    WorldDatabase.ProcessResultQueue(getConfig(CONFIG_UINT32_ASYNC_QUERIES_TICK_TIMEOUT));
-    LoginDatabase.ProcessResultQueue(getConfig(CONFIG_UINT32_ASYNC_QUERIES_TICK_TIMEOUT));
+    static unsigned first = 0; // owner-thread only; rotate to avoid DB starvation
+    uint32 const begin = WorldTimer::getMSTime();
+    uint32 const budget = getConfig(CONFIG_UINT32_DB_CALLBACK_BUDGET_MS);
+    for (unsigned i = 0; i < 3; ++i)
+    {
+        uint32 const used = WorldTimer::getMSTimeDiffToNow(begin);
+        if (used >= budget)
+            break;
+        uint32 const remaining = budget - used;
+        switch ((first + i) % 3)
+        {
+            case 0: CharacterDatabase.ProcessResultQueue(remaining); break;
+            case 1: WorldDatabase.ProcessResultQueue(remaining); break;
+            case 2: LoginDatabase.ProcessResultQueue(remaining); break;
+        }
+    }
+    first = (first + 1) % 3;
 }
 
 void World::UpdateRealmCharCount(uint32 accountId)
@@ -4629,6 +4673,7 @@ void World::SendUpdateMultipleItems(const std::vector<uint32>& items, WorldSessi
 
 void World::SetSessionDisconnected(WorldSession* sess)
 {
+    std::lock_guard<std::recursive_mutex> sessionLock(m_sessionUpdateMutex);
     SessionMap::iterator itr = m_sessions.find(sess->GetAccountId());
     ASSERT(itr != m_sessions.end());
     if (sess->HadQueue())

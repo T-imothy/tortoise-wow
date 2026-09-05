@@ -109,66 +109,60 @@ bool SqlQuery::Execute(SqlConnection *conn)
 
 void SqlResultQueue::Update(uint32 timeout)
 {
-    uint32 begin = WorldTimer::getMSTime();
-    /// execute the callbacks waiting in the synchronization queue
-    MaNGOS::IQueryCallback* callback = NULL;
-    int n = 0;
-    while (next(callback))
+    uint32 const begin = WorldTimer::getMSTime();
+    // CMaNGOS-style owner-thread completion. Async queries remain async; only
+    // application of their results is serialized with world/map lifetime.
+    // A bounded count also guarantees progress when the clock has low resolution.
+    for (unsigned n = 0; n < 64; ++n)
+
     {
-        if (!callback->IsThreadSafe())
-        {
-            _threadUnsafeWaitingQueries.add(callback);
-            ++numUnsafeQueries;
-        }
-        else
-        {
-            ++n;
-            //caller->queue.add(callback);
-            m_callbackThreads << [callback, n](){
-                callback->Execute();
-                delete callback;
-            };
-        }
-    }
-    std::future<void> job = m_callbackThreads->processWorkload();
-    MaNGOS::IQueryCallback* s = NULL;
-    while (_threadUnsafeWaitingQueries.next(s))
-    {
-        s->Execute();
-        delete s;
-        --numUnsafeQueries;
-        if (timeout && WorldTimer::getMSTimeDiffToNow(begin) > timeout)
+        if (n && timeout && WorldTimer::getMSTimeDiffToNow(begin) >= timeout)
             break;
+        MaNGOS::IQueryCallback* callback = nullptr;
+        bool found = false;
+        // Prefer player logins, but do not starve background bot completions.
+        if (++m_priorityBurst >= 8)
+        {
+            m_priorityBurst = 0;
+            found = nextCallback(callback, false);
+
+        }
+        if (!found)
+            found = nextCallback(callback, true) || nextCallback(callback, false);
+        if (!found)
+            break;
+        std::unique_ptr<MaNGOS::IQueryCallback> owned(callback);
+        uint32 const start = WorldTimer::getMSTime();
+        owned->Execute();
+        uint32 const elapsed = WorldTimer::getMSTimeDiffToNow(start);
+        if (elapsed >= 100)
+            sLog.out(LOG_PERFORMANCE, "DB_CALLBACK_SLOW elapsed_ms=%u high_priority=%u pending=%zu",
+                elapsed, owned->IsHighPriority() ? 1 : 0, PendingCount());
     }
 
-    if (numUnsafeQueries > 1000) // Bottleneck here
-        sLog.out(LOG_PERFORMANCE, "Database: %u unsafe queries remaining!", numUnsafeQueries);
-
-    if (job.valid())
-        job.wait();
 }
 
-#ifndef DO_POSTGRESQL
-using SqlResultQueueWorker = ThreadPool::ThreadPool::MySQL<>;
-#else
-using SqlResultQueueWorker = ThreadPool::SingleQueue;
-#endif
-
-SqlResultQueue::SqlResultQueue(const char* Name) :
-    numUnsafeQueries(0)
+bool SqlResultQueue::nextCallback(MaNGOS::IQueryCallback*& callback, bool priority)
 {
-    char PoolName[128];
-    sprintf(PoolName, "SqlCallback %s", Name);
-    m_callbackThreads.reset(new ThreadPool(6, PoolName));
-    m_callbackThreads->start<SqlResultQueueWorker>();
+    // Legacy owner-only queues remain supported for shutdown/draining.
+    if (priority ? _priorityThreadUnsafeWaitingQueries.next(callback) : _threadUnsafeWaitingQueries.next(callback))
+    {
+        if (numUnsafeQueries)
+            --numUnsafeQueries;
+        return true;
+    }
+    return priority ? _priorityWaitingQueries.next(callback) : next(callback);
+
 }
 
+SqlResultQueue::SqlResultQueue(const char* /*Name*/) : numUnsafeQueries(0) {}
 SqlResultQueue::~SqlResultQueue(){}
 
 void SqlResultQueue::CancelAll()
 {
     MaNGOS::IQueryCallback* cb;
-    while (next(cb))
+    while (nextCallback(cb, true) || nextCallback(cb, false))
+
     {
         cb->SetResult(nullptr);
         cb->Execute();

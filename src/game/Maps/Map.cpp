@@ -20,7 +20,8 @@
  */
 
 #include "Map.h"
-#include "WorkMetrics.h"
+#include "MapWork.h"
+#include "ExecutionWatch.h"
 #include <shared_mutex>
 #include "MapManager.h"
 #include "Player.h"
@@ -117,7 +118,7 @@ WorldSafeLocsEntry const* Map::GraveyardManagerStub::GetClosestGraveYard(float x
 
 void Map::LoadMapAndVMap(int gx, int gy)
 {
-    if (m_bLoadedGrids[gx][gx])
+    if (m_bLoadedGrids[gx][gy])
         return;
 
     GridMap * pInfo = m_TerrainData->Load(gx, gy);
@@ -788,7 +789,7 @@ inline void Map::UpdateActiveCellsAsynch(uint32 now, uint32 diff)
         std::future<void> job = m_cellThreads->processWorkload();
         UpdateActiveCellsCallback(diff, now, nthreads, nthreads+1, step);
         if (job.valid())
-            job.wait();
+            job.get();
     }
 }
 
@@ -804,9 +805,9 @@ inline void Map::UpdateActiveCellsSynch(uint32 now, uint32 diff)
             return;
 
         stride = std::max<uint32>(1, stride);
-        size_t const start = static_cast<size_t>(_botCellUpdateSequence % stride);
-        for (size_t index = start; index < players.size(); index += stride)
-            UpdateCellsAroundObject(now, diff, players[index]);
+        for (Player* player : players)
+            if (player && IsStaggeredMapWorkDue(_botCellUpdateSequence, player->GetGUIDLow(), stride))
+                UpdateCellsAroundObject(now, diff, player);
     };
     updateScheduledCells(m_autonomousActivePlayers, m_autonomousActiveStride);
     updateScheduledCells(m_activeZoneBackgroundPlayers, m_activeZoneBackgroundStride);
@@ -825,65 +826,6 @@ inline void Map::UpdateActiveCellsSynch(uint32 now, uint32 diff)
     }
 }
 
-void Map::UpdateBudgetedCells(uint32 now, uint32 diff)
-{
-    WorkMetrics::Probe foregroundCost(WorkMetrics::ForegroundCells);
-    resetMarkedCells();
-    // Update the complete visible interaction, including creatures and pets,
-    // before unrelated background cells. Never time-slice a cell traversal.
-    for (Player* player : m_responsivePlayers)
-        UpdateCellsAroundObject(now, diff, player);
-    for (m_activeNonPlayersIter = m_activeNonPlayers.begin(); m_activeNonPlayersIter != m_activeNonPlayers.end();)
-    {
-        WorldObject* object = *m_activeNonPlayersIter++;
-        UpdateCellsAroundObject(now, diff, object);
-    }
-    foregroundCost.Finish();
-
-    WorkMetrics::Probe enqueueCost(WorkMetrics::QueueCells);
-    auto enqueue = [this](std::vector<Player*> const& players, uint32 stride)
-    {
-        stride = std::max<uint32>(1, stride);
-        for (size_t i = _botCellUpdateSequence % stride; i < players.size(); i += stride)
-        {
-            Player const* player = players[i];
-            if (!player || !player->IsInWorld() || !player->IsPositionValid()) continue;
-            CellArea area = Cell::CalculateCellArea(player->GetPositionX(), player->GetPositionY(), player->GetGridActivationDistance());
-            for (uint32 x = area.low_bound.x_coord; x <= area.high_bound.x_coord; ++x)
-                for (uint32 y = area.low_bound.y_coord; y <= area.high_bound.y_coord; ++y)
-                {
-                    uint32 const id = y * TOTAL_NUMBER_OF_CELLS_PER_MAP + x;
-                    if (!isCellMarked(id)) m_backgroundCells.Push(id);
-                }
-        }
-    };
-    if (m_backgroundPlayers.empty()) m_backgroundCells.Clear();
-    enqueue(m_autonomousActivePlayers, m_autonomousActiveStride);
-    enqueue(m_activeZoneBackgroundPlayers, m_activeZoneBackgroundStride);
-    enqueue(m_hibernatedBackgroundPlayers, m_hibernatedBackgroundStride);
-    enqueueCost.Finish();
-
-    WorkMetrics::Probe backgroundCost(WorkMetrics::BackgroundCells);
-    BoundedWork::Budget budget(sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_CELL_BUDGET_MS),
-        sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_CELL_BATCH_SIZE));
-    size_t completed = 0;
-    MaNGOS::ObjectUpdater updater(diff, now, true, sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_MAX_CATCHUP_DIFF));
-    TypeContainerVisitor<MaNGOS::ObjectUpdater, GridTypeMapContainer> gridUpdate(updater);
-    TypeContainerVisitor<MaNGOS::ObjectUpdater, WorldTypeMapContainer> worldUpdate(updater);
-    while (m_backgroundCells.Size() && !budget.Exhausted(completed))
-    {
-        uint32 const id = m_backgroundCells.Pop();
-        if (isCellMarked(id)) continue;
-        markCell(id);
-        Cell cell(CellPair(id % TOTAL_NUMBER_OF_CELLS_PER_MAP, id / TOTAL_NUMBER_OF_CELLS_PER_MAP));
-        cell.SetNoCreate();
-        Visit(cell, gridUpdate);
-        Visit(cell, worldUpdate);
-        ++completed;
-    }
-    m_backgroundCellsUpdated += completed;
-}
-
 inline void Map::UpdateCells(uint32 map_diff)
 {
     uint32 now = WorldTimer::getMSTime();
@@ -895,23 +837,19 @@ inline void Map::UpdateCells(uint32 map_diff)
     ++_botCellUpdateSequence;
 
     /// update active cells around players and active objects
-    if (IsContinent() && sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_CELL_BUDGET_MS))
-        UpdateBudgetedCells(now, diff);
-    else if (IsContinent() && m_cellThreads->status() == ThreadPool::Status::READY)
+    if (IsContinent() && m_cellThreads->status() == ThreadPool::Status::READY)
         UpdateActiveCellsAsynch(now, diff);
     else
         UpdateActiveCellsSynch(now, diff);
 
     if (IsContinent() && m_motionThreads->status() == ThreadPool::Status::READY && !unitsMvtUpdate.empty())
     {
-        WorkMetrics::Probe motionCost(WorkMetrics::MotionBatch);
         for (auto it = unitsMvtUpdate.begin(); it != unitsMvtUpdate.end(); it++)
             m_motionThreads << [it,diff](){
                  if ((*it)->IsInWorld())
                     (*it)->GetMotionMaster()->UpdateMotionAsync(diff);
-                 WorkMetrics::Flush();
             };
-        m_motionThreads->processWorkload().wait();
+        m_motionThreads->processWorkload().get();
     }
     unitsMvtUpdate.clear();
 }
@@ -922,9 +860,9 @@ void Map::MarkScheduledPlayerCells(std::vector<Player*> const& players, uint32 s
         return;
 
     stride = std::max<uint32>(1, stride);
-    size_t const start = static_cast<size_t>(_botCellUpdateSequence % stride);
-    for (size_t index = start; index < players.size(); index += stride)
-        MarkCellsAroundObject(players[index]);
+    for (Player* player : players)
+        if (player && IsStaggeredMapWorkDue(_botCellUpdateSequence, player->GetGUIDLow(), stride))
+            MarkCellsAroundObject(player);
 }
 
 bool Map::ShouldUpdateBotCells(Player const* player) const
@@ -938,7 +876,7 @@ bool Map::ShouldUpdateBotCells(Player const* player) const
     uint32 const stride = IsAutonomousActivePlayer(player) ? m_autonomousActiveStride :
         (m_hasRealPlayers && HasActiveZone(player->GetZoneId()) ?
             m_activeZoneBackgroundStride : m_hibernatedBackgroundStride);
-    return (_botCellUpdateSequence % stride) == (player->GetGUIDLow() % stride);
+    return IsStaggeredMapWorkDue(_botCellUpdateSequence, player->GetGUIDLow(), stride);
 }
 
 void Map::RefreshRealPlayerActivity()
@@ -947,6 +885,7 @@ void Map::RefreshRealPlayerActivity()
     uint32 const criticalRefresh = sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_CRITICAL_REFRESH_INTERVAL);
 
     m_hasRealPlayers = false;
+    m_realPlayerCells.reset();
     m_realPlayerZones.clear();
     m_machineDrivenPlayers.clear();
     m_moduleCriticalPlayers.clear();
@@ -955,7 +894,6 @@ void Map::RefreshRealPlayerActivity()
     m_autonomousActivePlayers.clear();
     m_activeZoneBackgroundPlayers.clear();
     m_hibernatedBackgroundPlayers.clear();
-    m_backgroundPlayers.clear();
     m_realPlayerPopulation = 0;
     m_responsiveBotPopulation = 0;
     m_interactiveBotPopulation = 0;
@@ -989,6 +927,11 @@ void Map::RefreshRealPlayerActivity()
 
         m_hasRealPlayers = true;
         m_realPlayerZones.insert(player->GetZoneId());
+        CellArea const area = Cell::CalculateCellArea(player->GetPositionX(), player->GetPositionY(),
+            player->GetGridActivationDistance());
+        for (uint32 x = area.low_bound.x_coord; x <= area.high_bound.x_coord; ++x)
+            for (uint32 y = area.low_bound.y_coord; y <= area.high_bound.y_coord; ++y)
+                m_realPlayerCells.set(y * TOTAL_NUMBER_OF_CELLS_PER_MAP + x);
         ++m_realPlayerPopulation;
     }
 
@@ -1028,6 +971,13 @@ void Map::RefreshRealPlayerActivity()
             continue;
 
         bool const machineDriven = IsMachineDrivenPlayer(player);
+        if (machineDriven && player->IsPositionValid())
+        {
+            CellPair const cell = MaNGOS::ComputeCellPair(player->GetPositionX(), player->GetPositionY());
+            if (cell.x_coord < TOTAL_NUMBER_OF_CELLS_PER_MAP && cell.y_coord < TOTAL_NUMBER_OF_CELLS_PER_MAP &&
+                m_realPlayerCells.test(cell.y_coord * TOTAL_NUMBER_OF_CELLS_PER_MAP + cell.x_coord))
+                m_moduleCriticalPlayers.insert(player->GetGUIDLow());
+        }
         bool const interactive = !machineDriven ||
             m_moduleCriticalPlayers.find(player->GetGUIDLow()) != m_moduleCriticalPlayers.end();
         if (interactive)
@@ -1043,19 +993,13 @@ void Map::RefreshRealPlayerActivity()
             if (machineDriven)
                 ++m_responsiveBotPopulation;
         }
+        else if (IsAutonomousActivePlayer(player))
+            m_autonomousActivePlayers.push_back(player);
+        else if (m_hasRealPlayers && HasActiveZone(player->GetZoneId()))
+            m_activeZoneBackgroundPlayers.push_back(player);
         else
-        {
-            m_backgroundPlayers.push_back(player);
-            if (IsAutonomousActivePlayer(player))
-                m_autonomousActivePlayers.push_back(player);
-            else if (m_hasRealPlayers && HasActiveZone(player->GetZoneId()))
-                m_activeZoneBackgroundPlayers.push_back(player);
-            else
-                m_hibernatedBackgroundPlayers.push_back(player);
-        }
+            m_hibernatedBackgroundPlayers.push_back(player);
     }
-    if (m_backgroundDeadlines.Size() > m_machineDrivenPlayers.size() + 64)
-        m_backgroundDeadlines.Prune([this](uint32 guid) { return m_machineDrivenPlayers.count(guid) != 0; });
 }
 
 bool Map::IsMachineDrivenPlayer(Player const* player) const
@@ -1126,10 +1070,6 @@ void Map::UpdateSessionsMovementAndSpellsIfNeeded()
 
     ProcessSessionPackets(PACKET_PROCESS_MOVEMENT);
     ProcessSessionPackets(PACKET_PROCESS_SPELLS);
-    // Loot, inventory and NPC interactions use the MAP queue. They must also
-    // be serviced at these safe map-thread checkpoints, including while this
-    // continent waits for a slower continent to finish its update.
-    ProcessSessionPackets(PACKET_PROCESS_MAP);
     m_lastMvtSpellsUpdate = WorldTimer::getMSTime();
 }
 
@@ -1148,6 +1088,7 @@ void Map::UpdatePlayers(bool responsiveOnly)
             return;
 
         auto const updateStart = std::chrono::steady_clock::now();
+        ExecutionWatch::Set(ExecutionWatch::PlayerCore, GetId(), GetInstanceId(), plr->GetGUIDLow());
         WorldObject::UpdateHelper helper(plr);
         if (machineDriven)
             helper.UpdateRealTimeBounded(now, maxCatchUpDiff);
@@ -1168,8 +1109,7 @@ void Map::UpdatePlayers(bool responsiveOnly)
         }
     };
 
-    // This pass can run after cells/visibility and repeatedly while continent
-    // workers synchronize. It exists to keep real clients responsive, not to
+    // This pass can run after cells/visibility. It keeps real clients responsive, not
     // give thousands of autonomous combat bots extra Player::Update calls.
     // Only real players and bots interacting with a real player are admitted.
     if (responsiveOnly)
@@ -1197,12 +1137,11 @@ void Map::UpdatePlayers(bool responsiveOnly)
                 return;
 
             stride = std::max<uint32>(1, stride);
-            size_t const start = static_cast<size_t>(_playerUpdateSequence % stride);
             uint64 updated = 0;
-            for (size_t index = start; index < players.size(); index += stride)
+            for (Player* plr : players)
             {
-                Player* plr = players[index];
-                if (!plr || !plr->IsInWorld())
+                if (!plr || !plr->IsInWorld() ||
+                    !IsStaggeredMapWorkDue(_playerUpdateSequence, plr->GetGUIDLow(), stride))
                     continue;
                 updatePlayer(plr, true, diff);
                 ++updated;
@@ -1214,35 +1153,9 @@ void Map::UpdatePlayers(bool responsiveOnly)
                 m_playerPerfHibernated += deferred;
         };
 
-        uint32 const budgetMs = sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_PLAYER_BUDGET_MS);
-        if (IsContinent() && budgetMs)
-        {
-            BoundedWork::Budget budget(budgetMs, sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_PLAYER_BATCH_SIZE));
-            size_t const count = m_backgroundPlayers.size();
-            size_t visited = 0, updated = 0;
-            while (visited < count && !budget.Exhausted(updated))
-            {
-                m_backgroundCursor %= count;
-                Player* plr = m_backgroundPlayers[m_backgroundCursor++];
-                ++visited;
-                if (!plr || !plr->IsInWorld()) continue;
-                uint32 const stride = IsAutonomousActivePlayer(plr) ? m_autonomousActiveStride :
-                    (m_hasRealPlayers && HasActiveZone(plr->GetZoneId()) ? m_activeZoneBackgroundStride : m_hibernatedBackgroundStride);
-                uint32 const cadence = sWorld.getConfig(CONFIG_UINT32_INTERVAL_MAPUPDATE) * stride;
-                if (!m_backgroundDeadlines.Due(plr->GetGUIDLow(), now, cadence)) continue;
-                updatePlayer(plr, true, diff);
-                m_backgroundDeadlines.Served(plr->GetGUIDLow(), now);
-                ++updated;
-            }
-            m_playerPerfDeferred += count - updated;
-            if (visited < count) ++m_backgroundBudgetStops;
-        }
-        else
-        {
-            updateScheduled(m_autonomousActivePlayers, m_autonomousActiveStride, false);
-            updateScheduled(m_activeZoneBackgroundPlayers, m_activeZoneBackgroundStride, false);
-            updateScheduled(m_hibernatedBackgroundPlayers, m_hibernatedBackgroundStride, true);
-        }
+        updateScheduled(m_autonomousActivePlayers, m_autonomousActiveStride, false);
+        updateScheduled(m_activeZoneBackgroundPlayers, m_activeZoneBackgroundStride, false);
+        updateScheduled(m_hibernatedBackgroundPlayers, m_hibernatedBackgroundStride, true);
     }
     _lastPlayersUpdate = now;
 
@@ -1263,20 +1176,97 @@ void Map::UpdatePlayers(bool responsiveOnly)
                 m_autonomousActivePlayers.size(), m_activeZoneBackgroundPlayers.size(), m_hibernatedBackgroundPlayers.size(),
                 m_autonomousActiveStride,
                 m_activeZoneBackgroundStride, m_hibernatedBackgroundStride);
-        if (IsContinent())
-            sLog.out(LOG_PERFORMANCE, "BACKGROUND_WORK map=%u player_budget_stops=%llu cells_updated=%llu pending_cells=%zu",
-                GetId(), static_cast<unsigned long long>(m_backgroundBudgetStops),
-                static_cast<unsigned long long>(m_backgroundCellsUpdated), m_backgroundCells.Size());
-        m_backgroundBudgetStops = m_backgroundCellsUpdated = 0;
         m_playerPerfReportStart = now;
+        sLog.out(LOG_PERFORMANCE,
+            "AI_SCHEDULER map=%u inst=%u updates=%llu deferred=%llu stale=%llu limit=%u",
+            GetId(), GetInstanceId(), static_cast<unsigned long long>(m_aiUpdates),
+            static_cast<unsigned long long>(m_aiDeferred), static_cast<unsigned long long>(m_aiStale),
+            sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_IDLE_AI_BATCH));
+        m_aiUpdates = m_aiDeferred = m_aiStale = 0;
         m_playerPerfRealUpdates = m_playerPerfBotUpdates = 0;
         m_playerPerfRealMicros = m_playerPerfBotMicros = 0;
         m_playerPerfDeferred = m_playerPerfHibernated = 0;
     }
 }
 
+void Map::UpdatePlayerAI(bool responsiveOnly)
+{
+    uint32 const now = WorldTimer::getMSTime();
+    if (m_lastAIUpdate && WorldTimer::getMSTimeDiff(m_lastAIUpdate, now) <
+        sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_UPDATE_PLAYERS_DIFF))
+        return;
+    m_lastAIUpdate = now;
+
+    struct Request
+    {
+        ObjectGuid guid;
+        MapWorkStamp stamp;
+        uint32 elapsed;
+    };
+    std::vector<Request> foreground, background;
+    // Snapshot GUIDs before executing any AI: an action may unlink a player.
+    for (auto const& ref : m_mapRefManager)
+    {
+        Player* player = ref.getSource();
+        if (!player || !player->IsInWorld() || player->FindMap() != this || player->IsBeingTeleported())
+            continue;
+        bool const interactive = IsResponsivePlayer(player);
+        if (responsiveOnly && !interactive)
+            continue;
+        bool const immediate = interactive || !IsContinent() || IsAutonomousActivePlayer(player);
+        if (!interactive && IsContinent() && immediate &&
+            !IsStaggeredMapWorkDue(_playerUpdateSequence, player->GetGUIDLow(), m_autonomousActiveStride))
+            continue;
+        uint32 const elapsed = std::min<uint32>(500, player->ConsumeAIElapsed(now));
+        Request request{player->GetObjectGuid(), {GetId(), GetInstanceId(), player->GetMapWorkGeneration()},
+            elapsed};
+        if (immediate)
+            foreground.push_back(request);
+        else if (Script_IsAIUpdateDue(player, elapsed))
+            background.push_back(request);
+    }
+    auto execute = [this](Request const& request)
+    {
+        Player* player = GetPlayer(request.guid);
+        if (!player || player->FindMap() != this || player->IsBeingTeleported() ||
+            !request.stamp.Matches(player->GetMapId(), player->GetInstanceId(),
+                player->GetMapWorkGeneration(), player->IsInWorld()))
+        {
+            ++m_aiStale;
+            return;
+        }
+        ExecutionWatch::Set(ExecutionWatch::BotAI, GetId(), GetInstanceId(), player->GetGUIDLow());
+        Script_UpdateAI(player, request.elapsed, false);
+        ++m_aiUpdates;
+    };
+    for (Request const& request : foreground)
+        execute(request);
+
+    // Round-robin by GUID, not a vector offset that changes when bots log in or
+    // out. The configured population is never used as a queue size or index.
+    std::sort(background.begin(), background.end(), [](Request const& a, Request const& b)
+        { return a.guid.GetCounter() < b.guid.GetCounter(); });
+    if (!background.empty())
+    {
+        auto next = std::upper_bound(background.begin(), background.end(), m_idleAICursorGuid,
+            [](uint32 guid, Request const& r) { return guid < r.guid.GetCounter(); });
+        size_t const start = next == background.end() ? 0 : next - background.begin();
+        size_t const count = std::min<size_t>(background.size(),
+            sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_IDLE_AI_BATCH));
+        for (size_t n = 0; n < count; ++n)
+        {
+            Request const& request = background[(start + n) % background.size()];
+            execute(request);
+            m_idleAICursorGuid = request.guid.GetCounter();
+        }
+        m_aiDeferred += background.size() - count;
+    }
+}
+
 void Map::DoUpdate(uint32 maxDiff)
 {
+    ExecutionWatch::ResetOnExit watchScope;
+    ExecutionWatch::Set(ExecutionWatch::MapStart, GetId(), GetInstanceId());
     uint32 const now = WorldTimer::getMSTime();
     uint32 diff = WorldTimer::getMSTimeDiff(_lastMapUpdate, now);
     if (diff > maxDiff)
@@ -1298,7 +1288,6 @@ void Map::DoUpdate(uint32 maxDiff)
 void Map::Update(uint32 t_diff)
 {
     XScopeStatTimer ScopeStatTimer{ UpdateTimer };
-    uint32 const fullUpdateStart = WorldTimer::getMSTime();
     RefreshRealPlayerActivity();
     ScriptRegistry<AllMapScript>::ForEach([&](AllMapScript* script)
     {
@@ -1306,7 +1295,6 @@ void Map::Update(uint32 t_diff)
     });
 
     uint32 updateMapTime = WorldTimer::getMSTime();
-    uint32 const preparationTime = WorldTimer::getMSTimeDiff(fullUpdateStart, updateMapTime);
     _dynamicTree.update(t_diff);
 
     UpdateSessionsMovementAndSpellsIfNeeded();
@@ -1320,7 +1308,7 @@ void Map::Update(uint32 t_diff)
             // Synthetic playerbot sessions have no socket and cannot have
             // inbound packets. Updating them here still ran idle/analyser work
             // for every bot on every map pass. Their AI remains driven from the
-            // PlayerScript update below.
+            // map-owned AI phase below.
             if (!pSession->GetSocket() && !pSession->GetMasterPlayer())
                 continue;
             MapSessionFilter updater(pSession);
@@ -1334,20 +1322,25 @@ void Map::Update(uint32 t_diff)
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
     UpdateSessionsMovementAndSpellsIfNeeded();
     UpdatePlayers(false);
+    UpdatePlayerAI(false);
     uint32 playersUpdateTime = WorldTimer::getMSTimeDiffToNow(updateMapTime) - sessionsUpdateTime;
 
+    ExecutionWatch::Set(ExecutionWatch::Cells, GetId(), GetInstanceId());
     UpdateCells(t_diff);
     uint32 activeCellsUpdateTime = WorldTimer::getMSTimeDiffToNow(updateMapTime) - playersUpdateTime - sessionsUpdateTime;
 
     // Send world objects and item update field changes
+    ExecutionWatch::Set(ExecutionWatch::ObjectUpdates, GetId(), GetInstanceId());
     SendObjectUpdates();
     uint32 objectsUpdateTime = WorldTimer::getMSTimeDiffToNow(updateMapTime) - activeCellsUpdateTime - playersUpdateTime - sessionsUpdateTime;
 
+    ExecutionWatch::Set(ExecutionWatch::Visibility, GetId(), GetInstanceId());
     UpdateVisibilityForRelocations();
     uint32 visibilityUpdateTime = WorldTimer::getMSTimeDiffToNow(updateMapTime) - objectsUpdateTime - activeCellsUpdateTime - playersUpdateTime - sessionsUpdateTime;
 
     UpdateSessionsMovementAndSpellsIfNeeded();
     UpdatePlayers(true);
+    UpdatePlayerAI(true);
     uint32 playersUpdateTime2 = WorldTimer::getMSTimeDiffToNow(updateMapTime) - objectsUpdateTime - activeCellsUpdateTime - playersUpdateTime - sessionsUpdateTime - visibilityUpdateTime;
 
     RemoveCorpses();
@@ -1355,22 +1348,59 @@ void Map::Update(uint32 t_diff)
 
     updateMapTime = WorldTimer::getMSTimeDiffToNow(updateMapTime);
 
-    uint32 additionnalWaitTime = 0;
-    uint32 additionnalUpdateCounts = 0;
-    if (!Instanceable())
+    // Instance subclasses rely on their scripts completing inside Map::Update.
+    // Continents finish at the manager-owned barrier, never by parking workers.
+    m_pendingUpdateDiff = t_diff;
+    if (Instanceable())
+        CompleteUpdate();
+    uint32 const additionnalWaitTime = 0;
+    uint32 const additionnalUpdateCounts = 0;
+    bool packetBroadcastSlow = sWorld.GetBroadcaster()->IsMapSlow(GetInstanceId());
+    if (sWorld.getConfig(CONFIG_UINT32_PERFLOG_SLOW_MAP_UPDATE) && updateMapTime > sWorld.getConfig(CONFIG_UINT32_PERFLOG_SLOW_MAP_UPDATE))
+        sLog.out(LOG_PERFORMANCE, "Update single map %3u inst %2u: %3ums "
+            "[sess %3ums|players %3ums|cells %3ums|sendObjUpdates %3ums"
+            "|relocations %3ums|players2 %3ums|wait%2u %3ums] %s",
+            GetId(), GetInstanceId(), updateMapTime,
+                 sessionsUpdateTime, playersUpdateTime, activeCellsUpdateTime, objectsUpdateTime,
+                 visibilityUpdateTime, playersUpdateTime2, additionnalUpdateCounts, additionnalWaitTime,
+                packetBroadcastSlow ? "SLOWBCAST" : "");
+    // Continent only
+    if (IsContinent())
     {
-        additionnalWaitTime = WorldTimer::getMSTime();
-        sMapMgr.MarkContinentUpdateFinished();
-        while (!sMapMgr.waitContinentUpdateFinishedUntil(start + std::chrono::milliseconds(sWorld.getConfig(CONFIG_UINT32_INTERVAL_MAPUPDATE))))
+        if (sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_TICK_LOWER_GRID_ACTIVATION_DISTANCE) && updateMapTime > sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_TICK_LOWER_GRID_ACTIVATION_DISTANCE))
         {
-            start = std::chrono::high_resolution_clock::now();
-            UpdateSessionsMovementAndSpellsIfNeeded();
-            UpdatePlayers(true);
-            ++additionnalUpdateCounts;
+            --m_GridActivationDistance;
+            if (m_GridActivationDistance < sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_MIN_GRID_ACTIVATION_DISTANCE))
+                m_GridActivationDistance = sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_MIN_GRID_ACTIVATION_DISTANCE);
         }
-        additionnalWaitTime = WorldTimer::getMSTimeDiffToNow(additionnalWaitTime);
+        else if (sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_TICK_INCREASE_GRID_ACTIVATION_DISTANCE) && updateMapTime < sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_TICK_INCREASE_GRID_ACTIVATION_DISTANCE))
+        {
+            ++m_GridActivationDistance;
+            if (m_GridActivationDistance > World::GetMaxVisibleDistanceOnContinents())
+                m_GridActivationDistance = World::GetMaxVisibleDistanceOnContinents();
+        }
+        if (packetBroadcastSlow ||
+            (sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_TICK_LOWER_VISIBILITY_DISTANCE) &&
+            updateMapTime > sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_TICK_LOWER_VISIBILITY_DISTANCE)))
+        {
+            --m_VisibleDistance;
+            if (m_VisibleDistance < sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_MIN_VISIBILITY_DISTANCE))
+                m_VisibleDistance = sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_MIN_VISIBILITY_DISTANCE);
+        }
+        else if (sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_TICK_INCREASE_VISIBILITY_DISTANCE) && updateMapTime < sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_TICK_INCREASE_VISIBILITY_DISTANCE))
+        {
+            ++m_VisibleDistance;
+            if (m_VisibleDistance > World::GetMaxVisibleDistanceOnContinents())
+                m_VisibleDistance = World::GetMaxVisibleDistanceOnContinents();
+        }
     }
-    uint32 const tailStart = WorldTimer::getMSTime();
+}
+
+void Map::CompleteUpdate()
+{
+    ExecutionWatch::ResetOnExit watchScope;
+    ExecutionWatch::Set(ExecutionWatch::MapCompletion, GetId(), GetInstanceId());
+    uint32 const t_diff = m_pendingUpdateDiff;
     // Don't unload grids if it's battleground, since we may have manually added GOs,creatures, those doesn't load from DB at grid re-load !
     // This isn't really bother us, since as soon as we have instanced BG-s, the whole map unloads as the BG gets ended
     if (!IsBattleGround())
@@ -1409,53 +1439,6 @@ void Map::Update(uint32 t_diff)
 
     m_weatherSystem->UpdateWeathers(t_diff);
 
-    uint32 const tailTime = WorldTimer::getMSTimeDiffToNow(tailStart);
-    uint32 const fullUpdateTime = WorldTimer::getMSTimeDiffToNow(fullUpdateStart);
-    // The old measurement excluded both activity classification and grid/script
-    // maintenance. Include their cost when deciding whether to report a stall,
-    // but preserve updateMapTime for the existing adaptive-distance policy.
-    uint32 const workTime = preparationTime + updateMapTime + tailTime;
-    bool packetBroadcastSlow = sWorld.GetBroadcaster()->IsMapSlow(GetInstanceId());
-    if (sWorld.getConfig(CONFIG_UINT32_PERFLOG_SLOW_MAP_UPDATE) && workTime > sWorld.getConfig(CONFIG_UINT32_PERFLOG_SLOW_MAP_UPDATE))
-        sLog.out(LOG_PERFORMANCE, "Update single map %3u inst %2u: %3ums "
-            "[sess %3ums|players %3ums|cells %3ums|sendObjUpdates %3ums"
-            "|relocations %3ums|players2 %3ums|wait%2u %3ums|prepare %3ums|tail %3ums|total %3ums] %s",
-            GetId(), GetInstanceId(), updateMapTime,
-                 sessionsUpdateTime, playersUpdateTime, activeCellsUpdateTime, objectsUpdateTime,
-                 visibilityUpdateTime, playersUpdateTime2, additionnalUpdateCounts, additionnalWaitTime,
-                 preparationTime, tailTime, fullUpdateTime,
-                packetBroadcastSlow ? "SLOWBCAST" : "");
-    // Continent only
-    if (IsContinent())
-    {
-        if (sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_TICK_LOWER_GRID_ACTIVATION_DISTANCE) && updateMapTime > sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_TICK_LOWER_GRID_ACTIVATION_DISTANCE))
-        {
-            --m_GridActivationDistance;
-            if (m_GridActivationDistance < sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_MIN_GRID_ACTIVATION_DISTANCE))
-                m_GridActivationDistance = sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_MIN_GRID_ACTIVATION_DISTANCE);
-        }
-        else if (sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_TICK_INCREASE_GRID_ACTIVATION_DISTANCE) && updateMapTime < sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_TICK_INCREASE_GRID_ACTIVATION_DISTANCE))
-        {
-            ++m_GridActivationDistance;
-            if (m_GridActivationDistance > World::GetMaxVisibleDistanceOnContinents())
-                m_GridActivationDistance = World::GetMaxVisibleDistanceOnContinents();
-        }
-        if (packetBroadcastSlow ||
-            (sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_TICK_LOWER_VISIBILITY_DISTANCE) &&
-            updateMapTime > sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_TICK_LOWER_VISIBILITY_DISTANCE)))
-        {
-            --m_VisibleDistance;
-            if (m_VisibleDistance < sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_MIN_VISIBILITY_DISTANCE))
-                m_VisibleDistance = sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_MIN_VISIBILITY_DISTANCE);
-        }
-        else if (sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_TICK_INCREASE_VISIBILITY_DISTANCE) && updateMapTime < sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_TICK_INCREASE_VISIBILITY_DISTANCE))
-        {
-            ++m_VisibleDistance;
-            if (m_VisibleDistance > World::GetMaxVisibleDistanceOnContinents())
-                m_VisibleDistance = World::GetMaxVisibleDistanceOnContinents();
-        }
-    }
-    WorkMetrics::Flush();
     m_updateFinished = true;
 }
 
@@ -3325,7 +3308,7 @@ void Map::SendObjectUpdates()
          job = m_objectThreads->processWorkload();
     f();
     if (job.valid())
-        job.wait();
+        job.get();
     if (ait >= i_objectsToClientUpdate.size()) //ait is increased before checks, so max value is `objectsCount + threads`
         i_objectsToClientUpdate.clear();
     else
@@ -3404,7 +3387,7 @@ void Map::UpdateVisibilityForRelocations()
 
     f();
     if (job.valid())
-        job.wait();
+        job.get();
     if (ait >= i_unitsRelocated.size()) //ait is increased before checks, so max value is `objectsCount + threads`
         i_unitsRelocated.clear();
     else

@@ -33,6 +33,7 @@
 
 #include "Common.h"
 #include "Master.h"
+#include "ExecutionWatch.h"
 #include "WorldSocket.h"
 #include "WorldRunnable.h"
 #ifdef ENABLE_SOAP
@@ -128,6 +129,36 @@ void freezeDetector(uint32 _delaytime)
     }
 };
 
+static void WatchWorldProgress(uint32 thresholdMs, std::string logPath)
+{
+    uint32 loop = World::m_worldLoopCounter.load();
+    uint64 lastProgress = ExecutionWatch::Now();
+    bool reported = false;
+    while (!World::IsStopped())
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        uint64 const now = ExecutionWatch::Now();
+        uint32 const current = World::m_worldLoopCounter.load();
+        if (current != loop)
+        {
+            loop = current;
+            lastProgress = now;
+            reported = false;
+        }
+        else if (!reported && now - lastProgress >= thresholdMs)
+        {
+            if (FILE* file = fopen(logPath.c_str(), "a"))
+            {
+                fprintf(file, "\nSTALL epoch=%llu (diagnostic only; no restart or termination)\n",
+                    static_cast<unsigned long long>(time(nullptr)));
+                ExecutionWatch::Dump(file, loop, now - lastProgress);
+                fclose(file);
+            }
+            reported = true;
+        }
+    }
+}
+
 Master::Master()
 {
     
@@ -141,6 +172,23 @@ Master::~Master()
 /// Main function
 int Master::Run()
 {
+#ifdef WIN32
+    // Install crash-dump capture ASAP so any startup-time crash
+    // (e.g. DBC load failure) also produces a usable dump. VEH + CRT
+    // hooks catch heap corruption / fast-fail / std::terminate paths
+    // that bypass SetUnhandledExceptionFilter. See
+    // MangosdInstallCrashHandlers above for the full hook inventory.
+    MangosdInstallCrashHandlers();
+    if (sConfig.GetBoolDefault("Console.DisableQuickEdit", true))
+    {
+        HANDLE const input = GetStdHandle(STD_INPUT_HANDLE);
+        DWORD mode = 0;
+        if (GetConsoleMode(input, &mode))
+            SetConsoleMode(input, (mode | ENABLE_EXTENDED_FLAGS) & ~ENABLE_QUICK_EDIT_MODE);
+    }
+#endif
+
+
     /// worldd PID file creation
     std::string pidfile = sConfig.GetStringDefault("PidFile", "");
     if (!pidfile.empty())
@@ -211,6 +259,15 @@ int Master::Run()
 
     ///- Launch WorldRunnable thread
     std::thread world_thread{WorldRunnable()};
+    std::thread progress_thread;
+    if (uint32 seconds = sConfig.GetIntDefault("Diagnostics.StallSeconds", 10))
+    {
+        std::string directory = sConfig.GetStringDefault("LogsDir", ".");
+        if (directory.empty())
+            directory = ".";
+        progress_thread = std::thread(WatchWorldProgress, std::min<uint32>(seconds, 3600) * 1000,
+            directory + "/StallBreadcrumb.log");
+    }
 
 #ifdef ENABLE_SOAP
     ///- Start the SOAP remote command interface (off unless SOAP.Enabled = 1)
@@ -304,6 +361,8 @@ int Master::Run()
     }
 
     world_thread.join();
+    if (progress_thread.joinable())
+        progress_thread.join();
 
 #ifdef ENABLE_SOAP
     ///- Stop SOAP before anything below touches the databases: joins the accept

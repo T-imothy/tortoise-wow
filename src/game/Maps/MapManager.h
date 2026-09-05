@@ -95,7 +95,11 @@ class MapManager : public MaNGOS::Singleton<MapManager, MaNGOS::ClassLevelLockab
         void DeleteTestMap(Map* map);
         Map* FindMap(uint32 mapId, uint32 instanceId = 0) const;
         void ScheduleNewWorldOnFarTeleport(Player* pPlayer);
-        void CancelInstanceCreationForPlayer(Player* pPlayer) { m_scheduledNewInstancesForPlayers.erase(pPlayer); }
+        void CancelInstanceCreationForPlayer(Player* pPlayer)
+        {
+            std::lock_guard<std::mutex> lock(m_scheduledNewInstancesLock);
+            m_scheduledNewInstancesForPlayers.erase(pPlayer);
+        }
 
         void UpdateGridState(grid_state_t state, Map& map, NGridType& ngrid, GridInfo& ginfo, const uint32 &x, const uint32 &y, const uint32 &t_diff);
 
@@ -190,11 +194,6 @@ class MapManager : public MaNGOS::Singleton<MapManager, MaNGOS::ClassLevelLockab
         void ExecuteDelayedPlayerTeleports();
         void ExecuteSingleDelayedTeleport(Player *player);
         void CancelDelayedPlayerTeleport(Player *player);
-        void MarkContinentUpdateFinished();
-        bool IsContinentUpdateFinished() const;
-
-        bool waitContinentUpdateFinishedFor(std::chrono::milliseconds time) const;
-        bool waitContinentUpdateFinishedUntil(std::chrono::high_resolution_clock::time_point time) const;
     private:
 
         // debugging code, should be deleted some day
@@ -221,14 +220,7 @@ class MapManager : public MaNGOS::Singleton<MapManager, MaNGOS::ClassLevelLockab
         IntervalTimer i_timer;
 
         uint32 i_MaxInstanceId;
-        int i_maxContinentThread = 0;
-
-        mutable std::mutex m_continentMutex;
-        mutable std::condition_variable m_continentCV;
-        std::atomic<int> i_continentUpdateFinished{0};
-
         std::unique_ptr<ThreadPool> m_threads;
-        std::unique_ptr<ThreadPool> m_continentThreads;
         bool asyncMapUpdating = false;
 
         // Instanced continent zones
@@ -237,8 +229,8 @@ class MapManager : public MaNGOS::Singleton<MapManager, MaNGOS::ClassLevelLockab
         std::map<Player*, uint16 /* new instance */> m_scheduledInstanceSwitches[LAST_CONTINENT_ID]; // 2 continents
 
         // Handle creation of new maps for teleport while continents are being updated.
-        void CreateNewInstancesForPlayers();
         void CreateNewInstancesForPlayersSync();
+        std::mutex m_scheduledNewInstancesLock;
         std::unordered_set<Player*> m_scheduledNewInstancesForPlayers;
 
         std::mutex m_scheduledFarTeleportsLock;

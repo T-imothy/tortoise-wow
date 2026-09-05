@@ -1966,6 +1966,9 @@ class Player final: public Unit
 
         // Current teleport data
         WorldLocation m_teleport_dest;
+        // Invalidates map-owned work, including near teleports within one map.
+        uint64 m_mapWorkGeneration = 0;
+        uint32 m_lastAIUpdateMs = 0;
         uint32 m_teleport_options;
         bool mSemaphoreTeleport_Near;
         bool mSemaphoreTeleport_Far;
@@ -2092,6 +2095,13 @@ class Player final: public Unit
         bool IsBeingTeleportedNear() const { return mSemaphoreTeleport_Near; }
         bool IsBeingTeleportedFar() const { return mSemaphoreTeleport_Far; }
         void SetSemaphoreTeleportNear(bool semphsetting);
+        uint64 GetMapWorkGeneration() const { return m_mapWorkGeneration; }
+        uint32 ConsumeAIElapsed(uint32 now)
+        {
+            uint32 const diff = m_lastAIUpdateMs ? now - m_lastAIUpdateMs : 0;
+            m_lastAIUpdateMs = now;
+            return diff;
+        }
         void SetSemaphoreTeleportFar(bool semphsetting);
         void SetPendingFarTeleport(bool pending) { mPendingFarTeleport = pending; }
         void ExecuteTeleportNear();

@@ -3239,3 +3239,15 @@ bool Script_IsUpdateCritical(Player const* player)
         return script->IsUpdateCritical(player);
     });
 }
+
+bool Script_IsAIUpdateDue(Player* player, uint32 diff)
+{
+    return ScriptRegistry<PlayerScript>::ForEachEnabledHookWithReturn(PLAYERHOOK_IS_AI_UPDATE_DUE,
+        [&](PlayerScript* script) { return script->IsAIUpdateDue(player, diff); });
+}
+
+void Script_UpdateAI(Player* player, uint32 diff, bool minimal)
+{
+    ScriptRegistry<PlayerScript>::ForEachEnabledHook(PLAYERHOOK_ON_AI_UPDATE,
+        [&](PlayerScript* script) { script->OnAIUpdate(player, diff, minimal); });
+}
