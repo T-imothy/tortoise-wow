@@ -17,6 +17,7 @@
  */
 
 #include "MoveSplineInit.h"
+#include <cmath>
 #include <atomic>
 #include "MoveSpline.h"
 #include "packet_builder.h"
@@ -87,7 +88,8 @@ int32 MoveSplineInit::Launch()
     if (newTransport)
         newTransport->CalculatePassengerOffset(real_position.x, real_position.y, real_position.z);
 
-    if (args.path.empty())
+    bool const pathWasEmpty = args.path.empty();
+    if (pathWasEmpty)
     {
         // should i do the things that user should do?
         MoveTo(real_position);
@@ -95,6 +97,24 @@ int32 MoveSplineInit::Launch()
 
     // corrent first vertex
     args.path[0] = real_position;
+    bool hasMovement = false;
+    Vector3 previous = args.path.front();
+    for (Vector3 const& point : args.path)
+    {
+        if (!std::isfinite(point.x) || !std::isfinite(point.y) || !std::isfinite(point.z))
+        {
+            sLog.outError("MoveSplineInit::Launch rejected non-finite path for %s", unit.GetGuidStr().c_str());
+            return 0;
+        }
+        hasMovement = hasMovement || (point - previous).squaredMagnitude() > 0.0001f;
+        previous = point;
+    }
+    // Facing/stop/cyclic splines are legitimate without displacement.
+    if (!hasMovement && !pathWasEmpty && !args.flags.done && !args.flags.cyclic && !args.flags.isFacing())
+    {
+        unit.StopMoving();
+        return 0;
+    }
     uint32 moveFlags = unit.m_movementInfo.GetMovementFlags();
     uint32 oldMoveFlags = moveFlags;
     if (args.flags.done)

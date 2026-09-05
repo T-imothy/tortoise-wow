@@ -20,11 +20,48 @@
  */
 
 #include "Map.h"
+#include "AreaLookupIndex.h"
+
+namespace
+{
+    AreaLookupIndex areaLookupIndex;
+}
+
+void AreaEntry::RebuildLookupIndex()
+{
+    AreaLookupIndex next;
+    for (auto it = sAreaStorage.begin<AreaEntry>(); it != sAreaStorage.end<AreaEntry>(); ++it)
+        next.Add(it->Id, it->ExploreFlag, it->MapId, it->IsZone());
+    areaLookupIndex = std::move(next);
+}
+
+uint32 AreaEntry::GetFlagByMapId(uint32 mapId)
+{
+    return areaLookupIndex.MapFlag(mapId);
+}
+
+AreaEntry const* AreaEntry::GetByAreaFlagAndMap(uint32 flag, uint32 mapId)
+{
+    if (uint32 id = areaLookupIndex.Find(flag, mapId))
+        return GetById(id);
+    if (auto const* map = sMapStorage.LookupEntry<MapEntry>(mapId))
+        return GetById(map->linkedZone);
+    return nullptr;
+}
+
 #include "MapWork.h"
+#include "AggressorAI.h"
+#include "ReactorAI.h"
+#include "NullCreatureAI.h"
+#include "CritterAI.h"
+#include "SpellAuras.h"
 #include "ExecutionWatch.h"
+#include "DetailedWorkDiagnostics.h"
 #include <shared_mutex>
 #include "MapManager.h"
 #include "Player.h"
+#include "Pet.h"
+#include "Totem.h"
 #include "GridNotifiers.h"
 #include "Log.h"
 #include "GridStates.h"
@@ -65,6 +102,8 @@
 #include "Autoscaling/AutoScaler.hpp"
 #include "Logging/DatabaseLogger.hpp"
 #include "PerfStats.h"
+#include "BackgroundWorldScheduling.h"
+#include "Config/Config.h"
 
 #ifdef ENABLE_ELUNA
 #include "LuaEngine.h"
@@ -180,13 +219,11 @@ Map::Map(uint32 id, time_t expiry, uint32 InstanceId)
         }
 #endif
         m_motionThreads.reset(new ThreadPool(motionThreads, "MotionUpdate"));
-        m_objectThreads.reset(new ThreadPool(objectThreads, "ObjectUpdate"));
+        // Object packet builders use the shared MapManager pool.
         m_visibilityThreads.reset(new ThreadPool(visibilityThreads, "Visibility"));
-        m_cellThreads.reset(new ThreadPool(std::max((int)sWorld.getConfig(CONFIG_UINT32_MTCELLS_THREADS) - 1, 0), "CellUpdate"));
         m_visibilityThreads->start<ThreadPool::MySQL<ThreadPool::MultiQueue>>();
-        m_cellThreads->start();
         m_motionThreads->start();
-        m_objectThreads->start<ThreadPool::MySQL<ThreadPool::MultiQueue>>();
+        // No unused per-map packet-building pool.
     }
 
 #ifdef ENABLE_ELUNA
@@ -685,145 +722,293 @@ void Map::UpdateSync(const uint32 diff)
     */
 }
 
-inline void Map::UpdateCellsAroundObject(uint32 now, uint32 diff, WorldObject const* object)
+namespace
 {
-    if (!object || !object->IsInWorld() || !object->IsPositionValid())
-        return;
-
-    MaNGOS::ObjectUpdater updater(diff, now);
-    TypeContainerVisitor<MaNGOS::ObjectUpdater, GridTypeMapContainer  > grid_object_update(updater);
-    TypeContainerVisitor<MaNGOS::ObjectUpdater, WorldTypeMapContainer > world_object_update(updater);
-
-    //lets update mobs/objects in ALL visible cells around player!
-    CellArea area = Cell::CalculateCellArea(object->GetPositionX(), object->GetPositionY(), object->GetGridActivationDistance());
-
-    for (uint32 x = area.low_bound.x_coord; x <= area.high_bound.x_coord; ++x)
+    // Read-only traversal. No Update(), grid creation, visibility or AI here.
+    struct CellObjectCollector
     {
-        for (uint32 y = area.low_bound.y_coord; y <= area.high_bound.y_coord; ++y)
+        std::vector<ObjectGuid>& objects;
+        template<class T> void Visit(GridRefManager<T>& entries)
         {
-            // marked cells are those that have been visited
-            // don't visit the same cell twice
-            uint32 cell_id = (y * TOTAL_NUMBER_OF_CELLS_PER_MAP) + x;
-            if (!isCellMarked(cell_id))
-            {
-                markCell(cell_id);
-                CellPair pair(x, y);
-                Cell cell(pair);
-                cell.SetNoCreate();
-                Visit(cell, grid_object_update);
-                Visit(cell, world_object_update);
-            }
+            for (auto const& entry : entries)
+                objects.push_back(entry.getSource()->GetObjectGuid());
         }
-    }
+        void Visit(PlayerMapType&) {}
+        void Visit(CorpseMapType&) {}
+        void Visit(CameraMapType&) {}
+    };
 }
 
 inline void Map::MarkCellsAroundObject(WorldObject const* object)
 {
     if (!object || !object->IsInWorld() || !object->IsPositionValid())
         return;
-
     CellArea area = Cell::CalculateCellArea(object->GetPositionX(), object->GetPositionY(), object->GetGridActivationDistance());
-
     for (uint32 x = area.low_bound.x_coord; x <= area.high_bound.x_coord; ++x)
-    {
         for (uint32 y = area.low_bound.y_coord; y <= area.high_bound.y_coord; ++y)
         {
-            uint32 cell_id = (y * TOTAL_NUMBER_OF_CELLS_PER_MAP) + x;
-            markCell(cell_id);
-        }
-    }
-}
-
-
-inline void Map::UpdateActiveCellsCallback(uint32 diff, uint32 now, uint32 threadId, uint32 totalThreads, uint32 step)
-{
-    MaNGOS::ObjectUpdater updater(diff, now);
-    TypeContainerVisitor<MaNGOS::ObjectUpdater, GridTypeMapContainer  > grid_object_update(updater);
-    TypeContainerVisitor<MaNGOS::ObjectUpdater, WorldTypeMapContainer > world_object_update(updater);
-
-    int safeDistCells = sWorld.getConfig(CONFIG_UINT32_MTCELLS_SAFEDISTANCE) / SIZE_OF_GRID_CELL + 1;
-    totalThreads *= 2;
-    threadId = 2 * threadId + step;
-    for (int y = 0; y < TOTAL_NUMBER_OF_CELLS_PER_MAP; ++y)
-    {
-        // Skip grids not for this thread
-        if ((y / safeDistCells) % totalThreads != threadId)
-            continue;
-        for (int x = 0; x < TOTAL_NUMBER_OF_CELLS_PER_MAP; ++x)
-        {
-            uint32 cellId = (y * TOTAL_NUMBER_OF_CELLS_PER_MAP) + x;
-            if (!isCellMarked(cellId))
-                continue;
-            CellPair pair(x, y);
-            Cell cell(pair);
+            uint32 const id = y * TOTAL_NUMBER_OF_CELLS_PER_MAP + x;
+            if (isCellMarked(id)) continue;
+            markCell(id);
+            Cell cell(CellPair(x, y));
             cell.SetNoCreate();
-            Visit(cell, grid_object_update);
-            Visit(cell, world_object_update);
+            m_discoveryCells.push_back(cell);
+        }
+}
+
+namespace
+{
+bool CmangosBackgroundWorldEnabled()
+{
+    // Restart-only switch; no configuration locks in the per-object hot path.
+    static bool const enabled = [] {
+        bool const value = sConfig.GetBoolDefault("MapUpdate.BackgroundWorld.CmangosScheduling", true);
+        sLog.outString("BACKGROUND_WORLD_SCHEDULING enabled=%u idle_ms=500-1000 random_ms=250-500 protected_gameplay=1", uint32(value));
+        return value;
+    }();
+    return enabled;
+}
+
+BackgroundWorld::CreatureState DescribeBackgroundCreature(Creature* creature, bool foreground)
+{
+    BackgroundWorld::CreatureState state;
+    state.continent = creature->GetMap()->IsContinent();
+    state.foreground = foreground;
+    state.alive = creature->IsAlive();
+    state.controlled = creature->IsPet() || creature->IsTotem() || !creature->GetCharmerOrOwnerGuid().IsEmpty();
+    state.combat = creature->IsInCombat();
+    state.events = creature->GetEvents().HasScheduledEvent();
+    for (auto const& entry : creature->GetSpellAuraHolderMap())
+        if (!entry.second->CanDeferIdleUpdate()) { state.auras = true; break; }
+    state.casting = creature->IsNonMeleeSpellCasted(true);
+    auto const* info = creature->GetCreatureInfo();
+    // Inspect the actual selected AI, not its template name. Aggressor/Reactor
+    // spell lists are only advanced with a hostile victim; Critter timers only
+    // run in combat. Exact types deliberately exclude scripted subclasses.
+    auto const* ai = creature->AI();
+    bool const ordinaryAI = ai && (typeid(*ai) == typeid(AggressorAI) ||
+        typeid(*ai) == typeid(ReactorAI) || typeid(*ai) == typeid(NullCreatureAI) ||
+        typeid(*ai) == typeid(CritterAI));
+    state.scripted = info->script_id || !ordinaryAI ||
+        creature->GetZoneScript() || creature->IsWorldBoss() || creature->IsEscortable() ||
+        creature->HasCreatureState(CSTATE_INIT_AI_ON_UPDATE) || creature->HasCreatureState(CSTATE_EVADE_ON_UPDATE);
+    state.active = creature->IsActiveObject();
+    state.transport = creature->GetTransport() != nullptr;
+    auto const motion = creature->GetMotionMaster()->GetCurrentMovementGeneratorType();
+    state.motion = motion == IDLE_MOTION_TYPE ? BackgroundWorld::Motion::Idle :
+        motion == RANDOM_MOTION_TYPE ? BackgroundWorld::Motion::Random : BackgroundWorld::Motion::Other;
+    return state;
+}
+}
+
+void Map::UpdateDiscoveredCells(uint32 now, uint32 diff)
+{
+    TurtleDiagnostics::Scope selection(TurtleDiagnostics::Selection);
+    resetMarkedCells();
+    m_discoveryCells.clear();
+    std::vector<ObjectGuid> explicitUpdates;
+    bool const cmangosScheduling = CmangosBackgroundWorldEnabled() && IsContinent();
+    for (ObjectGuid guid : m_responsivePlayers)
+        MarkCellsAroundObject(GetPlayer(guid));
+    // Snapshot protection before background cells are added. This also protects
+    // bots grouped with a real player, not just the cell under the real player.
+    auto const foregroundCells = marked_cells;
+    if (!cmangosScheduling)
+    {
+        MarkScheduledPlayerCells(m_autonomousActivePlayers, m_autonomousActiveStride);
+        MarkScheduledPlayerCells(m_activeZoneBackgroundPlayers, m_activeZoneBackgroundStride);
+        MarkScheduledPlayerCells(m_hibernatedBackgroundPlayers, m_hibernatedBackgroundStride);
+    }
+    else
+    {
+        // Shared Classic/TBC/WotLK behavior: a socketless bot needs its grid
+        // loaded, but must not activate a full NPC neighborhood merely by
+        // existing. Preserve actual combat/cast targets explicitly because
+        // Turtle does not automatically register every combat NPC as active.
+        auto loadBotGrids = [this, &explicitUpdates](std::vector<ObjectGuid> const& players)
+        {
+            auto markParticipant = [this](WorldObject* object) {
+                if (object && object->FindMap() == this) MarkCellsAroundObject(object);
+            };
+            auto markCombat = [&](Unit* unit) {
+                if (!unit->IsInCombat() && !unit->IsNonMeleeSpellCasted(true)) return;
+                markParticipant(unit->GetVictim());
+                markParticipant(GetWorldObject(unit->GetTargetGuid()));
+                for (Unit* attacker : unit->GetAttackers()) markParticipant(attacker);
+            };
+            for (ObjectGuid guid : players)
+            {
+                Player* player = GetPlayer(guid);
+                if (!player || !player->IsInWorld() || !player->IsPositionValid()) continue;
+                CellPair const pair = MaNGOS::ComputeCellPair(player->GetPositionX(), player->GetPositionY());
+                if (pair.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || pair.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP) continue;
+                Cell cell(pair);
+                EnsureGridLoaded(cell);
+                TurtleDiagnostics::Record(TurtleDiagnostics::BotGridOnly, 1);
+                // Selection and loot are separate from Unit's attack target in
+                // Turtle. Keep those directly interacted-with objects live,
+                // including corpses, without activating their entire region.
+                for (ObjectGuid targetGuid : {player->GetSelectionGuid(), player->GetLootGuid()})
+                    if (WorldObject* target = GetWorldObject(targetGuid))
+                        if (!target->IsPlayer() && target->IsInWorld() && target->FindMap() == this)
+                            explicitUpdates.push_back(targetGuid);
+                // A grid-only owner must not freeze its pet/guardian/totem or
+                // charm. Queue their GUIDs directly, without activating a large
+                // neighborhood around every idle controlled unit.
+                player->CallForAllControlledUnits([&](Unit* controlled) {
+                    // Charmed players still belong to the separate player pass.
+                    if (controlled->IsPlayer() || !controlled->IsInWorld() || controlled->FindMap() != this) return;
+                    explicitUpdates.push_back(controlled->GetObjectGuid());
+                    markCombat(controlled);
+                }, CONTROLLED_PET | CONTROLLED_MINIPET | CONTROLLED_GUARDIANS | CONTROLLED_TOTEMS | CONTROLLED_CHARM);
+                if (player->IsInCombat() || player->IsNonMeleeSpellCasted(true))
+                {
+                    uint32 const id = pair.y_coord * TOTAL_NUMBER_OF_CELLS_PER_MAP + pair.x_coord;
+                    if (!isCellMarked(id))
+                    {
+                        markCell(id); cell.SetNoCreate(); m_discoveryCells.push_back(cell);
+                    }
+                    markCombat(player);
+                    markParticipant(GetWorldObject(player->GetSelectionGuid()));
+                }
+            }
+        };
+        loadBotGrids(m_autonomousActivePlayers);
+        loadBotGrids(m_activeZoneBackgroundPlayers);
+        loadBotGrids(m_hibernatedBackgroundPlayers);
+    }
+
+    uint32 const average = sWorld.GetAverageDiff();
+    uint32 const skip = cmangosScheduling ? BackgroundWorld::BackgroundStride(average, m_hasRealPlayers,
+        sWorld.getConfig(CONFIG_UINT32_MAP_BACKGROUND_OBJECT_SKIP)) : IsContinent() ? std::min<uint32>(
+        sWorld.getConfig(CONFIG_UINT32_MAP_BACKGROUND_OBJECT_SKIP),
+        std::max<uint32>(1, average / 100) * (m_hasRealPlayers ? 1 : 3)) : 1;
+    // ManTech background-object shedding, but deterministic GUID cadence rather
+    // than a random all-or-none decision. Real-player areas and combat stay live.
+    for (WorldObject* object : m_activeNonPlayers)
+    {
+        if (!object || !object->IsInWorld() || !object->IsPositionValid()) continue;
+        CellPair const cell = MaNGOS::ComputeCellPair(object->GetPositionX(), object->GetPositionY());
+        uint32 const id = cell.y_coord * TOTAL_NUMBER_OF_CELLS_PER_MAP + cell.x_coord;
+        bool critical = !IsContinent() || foregroundCells.test(id) ||
+            (object->IsUnit() && static_cast<Unit*>(object)->IsInCombat());
+        if (cmangosScheduling && !critical)
+        {
+            // Active scripted/escort/event/transport work is not ordinary
+            // ambient population and must not be load-shed.
+            if (object->GetViewPoint().hasViewers() || object->GetTypeId() != TYPEID_UNIT)
+                critical = true;
+            else
+            {
+                auto state = DescribeBackgroundCreature(static_cast<Creature*>(object), false);
+                state.active = false; // ordinary active idle spawns may be staggered
+                critical = BackgroundWorld::CreatureInterval(state, object->GetGUIDLow()) == 0;
+            }
+        }
+        if (!critical && !IsStaggeredMapWorkDue(_botCellUpdateSequence, object->GetGUIDLow(), skip))
+        {
+            TurtleDiagnostics::Record(TurtleDiagnostics::BackgroundSkipped, 1);
+            continue;
+        }
+        MarkCellsAroundObject(object);
+    }
+    selection.Finish();
+    TurtleDiagnostics::Record(TurtleDiagnostics::CellCount, m_discoveryCells.size());
+
+    size_t const configuredChunk = sWorld.getConfig(CONFIG_UINT32_MAP_CELL_CHUNK_SIZE);
+    size_t const maxChunks = sWorld.getConfig(CONFIG_UINT32_MAP_CELL_MAX_CHUNKS);
+    size_t const chunkSize = std::max(configuredChunk, (m_discoveryCells.size() + maxChunks - 1) / maxChunks);
+    size_t const chunks = (m_discoveryCells.size() + chunkSize - 1) / chunkSize;
+    std::vector<std::vector<ObjectGuid>> found(chunks);
+    auto collect = [this, &found, chunkSize](size_t chunk)
+    {
+        CellObjectCollector collector{found[chunk]};
+        TypeContainerVisitor<CellObjectCollector, GridTypeMapContainer> grid(collector);
+        TypeContainerVisitor<CellObjectCollector, WorldTypeMapContainer> world(collector);
+        size_t const end = std::min(m_discoveryCells.size(), (chunk + 1) * chunkSize);
+        for (size_t i = chunk * chunkSize; i < end; ++i)
+        {
+            Visit(m_discoveryCells[i], grid);
+            Visit(m_discoveryCells[i], world);
+        }
+    };
+    TurtleDiagnostics::Scope discovery(TurtleDiagnostics::Discovery);
+    auto& pool = sMapMgr.CellDiscovery();
+    bool const coolingDown = m_cellFallbackStarted &&
+        WorldTimer::getMSTimeDiff(m_cellFallbackStarted, now) <
+            sWorld.getConfig(CONFIG_UINT32_MAP_CELL_FALLBACK_SECONDS) * 1000;
+    if (IsContinent() && pool.Size() && !coolingDown &&
+        m_discoveryCells.size() >= sWorld.getConfig(CONFIG_UINT32_MAP_CELL_MIN_PARALLEL))
+    {
+        MapTaskJoin group; // declared AFTER captured vectors; drains on every exit
+        group.tasks.reserve(chunks);
+        for (size_t n = 0; n < chunks; ++n)
+            group.tasks.push_back(pool.Submit([collect, n] { collect(n); }));
+        TurtleDiagnostics::Scope wait(TurtleDiagnostics::DiscoveryWait);
+        auto const deadline = std::chrono::steady_clock::now() +
+            std::chrono::milliseconds(sWorld.getConfig(CONFIG_UINT32_MAP_CELL_MAX_WAIT));
+        bool slow = false;
+        for (auto& task : group.tasks)
+            if (task.wait_until(deadline) != std::future_status::ready) { slow = true; break; }
+        // Deadline means use serial discovery on later ticks, NEVER abandon jobs.
+        group.Get();
+        if (slow)
+        {
+            m_cellFallbackStarted = now;
+            sLog.out(LOG_PERFORMANCE, "CELL_DISCOVERY_FALLBACK map=%u inst=%u cells=%u chunks=%u cooldown_s=%u",
+                GetId(), GetInstanceId(), uint32(m_discoveryCells.size()), uint32(chunks),
+                sWorld.getConfig(CONFIG_UINT32_MAP_CELL_FALLBACK_SECONDS));
         }
     }
-}
+    else
+        for (size_t n = 0; n < chunks; ++n) collect(n);
+    discovery.Finish();
 
-inline void Map::UpdateActiveCellsAsynch(uint32 now, uint32 diff)
-{
-    resetMarkedCells();
+    // Discovery workers have joined before changing the chunk container.
+    // The owner-side visited set deduplicates pets and interaction targets.
+    if (!explicitUpdates.empty()) found.push_back(std::move(explicitUpdates));
 
-    // Responsive players are always active. Background players are already
-    // partitioned by the scheduler, so visit only the due slice instead of
-    // rescanning every simulated character and re-running classification.
-    for (Player* player : m_responsivePlayers)
-        MarkCellsAroundObject(player);
-    MarkScheduledPlayerCells(m_autonomousActivePlayers, m_autonomousActiveStride);
-    MarkScheduledPlayerCells(m_activeZoneBackgroundPlayers, m_activeZoneBackgroundStride);
-    MarkScheduledPlayerCells(m_hibernatedBackgroundPlayers, m_hibernatedBackgroundStride);
-
-    for (m_activeNonPlayersIter = m_activeNonPlayers.begin(); m_activeNonPlayersIter != m_activeNonPlayers.end(); ++m_activeNonPlayersIter)
-        MarkCellsAroundObject(*m_activeNonPlayersIter);
-
-    const int nthreads = m_cellThreads->size();
-    for (int step = 0; step < 2; step++)
-    {
-        for (int i = 0; i < nthreads; ++i)
-            m_cellThreads << [this, diff, now, i, nthreads, step](){
-                UpdateActiveCellsCallback(diff, now, i, nthreads+1, step);
-            };
-        std::future<void> job = m_cellThreads->processWorkload();
-        UpdateActiveCellsCallback(diff, now, nthreads, nthreads+1, step);
-        if (job.valid())
-            job.get();
-    }
-}
-
-inline void Map::UpdateActiveCellsSynch(uint32 now, uint32 diff)
-{
-    resetMarkedCells();
-    for (Player* player : m_responsivePlayers)
-        UpdateCellsAroundObject(now, diff, player);
-
-    auto updateScheduledCells = [this, now, diff](std::vector<Player*> const& players, uint32 stride)
-    {
-        if (players.empty())
-            return;
-
-        stride = std::max<uint32>(1, stride);
-        for (Player* player : players)
-            if (player && IsStaggeredMapWorkDue(_botCellUpdateSequence, player->GetGUIDLow(), stride))
-                UpdateCellsAroundObject(now, diff, player);
-    };
-    updateScheduledCells(m_autonomousActivePlayers, m_autonomousActiveStride);
-    updateScheduledCells(m_activeZoneBackgroundPlayers, m_activeZoneBackgroundStride);
-    updateScheduledCells(m_hibernatedBackgroundPlayers, m_hibernatedBackgroundStride);
-
-    // non-player active objects
-    for (m_activeNonPlayersIter = m_activeNonPlayers.begin(); m_activeNonPlayersIter != m_activeNonPlayers.end();)
-    {
-        // skip not in world
-        WorldObject* obj = *m_activeNonPlayersIter;
-
-        // step before processing, in this case if Map::Remove remove next object we correctly
-        // step to next-next, and if we step to end() then newly added objects can wait next update.
-        ++m_activeNonPlayersIter;
-        UpdateCellsAroundObject(now, diff, obj);
-    }
+    TurtleDiagnostics::Scope updates(TurtleDiagnostics::ObjectUpdates);
+    std::unordered_set<uint64> visited;
+    for (auto const& chunk : found)
+        for (ObjectGuid guid : chunk)
+        {
+            if (!visited.insert(guid.GetRawValue()).second) continue;
+            WorldObject* object = GetWorldObject(guid);
+            // Earlier updates may remove/teleport an object from this snapshot.
+            if (!object || !object->IsInWorld() || object->FindMap() != this)
+            {
+                TurtleDiagnostics::Record(TurtleDiagnostics::StaleObject, 1);
+                continue;
+            }
+            WorldObject::UpdateHelper helper(object);
+            uint32 logicalDiff = diff;
+            if (cmangosScheduling && object->GetTypeId() == TYPEID_UNIT && object->IsPositionValid())
+            {
+                CellPair const cell = MaNGOS::ComputeCellPair(object->GetPositionX(), object->GetPositionY());
+                uint32 const id = cell.y_coord * TOTAL_NUMBER_OF_CELLS_PER_MAP + cell.x_coord;
+                bool const foreground = cell.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP ||
+                    cell.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || foregroundCells.test(id);
+                auto state = DescribeBackgroundCreature(static_cast<Creature*>(object), foreground);
+                TurtleDiagnostics::Record(state.foreground ? TurtleDiagnostics::CreatureForeground :
+                    state.combat || state.casting || state.controlled ? TurtleDiagnostics::CreatureInteractive :
+                    state.scripted ? TurtleDiagnostics::CreatureScriptProtected :
+                    state.auras ? TurtleDiagnostics::CreatureAuraProtected :
+                    TurtleDiagnostics::CreatureOther, 1);
+                uint32 const interval = BackgroundWorld::CreatureInterval(state, object->GetGUIDLow());
+                auto const decision = BackgroundWorld::DecideUpdate(helper.ElapsedTime(now), diff, interval);
+                if (!decision.due)
+                {
+                    TurtleDiagnostics::Record(TurtleDiagnostics::BackgroundCreatureDeferred, 1);
+                    continue; // do not reset the object's elapsed-time tracker
+                }
+                logicalDiff = decision.logicalDiff;
+            }
+            TurtleDiagnostics::Scope detail(object->GetTypeId() == TYPEID_UNIT ? TurtleDiagnostics::CreatureUpdate :
+                object->GetTypeId() == TYPEID_GAMEOBJECT ? TurtleDiagnostics::GameObjectUpdate : TurtleDiagnostics::DynamicObjectUpdate);
+            helper.UpdateRealTime(now, logicalDiff); // spell/aura clocks keep true elapsed time
+        }
+    TurtleDiagnostics::Record(TurtleDiagnostics::ObjectCount, visited.size());
 }
 
 inline void Map::UpdateCells(uint32 map_diff)
@@ -837,10 +1022,7 @@ inline void Map::UpdateCells(uint32 map_diff)
     ++_botCellUpdateSequence;
 
     /// update active cells around players and active objects
-    if (IsContinent() && m_cellThreads->status() == ThreadPool::Status::READY)
-        UpdateActiveCellsAsynch(now, diff);
-    else
-        UpdateActiveCellsSynch(now, diff);
+    UpdateDiscoveredCells(now, diff);
 
     if (IsContinent() && m_motionThreads->status() == ThreadPool::Status::READY && !unitsMvtUpdate.empty())
     {
@@ -854,15 +1036,15 @@ inline void Map::UpdateCells(uint32 map_diff)
     unitsMvtUpdate.clear();
 }
 
-void Map::MarkScheduledPlayerCells(std::vector<Player*> const& players, uint32 stride)
+void Map::MarkScheduledPlayerCells(std::vector<ObjectGuid> const& players, uint32 stride)
 {
     if (players.empty())
         return;
 
     stride = std::max<uint32>(1, stride);
-    for (Player* player : players)
-        if (player && IsStaggeredMapWorkDue(_botCellUpdateSequence, player->GetGUIDLow(), stride))
-            MarkCellsAroundObject(player);
+    for (ObjectGuid guid : players)
+        if (IsStaggeredMapWorkDue(_botCellUpdateSequence, guid.GetCounter(), stride))
+            MarkCellsAroundObject(GetPlayer(guid));
 }
 
 bool Map::ShouldUpdateBotCells(Player const* player) const
@@ -982,23 +1164,23 @@ void Map::RefreshRealPlayerActivity()
             m_moduleCriticalPlayers.find(player->GetGUIDLow()) != m_moduleCriticalPlayers.end();
         if (interactive)
         {
-            m_interactivePlayers.push_back(player);
+            m_interactivePlayers.push_back(player->GetObjectGuid());
             if (machineDriven)
                 ++m_interactiveBotPopulation;
         }
 
         if (!IsContinent() || !machineDriven || IsResponsivePlayer(player))
         {
-            m_responsivePlayers.push_back(player);
+            m_responsivePlayers.push_back(player->GetObjectGuid());
             if (machineDriven)
                 ++m_responsiveBotPopulation;
         }
         else if (IsAutonomousActivePlayer(player))
-            m_autonomousActivePlayers.push_back(player);
+            m_autonomousActivePlayers.push_back(player->GetObjectGuid());
         else if (m_hasRealPlayers && HasActiveZone(player->GetZoneId()))
-            m_activeZoneBackgroundPlayers.push_back(player);
+            m_activeZoneBackgroundPlayers.push_back(player->GetObjectGuid());
         else
-            m_hibernatedBackgroundPlayers.push_back(player);
+            m_hibernatedBackgroundPlayers.push_back(player->GetObjectGuid());
     }
 }
 
@@ -1034,18 +1216,21 @@ void Map::ProcessSessionPackets(PacketProcessing type)
 		break;
     }
 
-    /// update worldsessions for existing players
-    for (m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
+    // Owner-only checkpoints use the responsive GUID snapshot, not a full
+    // 6,000-session scan. A handler can transfer a player, so resolve each GUID
+    // afresh and never carry a player pointer across checkpoint calls.
+    auto const players = m_responsivePlayers;
+    for (ObjectGuid guid : players)
     {
-        Player* plr = m_mapRefIter->getSource();
-        if (plr && plr->IsInWorld())
+        Player* plr = GetPlayer(guid);
+        if (plr && plr->IsInWorld() && plr->FindMap() == this)
         {
             WorldSession* pSession = plr->GetSession();
-            if (!pSession->GetSocket())
+            if (!pSession || !pSession->GetSocket())
                 continue;
             MapSessionFilter updater(pSession);
             updater.SetProcessType(type);
-            pSession->ProcessPackets(updater);
+            pSession->ProcessPackets(updater, false, 2);
         }
     }
 
@@ -1070,11 +1255,15 @@ void Map::UpdateSessionsMovementAndSpellsIfNeeded()
 
     ProcessSessionPackets(PACKET_PROCESS_MOVEMENT);
     ProcessSessionPackets(PACKET_PROCESS_SPELLS);
+    // Loot/item/other map-safe actions deserve the same checkpoints as casts.
+    // WORLD and other ownership classes remain with their original owner.
+    ProcessSessionPackets(PACKET_PROCESS_MAP);
     m_lastMvtSpellsUpdate = WorldTimer::getMSTime();
 }
 
 void Map::UpdatePlayers(bool responsiveOnly)
 {
+    TurtleDiagnostics::Scope diagnosticPlayers(TurtleDiagnostics::PlayerCore);
     uint32 now = WorldTimer::getMSTime();
     uint32 diff = WorldTimer::getMSTimeDiff(_lastPlayersUpdate, now);
 
@@ -1084,7 +1273,7 @@ void Map::UpdatePlayers(bool responsiveOnly)
     uint32 const maxCatchUpDiff = sWorld.getConfig(CONFIG_UINT32_MACHINE_DRIVEN_MAX_CATCHUP_DIFF);
     auto updatePlayer = [this, now, maxCatchUpDiff](Player* plr, bool machineDriven, uint32 logicalDiff)
     {
-        if (!plr || !plr->IsInWorld())
+        if (!plr || !plr->IsInWorld() || plr->FindMap() != this)
             return;
 
         auto const updateStart = std::chrono::steady_clock::now();
@@ -1114,8 +1303,10 @@ void Map::UpdatePlayers(bool responsiveOnly)
     // Only real players and bots interacting with a real player are admitted.
     if (responsiveOnly)
     {
-        for (Player* plr : m_interactivePlayers)
+        for (ObjectGuid guid : m_interactivePlayers)
         {
+            Player* plr = GetPlayer(guid);
+            if (!plr) continue;
             bool const machineDriven = IsMachineDrivenPlayer(plr);
             updatePlayer(plr, machineDriven, diff + plr->GetSkippedUpdateTime());
         }
@@ -1124,13 +1315,15 @@ void Map::UpdatePlayers(bool responsiveOnly)
     {
         ++_playerUpdateSequence;
 
-        for (Player* plr : m_responsivePlayers)
+        for (ObjectGuid guid : m_responsivePlayers)
         {
+            Player* plr = GetPlayer(guid);
+            if (!plr) continue;
             bool const machineDriven = IsMachineDrivenPlayer(plr);
             updatePlayer(plr, machineDriven, diff + plr->GetSkippedUpdateTime());
         }
 
-        auto updateScheduled = [this, diff, &updatePlayer](std::vector<Player*> const& players,
+        auto updateScheduled = [this, diff, &updatePlayer](std::vector<ObjectGuid> const& players,
                                                            uint32 stride, bool hibernated)
         {
             if (players.empty())
@@ -1138,8 +1331,9 @@ void Map::UpdatePlayers(bool responsiveOnly)
 
             stride = std::max<uint32>(1, stride);
             uint64 updated = 0;
-            for (Player* plr : players)
+            for (ObjectGuid guid : players)
             {
+                Player* plr = GetPlayer(guid);
                 if (!plr || !plr->IsInWorld() ||
                     !IsStaggeredMapWorkDue(_playerUpdateSequence, plr->GetGUIDLow(), stride))
                     continue;
@@ -1191,6 +1385,7 @@ void Map::UpdatePlayers(bool responsiveOnly)
 
 void Map::UpdatePlayerAI(bool responsiveOnly)
 {
+    TurtleDiagnostics::Scope diagnosticAI(TurtleDiagnostics::BotAI);
     uint32 const now = WorldTimer::getMSTime();
     if (m_lastAIUpdate && WorldTimer::getMSTimeDiff(m_lastAIUpdate, now) <
         sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_UPDATE_PLAYERS_DIFF))
@@ -1202,6 +1397,8 @@ void Map::UpdatePlayerAI(bool responsiveOnly)
         ObjectGuid guid;
         MapWorkStamp stamp;
         uint32 elapsed;
+        uint32 dueAge = 0;
+        bool serviced = false;
     };
     std::vector<Request> foreground, background;
     // Snapshot GUIDs before executing any AI: an action may unlink a player.
@@ -1217,13 +1414,19 @@ void Map::UpdatePlayerAI(bool responsiveOnly)
         if (!interactive && IsContinent() && immediate &&
             !IsStaggeredMapWorkDue(_playerUpdateSequence, player->GetGUIDLow(), m_autonomousActiveStride))
             continue;
-        uint32 const elapsed = std::min<uint32>(500, player->ConsumeAIElapsed(now));
+        uint32 const elapsed = std::min<uint32>(immediate ? 500 : sWorld.getConfig(CONFIG_UINT32_MAP_IDLE_AI_ADVANCE), player->ConsumeAIElapsed(now));
         Request request{player->GetObjectGuid(), {GetId(), GetInstanceId(), player->GetMapWorkGeneration()},
             elapsed};
         if (immediate)
+        {
+            player->ClearBackgroundAIDueAge();
             foreground.push_back(request);
+        }
         else if (Script_IsAIUpdateDue(player, elapsed))
+        {
+            request.dueAge = player->BackgroundAIDueAge(now);
             background.push_back(request);
+        }
     }
     auto execute = [this](Request const& request)
     {
@@ -1236,6 +1439,7 @@ void Map::UpdatePlayerAI(bool responsiveOnly)
             return;
         }
         ExecutionWatch::Set(ExecutionWatch::BotAI, GetId(), GetInstanceId(), player->GetGUIDLow());
+        player->ClearBackgroundAIDueAge();
         Script_UpdateAI(player, request.elapsed, false);
         ++m_aiUpdates;
     };
@@ -1248,23 +1452,74 @@ void Map::UpdatePlayerAI(bool responsiveOnly)
         { return a.guid.GetCounter() < b.guid.GetCounter(); });
     if (!background.empty())
     {
+        auto* diagnosticOwner = TurtleDiagnostics::current;
+        auto const diagnosticContext = TurtleDiagnostics::context;
+        auto runIdleBatch = [&, diagnosticOwner, diagnosticContext]
+        {
+        TurtleDiagnostics::OwnerHandoff attribution(diagnosticOwner, diagnosticContext);
+        ExecutionWatch::ResetOnExit watchScope;
         auto next = std::upper_bound(background.begin(), background.end(), m_idleAICursorGuid,
             [](uint32 guid, Request const& r) { return guid < r.guid.GetCounter(); });
         size_t const start = next == background.end() ? 0 : next - background.begin();
+        size_t const configured = sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_IDLE_AI_BATCH);
+        size_t const floor = std::min<size_t>(configured, sWorld.getConfig(CONFIG_UINT32_MAP_IDLE_AI_MIN));
         size_t const count = std::min<size_t>(background.size(),
-            sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_IDLE_AI_BATCH));
-        for (size_t n = 0; n < count; ++n)
+            std::max(floor, configured * m_idleAIBudgetPercent / 100));
+        uint32 const budget = sWorld.getConfig(CONFIG_UINT32_MAP_IDLE_AI_BUDGET);
+        size_t const minimum = std::min<size_t>(count, sWorld.getConfig(CONFIG_UINT32_MAP_IDLE_AI_MIN));
+        auto const started = std::chrono::steady_clock::now();
+        size_t processed = 0;
+        // Age promotion cannot create an unlimited catch-up burst after a stall.
+        // The hard count bound remains; round-robin guarantees normal progress.
+        uint32 const maxDeferral = sWorld.getConfig(CONFIG_UINT32_MAP_IDLE_AI_MAX_DEFERRAL);
+        for (size_t n = 0; n < background.size() && processed < minimum; ++n)
         {
-            Request const& request = background[(start + n) % background.size()];
+            Request& request = background[(start + n) % background.size()];
+            if (request.dueAge < maxDeferral) continue;
             execute(request);
+            request.serviced = true;
+            ++processed;
+        }
+        for (size_t scanned = 0; scanned < background.size() && processed < count; ++scanned)
+        {
+            if (processed >= minimum && budget &&
+                std::chrono::steady_clock::now() - started >= std::chrono::milliseconds(budget))
+                break;
+            Request& request = background[(start + scanned) % background.size()];
+            if (request.serviced) continue;
+            execute(request);
+            ++processed;
             m_idleAICursorGuid = request.guid.GetCounter();
         }
-        m_aiDeferred += background.size() - count;
+        auto const cost = std::chrono::steady_clock::now() - started;
+        if (budget && (cost >= std::chrono::milliseconds(budget) || sWorld.GetAverageDiff() >= 250))
+        {
+            m_idleAIBudgetPercent = std::max<uint32>(25, m_idleAIBudgetPercent - std::min<uint32>(25, m_idleAIBudgetPercent));
+            m_idleAIRecoveryStreak = 0;
+        }
+        else if (sWorld.GetAverageDiff() <= 120 &&
+            ++m_idleAIRecoveryStreak >= sWorld.getConfig(CONFIG_UINT32_MAP_IDLE_AI_RECOVERY))
+        {
+            m_idleAIBudgetPercent = std::min<uint32>(100, m_idleAIBudgetPercent + 10);
+            m_idleAIRecoveryStreak = 0;
+        }
+        // Count budget + minimum progress + GUID cursor: no population-specific
+        // thresholds and no permanently abandoned/latched background queue.
+        m_aiDeferred += background.size() - processed;
+        };
+        // Match the later ManTech correction: AI may mutate shared threat and
+        // units, so transfer the whole map batch and wait, never fan out bots.
+        // This is a separate pool, not a task queued behind its waiting owner.
+        auto done = sMapMgr.IdleBotAI().Submit(runIdleBatch);
+        done.get();
     }
 }
 
 void Map::DoUpdate(uint32 maxDiff)
 {
+    TurtleDiagnostics::Frame diagnosticFrame(m_archDiagnostics, GetId(), GetInstanceId(), ++m_archTick);
+    TurtleDiagnostics::Scope diagnosticTotal(TurtleDiagnostics::MapTotal);
+    if (m_archQueuedAt) TurtleDiagnostics::Record(TurtleDiagnostics::MapQueue, TurtleDiagnostics::Micros() - m_archQueuedAt);
     ExecutionWatch::ResetOnExit watchScope;
     ExecutionWatch::Set(ExecutionWatch::MapStart, GetId(), GetInstanceId());
     uint32 const now = WorldTimer::getMSTime();
@@ -1325,17 +1580,26 @@ void Map::Update(uint32 t_diff)
     UpdatePlayerAI(false);
     uint32 playersUpdateTime = WorldTimer::getMSTimeDiffToNow(updateMapTime) - sessionsUpdateTime;
 
+    // The idle-AI handoff has joined here; there is no concurrent map mutation.
+    UpdateSessionsMovementAndSpellsIfNeeded();
     ExecutionWatch::Set(ExecutionWatch::Cells, GetId(), GetInstanceId());
     UpdateCells(t_diff);
     uint32 activeCellsUpdateTime = WorldTimer::getMSTimeDiffToNow(updateMapTime) - playersUpdateTime - sessionsUpdateTime;
 
+    UpdateSessionsMovementAndSpellsIfNeeded();
     // Send world objects and item update field changes
     ExecutionWatch::Set(ExecutionWatch::ObjectUpdates, GetId(), GetInstanceId());
-    SendObjectUpdates();
+    {
+        TurtleDiagnostics::Scope diagnosticObjects(TurtleDiagnostics::SendObjects);
+        SendObjectUpdates();
+    }
     uint32 objectsUpdateTime = WorldTimer::getMSTimeDiffToNow(updateMapTime) - activeCellsUpdateTime - playersUpdateTime - sessionsUpdateTime;
 
     ExecutionWatch::Set(ExecutionWatch::Visibility, GetId(), GetInstanceId());
-    UpdateVisibilityForRelocations();
+    {
+        TurtleDiagnostics::Scope diagnosticVisibility(TurtleDiagnostics::Visibility);
+        UpdateVisibilityForRelocations();
+    }
     uint32 visibilityUpdateTime = WorldTimer::getMSTimeDiffToNow(updateMapTime) - objectsUpdateTime - activeCellsUpdateTime - playersUpdateTime - sessionsUpdateTime;
 
     UpdateSessionsMovementAndSpellsIfNeeded();
@@ -1398,6 +1662,13 @@ void Map::Update(uint32 t_diff)
 
 void Map::CompleteUpdate()
 {
+    // Continent completion is a separate manager job; instances complete inside
+    // DoUpdate. Never nest a Frame using the same summary (it can reset buckets).
+    std::unique_ptr<TurtleDiagnostics::Frame> diagnosticFrame;
+    if (!TurtleDiagnostics::current && TurtleDiagnostics::enabled.load(std::memory_order_relaxed))
+        diagnosticFrame.reset(new TurtleDiagnostics::Frame(m_archDiagnostics, GetId(), GetInstanceId(), m_archTick));
+    TurtleDiagnostics::Scope completion(TurtleDiagnostics::Completion);
+    TurtleDiagnostics::Scope gridMaintenance(TurtleDiagnostics::GridMaintenance);
     ExecutionWatch::ResetOnExit watchScope;
     ExecutionWatch::Set(ExecutionWatch::MapCompletion, GetId(), GetInstanceId());
     uint32 const t_diff = m_pendingUpdateDiff;
@@ -1415,6 +1686,8 @@ void Map::CompleteUpdate()
         }
     }
 
+    gridMaintenance.Finish();
+    TurtleDiagnostics::Scope scriptTime(TurtleDiagnostics::Scripts);
     ///- Process necessary scripts
     if (m_uiScriptedEventsTimer <= t_diff)
     {
@@ -3167,6 +3440,7 @@ WorldObject* Map::GetWorldObject(ObjectGuid guid)
         case HIGHGUID_PLAYER:
             return GetPlayer(guid);
         case HIGHGUID_GAMEOBJECT:
+        case HIGHGUID_TRANSPORT:
             return GetGameObject(guid);
         case HIGHGUID_UNIT:
             return GetCreature(guid);
@@ -3181,7 +3455,6 @@ WorldObject* Map::GetWorldObject(ObjectGuid guid)
             return corpse && corpse->IsInWorld() ? corpse : nullptr;
         }
         case HIGHGUID_MO_TRANSPORT:
-        case HIGHGUID_TRANSPORT:
         default:
             break;
     }
@@ -3260,72 +3533,44 @@ void Map::RemoveUnitFromMovementUpdate(Unit *unit)
 
 void Map::SendObjectUpdates()
 {
-    // VERY HEAVY LOAD in case of a lot of players at the same place
-    // ~2ms / object if 500 players in the visible area around
-    uint32 now = WorldTimer::getMSTime();
-    uint32 objectsCount = i_objectsToClientUpdate.size();
-    if (!objectsCount)
-        return;
+    if (i_objectsToClientUpdate.empty()) return;
     _processingSendObjUpdates = true;
-
-    // Compute maximum number of threads
-    uint32 threads = 1;
-    if (IsContinent())
-        threads = m_objectThreads->size() +1;
-    if (!_objUpdatesThreads)
-        _objUpdatesThreads = 1;
-    if (threads < _objUpdatesThreads)
-        _objUpdatesThreads = threads;
-    if (threads > objectsCount)
-        threads = objectsCount;
-    uint32 step = objectsCount / threads;
-
-    ASSERT(step > 0);
-    ASSERT(threads >= 1);
-
-    std::vector<decltype(i_objectsToClientUpdate)::iterator> t;
-    t.reserve(i_objectsToClientUpdate.size()); //t will not contain end!
-    for (auto it = i_objectsToClientUpdate.begin(); it != i_objectsToClientUpdate.end(); it++)
-        t.push_back(it);
-    std::atomic<int> ait(0);
-    uint32 timeout = sWorld.getConfig(CONFIG_UINT32_MAP_OBJECTSUPDATE_TIMEOUT);
-    auto f = [&t, &ait, beginTime=now, timeout](){
-        UpdateDataMapType update_players; // Player -> UpdateData
-        int it = ait++;
-        while (it < t.size())
-        {
-            (*t[it])->BuildUpdateData(update_players);
-            if (WorldTimer::getMSTimeDiffToNow(beginTime) > timeout)
-                break;
-            it = ait++;
-        }
-
-        for (UpdateDataMapType::iterator iter = update_players.begin(); iter != update_players.end(); ++iter)
-            iter->second.Send(iter->first->GetSession());
+    struct ResetFlag { bool& flag; ~ResetFlag() { flag = false; } } reset{_processingSendObjUpdates};
+    std::vector<Object*> objects(i_objectsToClientUpdate.begin(), i_objectsToClientUpdate.end());
+    auto& pool = sMapMgr.ObjectBuild();
+    size_t const configured = sWorld.getConfig(CONFIG_UINT32_MAP_OBJECT_BUILD_CHUNK);
+    size_t const chunkSize = std::max(configured, (objects.size() + 7) / 8);
+    size_t const chunks = (objects.size() + chunkSize - 1) / chunkSize;
+    std::vector<std::unique_ptr<UpdateDataMapType>> updates;
+    updates.reserve(chunks);
+    for (size_t n = 0; n < chunks; ++n) updates.emplace_back(new UpdateDataMapType);
+    auto build = [&objects, &updates, chunkSize](size_t chunk)
+    {
+        size_t const end = std::min(objects.size(), (chunk + 1) * chunkSize);
+        for (size_t i = chunk * chunkSize; i < end; ++i)
+            objects[i]->BuildUpdateData(*updates[chunk]);
     };
-    std::future<void> job;
-    if (m_objectThreads)
-         job = m_objectThreads->processWorkload();
-    f();
-    if (job.valid())
-        job.get();
-    if (ait >= i_objectsToClientUpdate.size()) //ait is increased before checks, so max value is `objectsCount + threads`
-        i_objectsToClientUpdate.clear();
-    else
-        i_objectsToClientUpdate.erase(t.front(), t[ait]);
-
-    // If we timeout, use more threads !
-    if (!i_objectsToClientUpdate.empty())
-        ++_objUpdatesThreads;
-    else
-        --_objUpdatesThreads;
-
-    _processingSendObjUpdates = false;
-#ifdef MAP_SENDOBJECTUPDATES_PROFILE
-    uint32 diff = WorldTimer::getMSTimeDiffToNow(now);
-    if (diff > 50)
-        sLog.outString("SendObjectUpdates in %04u ms [%u threads. %3u/%3u]", diff, threads, objectsCount - i_objectsToClientUpdate.size(), objectsCount);
+    bool parallel = IsContinent() && pool.Size() && objects.size() >= configured;
+#ifdef ENABLE_ELUNA
+    if (sElunaConfig->IsElunaEnabled()) parallel = false;
 #endif
+    _objUpdatesThreads = parallel ? uint32(pool.Size()) : 1;
+    if (parallel)
+    {
+        MapTaskJoin group;
+        group.tasks.reserve(chunks);
+        for (size_t n = 0; n < chunks; ++n)
+            group.tasks.push_back(pool.Submit([build, n] { build(n); }));
+        group.Get();
+    }
+    else
+        for (size_t n = 0; n < chunks; ++n) build(n);
+    // Each object belongs to only one build job. All jobs join before sending
+    // or changing map/session ownership. Preserve deterministic chunk order.
+    i_objectsToClientUpdate.clear();
+    for (auto& chunk : updates)
+        for (auto& update : *chunk)
+            update.second.Send(update.first->GetSession());
 }
 
 //#define MAP_UPDATEVISIBILITY_PROFILE
@@ -3737,8 +3982,10 @@ bool Map::GetWalkRandomPosition(Transport* transport, float& x, float& y, float&
     ASSERT(MaNGOS::IsValidMapCoord(x, y, z));
 
     // Find the navMeshQuery.
+    DetailedWork::Scope queryWork(DetailedWork::NavQuery);
     MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
     dtNavMeshQuery const* m_navMeshQuery = transport ? mmap->GetModelNavMeshQuery(transport->GetDisplayId()) : mmap->GetNavMeshQuery(GetId());
+    queryWork.Finish();
     float radius = maxRadius * rand_norm_f();
 
     // Find a valid position nearby.
@@ -3759,7 +4006,9 @@ bool Map::GetWalkRandomPosition(Transport* transport, float& x, float& y, float&
             dtQueryFilter filter;
             filter.setIncludeFlags(moveAllowedFlags);
             filter.setExcludeFlags(NAV_STEEP_SLOPES);
+            DetailedWork::Scope polyWork(DetailedWork::WalkPoly);
             dtPolyRef startRef = PathInfo::FindWalkPoly(m_navMeshQuery, point, filter, closestPoint);
+            polyWork.Finish();
             if (!startRef)
             {
                 mmapsCorrect = false;
@@ -3767,6 +4016,7 @@ bool Map::GetWalkRandomPosition(Transport* transport, float& x, float& y, float&
             }
 
             dtPolyRef randomPosRef = 0;
+            DetailedWork::Scope navWork(DetailedWork::RandomNav);
             dtStatus result = m_navMeshQuery->findRandomPointAroundCircle(startRef, closestPoint, maxRadius, &filter, rand_norm_f, &randomPosRef, point);
             if (dtStatusFailed(result) || !MaNGOS::IsValidMapCoord(point[2], point[0], point[1]))
             {
@@ -3818,6 +4068,7 @@ bool Map::GetWalkRandomPosition(Transport* transport, float& x, float& y, float&
         z += 0.5f; // Allow us a little error (mmaps not very precise regarding height computations)
     else
     {
+        DetailedWork::Scope heightWork(DetailedWork::WalkHeight);
         float vmapH = GetHeight(x, y, z);
         if (vmapH > z)
             z = vmapH;

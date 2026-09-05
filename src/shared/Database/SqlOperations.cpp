@@ -20,6 +20,7 @@
  */
 
 #include "SqlOperations.h"
+#include "ArchitectureDiagnostics.h"
 #include "SqlDelayThread.h"
 #include "DatabaseEnv.h"
 #include "DatabaseImpl.h"
@@ -133,7 +134,10 @@ void SqlResultQueue::Update(uint32 timeout)
             break;
         std::unique_ptr<MaNGOS::IQueryCallback> owned(callback);
         uint32 const start = WorldTimer::getMSTime();
-        owned->Execute();
+        {
+            TurtleDiagnostics::Scope diagnosticCallback(TurtleDiagnostics::Callback);
+            owned->Execute();
+        }
         uint32 const elapsed = WorldTimer::getMSTimeDiffToNow(start);
         if (elapsed >= 100)
             sLog.out(LOG_PERFORMANCE, "DB_CALLBACK_SLOW elapsed_ms=%u high_priority=%u pending=%zu",

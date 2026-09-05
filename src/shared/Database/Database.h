@@ -264,7 +264,7 @@ class Database
         //you should call it explicitly after your server successfully started up
         //NO ASYNC TRANSACTIONS DURING SERVER STARTUP - ONLY DURING RUNTIME!!!
         void AllowAsyncTransactions() { m_bAllowAsyncTransactions = true; }
-        inline void AddToDelayQueue(SqlOperation* op) { m_delayQueue->add(op); }
+        void AddToDelayQueue(SqlOperation* op);
         inline bool NextDelayedOperation(SqlOperation*& op) { return m_delayQueue->next(op); }
 
         inline void AddToSerialDelayQueue(int workerId, SqlOperation* op) { m_threadsBodies[workerId]->addSerialOperation(op); }

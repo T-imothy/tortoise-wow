@@ -26,6 +26,7 @@
 #include "Platform/Define.h"
 #include "Policies/Singleton.h"
 #include "Map.h"
+#include "MapTaskExecutor.h"
 #include "GridStates.h"
 #include <condition_variable>
 
@@ -169,6 +170,9 @@ class MapManager : public MaNGOS::Singleton<MapManager, MaNGOS::ClassLevelLockab
             return fmod(o, 2.0f*M_PI_F);
         }
 
+        MapTaskExecutor& CellDiscovery() { return *m_cellDiscovery; }
+        MapTaskExecutor& IdleBotAI() { return *m_idleBotAI; }
+        MapTaskExecutor& ObjectBuild() { return *m_objectBuild; }
         void RemoveAllObjectsInRemoveList();
 
         bool CanPlayerEnter(uint32 mapId, Player* player);
@@ -221,6 +225,9 @@ class MapManager : public MaNGOS::Singleton<MapManager, MaNGOS::ClassLevelLockab
 
         uint32 i_MaxInstanceId;
         std::unique_ptr<ThreadPool> m_threads;
+        std::unique_ptr<MapTaskExecutor> m_cellDiscovery;
+        std::unique_ptr<MapTaskExecutor> m_objectBuild;
+        std::unique_ptr<MapTaskExecutor> m_idleBotAI;
         bool asyncMapUpdating = false;
 
         // Instanced continent zones

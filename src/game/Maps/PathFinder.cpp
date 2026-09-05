@@ -17,6 +17,7 @@
  */
 
 #include "MoveMap.h"
+#include "ArchitectureDiagnostics.h"
 #include "GridMap.h"
 #include "Creature.h"
 #include "PathFinder.h"
@@ -74,6 +75,7 @@ bool PathInfo::calculate(float destX, float destY, float destZ, bool forceDest, 
 
 bool PathInfo::calculate(Vector3 const& start, Vector3 dest, bool forceDest, bool offsets)
 {
+    TurtleDiagnostics::Scope diagnosticPath(TurtleDiagnostics::Path);
     // A m_navMeshQuery object is not thread safe, but a same PathInfo can be shared between threads.
     // So need to get a new one.
     MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
@@ -642,6 +644,7 @@ uint32 PathInfo::fixupCorridor(dtPolyRef* path, const uint32 npath, const uint32
 
 int fixupShortcuts(dtPolyRef* path, int npath, dtNavMeshQuery const* navQuery)
 {
+    auto navRead = navQuery->getAttachedNavMesh()->acquireRead();
     if (npath < 3)
         return npath;
 

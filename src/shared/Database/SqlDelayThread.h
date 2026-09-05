@@ -42,7 +42,7 @@ class SqlDelayThread
 
 
         //process all enqueued requests
-        void ProcessRequests();
+        size_t ProcessRequests();
 
     public:
         SqlDelayThread(const char* InName, Database* db, SqlConnection* conn);
@@ -52,6 +52,7 @@ class SqlDelayThread
         bool Delay(SqlOperation* sql) { m_sqlQueue.add(sql); return true; }
         void addSerialOperation(SqlOperation *op);
         bool HasAsyncQuery();
+        size_t DrainRequests() { return ProcessRequests(); } // after all workers join
 
         virtual void Stop();                                ///< Stop event
         void run();                                 ///< Main Thread loop

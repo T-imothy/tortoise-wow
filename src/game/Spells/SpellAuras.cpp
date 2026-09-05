@@ -7302,6 +7302,22 @@ SpellAuraHolder::~SpellAuraHolder()
     delete _pveHeartBeatData;
 }
 
+bool SpellAuraHolder::CanDeferIdleUpdate() const
+{
+    // Only inert, self-cast permanent passives. All duration/heartbeat,
+    // periodic, area, channel and specialized aura work retains real cadence.
+    // Keep this next to Update so changes to its timer contract are visible.
+    if (!IsPermanent() || !IsPassive() || !IsPositive() || m_duration > 0 ||
+        _heartBeatRandValue || _pveHeartBeatData || !m_target ||
+        GetCasterGuid() != m_target->GetObjectGuid() || m_spellProto->IsChanneledSpell())
+        return false;
+    for (Aura const* aura : m_auras)
+        if (aura && (typeid(*aura) != typeid(Aura) || aura->IsPeriodic() ||
+            aura->IsAreaAura() || aura->IsPersistent()))
+            return false;
+    return true;
+}
+
 void SpellAuraHolder::Update(uint32 diff)
 {
     // Battements de coeur : 2 fonctionnements.

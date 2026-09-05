@@ -786,6 +786,10 @@ class WorldObject : public Object
                 explicit UpdateHelper(WorldObject * obj) : m_obj(obj) {}
                 ~UpdateHelper() { }
 
+                // Read without resetting: deferred background work must retain
+                // the real elapsed time used by spell, aura and regen clocks.
+                uint32 ElapsedTime(uint32 now) const { return m_obj->m_updateTracker.timeElapsed(now); }
+
                 void Update(uint32 time_diff)
                 {
                     m_obj->Update(m_obj->m_updateTracker.timeElapsed(), time_diff);

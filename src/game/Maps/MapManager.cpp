@@ -47,10 +47,15 @@ MapManager::MapManager()
     :
     i_gridCleanUpDelay(sWorld.getConfig(CONFIG_UINT32_INTERVAL_GRIDCLEAN)),
     i_MaxInstanceId(RESERVED_INSTANCES_LAST),
-    m_threads(new ThreadPool(sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_WORKER_THREADS), "MapOwners"))
+    m_threads(new ThreadPool(sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_WORKER_THREADS), "MapOwners")),
+    m_cellDiscovery(new MapTaskExecutor(sWorld.getConfig(CONFIG_UINT32_MAP_CELL_THREADS))),
+    m_objectBuild(new MapTaskExecutor(sWorld.getConfig(CONFIG_UINT32_MAP_OBJECT_BUILD_THREADS))),
+    m_idleBotAI(new MapTaskExecutor(sWorld.getConfig(CONFIG_UINT32_MAP_IDLE_BOT_THREADS),
+        [] { CharacterDatabase.ThreadStart(); }, [] { CharacterDatabase.ThreadEnd(); }))
 {
     i_timer.SetInterval(sWorld.getConfig(CONFIG_UINT32_INTERVAL_MAPUPDATE));
     m_threads->start<ThreadPool::MySQL<>>();
+    sLog.outString("MANTECH_IDLE_AI workers=%zu ownership=joined_map_batch", m_idleBotAI->Size());
 }
 
 MapManager::~MapManager()
@@ -341,6 +346,11 @@ void MapManager::Update(uint32 diff)
 
     uint32 mapsDiff = (uint32)i_timer.GetCurrent();
     asyncMapUpdating = true;
+    struct PhaseExit
+    {
+        bool& active;
+        ~PhaseExit() { sWorld.GetChannelBroadcaster()->DisableSendingMessages(); active = false; }
+    } phaseExit{asyncMapUpdating};
 	sWorld.GetChannelBroadcaster()->EnableSendingMessages(); // should be active only on async map updating
 
     uint32 const now = WorldTimer::getMSTime();
@@ -385,7 +395,10 @@ void MapManager::Update(uint32 diff)
     ThreadPool::workload_t work;
     work.reserve(maps.size());
     for (Map* map : maps)
+    {
+        map->MarkUpdateQueued();
         work.emplace_back([map, mapsDiff] { map->DoUpdate(mapsDiff); });
+    }
     runBatch(work);
 
     // Preserve Turtle's continent post-update boundary: scripts/grid cleanup

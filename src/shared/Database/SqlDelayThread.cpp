@@ -31,7 +31,7 @@ SqlDelayThread::SqlDelayThread(const char* InName, Database* db, SqlConnection* 
 SqlDelayThread::~SqlDelayThread()
 {
     //process all requests which might have been queued while thread was stopping
-    ProcessRequests();
+    while (ProcessRequests()) {}
     delete m_dbConnection;
 }
 
@@ -77,6 +77,8 @@ void SqlDelayThread::run()
         }
     }
 
+    // Preserve every accepted operation, not just one capped batch, on shutdown.
+    while (ProcessRequests()) {}
     #ifndef DO_POSTGRESQL
     mysql_thread_end();
     #endif
@@ -87,11 +89,27 @@ void SqlDelayThread::Stop()
     m_running = false;
 }
 
-void SqlDelayThread::ProcessRequests()
+size_t SqlDelayThread::ProcessRequests()
 {
     SqlOperation* s = nullptr;
-    while (m_dbEngine->NextDelayedOperation(s))
+    size_t processed = 0;
+
+    uint32 priorityProcessed = 0;
+    while (priorityProcessed++ < 32 && (m_prioritySerialDelayQueue.next(s) || m_priorityQueue.next(s)))
     {
+        ++processed;
+        bool result = s->Execute(m_dbConnection);
+        const auto& callback = s->GetCallback();
+        if (callback)
+            (*callback)(result);
+        delete s;
+    }
+
+    uint32 normalProcessed = 0;
+    while (normalProcessed++ < 64 && m_dbEngine->NextDelayedOperation(s))
+
+    {
+        ++processed;
         bool result = s->Execute(m_dbConnection);
         const auto& callback = s->GetCallback();
         if (callback)
@@ -102,10 +120,12 @@ void SqlDelayThread::ProcessRequests()
     // Process any serial operations for this worker
     while (m_serialDelayQueue.next(s))
     {
+        ++processed;
         bool result = s->Execute(m_dbConnection);
         const auto& callback = s->GetCallback();
         if (callback)
             (*callback)(result);
         delete s;
     }
+    return processed;
 }

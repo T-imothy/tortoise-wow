@@ -149,6 +149,7 @@ class SpellAuraHolder
         // FIN NOSTALRIUS
 
         bool IsPermanent() const { return m_permanent; }
+        bool CanDeferIdleUpdate() const;
         void SetPermanent(bool permanent) { m_permanent = permanent; }
         bool IsPassive() const { return m_isPassive; }
         void SetPassive(bool on) { m_isPassive = on; }

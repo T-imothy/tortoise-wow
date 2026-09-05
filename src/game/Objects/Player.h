@@ -1969,6 +1969,7 @@ class Player final: public Unit
         // Invalidates map-owned work, including near teleports within one map.
         uint64 m_mapWorkGeneration = 0;
         uint32 m_lastAIUpdateMs = 0;
+        uint32 m_backgroundAIDueSinceMs = 0;
         uint32 m_teleport_options;
         bool mSemaphoreTeleport_Near;
         bool mSemaphoreTeleport_Far;
@@ -2102,6 +2103,12 @@ class Player final: public Unit
             m_lastAIUpdateMs = now;
             return diff;
         }
+        uint32 BackgroundAIDueAge(uint32 now)
+        {
+            if (!m_backgroundAIDueSinceMs) m_backgroundAIDueSinceMs = now;
+            return now - m_backgroundAIDueSinceMs;
+        }
+        void ClearBackgroundAIDueAge() { m_backgroundAIDueSinceMs = 0; }
         void SetSemaphoreTeleportFar(bool semphsetting);
         void SetPendingFarTeleport(bool pending) { mPendingFarTeleport = pending; }
         void ExecuteTeleportNear();

@@ -20,6 +20,7 @@
  */
 
 #include "Util.h"
+#include "ArchitectureDiagnostics.h"
 #include "DatabaseEnv.h"
 #include "Config/Config.h"
 #include "Database/SqlOperations.h"
@@ -247,6 +248,16 @@ void Database::HaltDelayThread()
     for (uint32 i = 0; i < m_numAsyncWorkers; ++i)
         m_delayThreads[i].join();
 
+    // A final callback may have queued work to a worker that already exited.
+    // Keep all worker/connection objects alive until that tail also drains.
+    size_t drained;
+    do
+    {
+        drained = 0;
+        for (auto const& worker : m_threadsBodies)
+            drained += worker->DrainRequests();
+    } while (drained);
+
     m_threadsBodies.clear();
     m_delayThreads.clear();
 
@@ -355,10 +366,10 @@ bool Database::PExecuteLog(const char * format,...)
 
 QueryResult* Database::Query(const char* sql)
 {
-    WorkMetrics::Probe wait(WorkMetrics::DatabaseWait);
+    TurtleDiagnostics::Scope wait(TurtleDiagnostics::DatabaseWait);
     SqlConnection::Lock guard(getQueryConnection());
     wait.Finish();
-    WorkMetrics::Probe execution(WorkMetrics::DatabaseRead);
+    TurtleDiagnostics::Scope execution(TurtleDiagnostics::DatabaseRead);
     return guard->Query(sql);
 }
 
@@ -591,6 +602,16 @@ bool Database::RollbackTransaction()
     m_TransStorage->reset();
 
     return true;
+}
+
+void Database::AddToDelayQueue(SqlOperation* op)
+{
+    // Unkeyed writes have one FIFO lane. Reads can use all workers. Keep
+    // Turtle's explicit serial-ID affinity for keyed read-after-write chains.
+    if (m_numAsyncWorkers && !op->IsReadOnly())
+        m_threadsBodies[0]->addSerialOperation(op);
+    else
+        m_delayQueue->add(op);
 }
 
 void Database::AddToSerialDelayQueue(SqlOperation *op)
