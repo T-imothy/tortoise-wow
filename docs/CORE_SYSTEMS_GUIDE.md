@@ -529,3 +529,18 @@ not a separate navmesh. Unsupported area-cost/fish APIs are not enabled.
 CoordinatePathTest compiles production PathInfo with real Detour tiles and mock
 host lookup, covering valid routes, gaps, steep polygons, missing maps, invalid
 coordinates, reset and unit-owned requests. This does not validate live map assets.
+
+### Modular database dispatch and headless reclaim (2026-09-12)
+
+- Database.AutoUpdate.ModuleAuthUpdateName/ModuleCharUpdateName/ModuleWorldUpdateName
+  independently select module data/sql folders (auth/char/world by default).
+  Core folder settings still select the core migration tree and regional SQL.
+  This prevents a core using "character" from silently missing module "char"
+  migrations. Disabled-updater behavior, order and error propagation remain.
+- HeadlessSessionMgr::ReclaimForNetwork emits the existing generic
+  OnReleaseToClient callback only after validating the request, before session
+  reattachment/deletion. Module observers relinquish control, never delete the
+  session. Normal session ownership stays native.
+- ModuleMigrationDispatchTest and NativeHeadlessReclaimTest execute these native
+  bodies with deterministic service/session fixtures. Neither test executes
+  live SQL, opens a network client, or proves full character login acceptance.

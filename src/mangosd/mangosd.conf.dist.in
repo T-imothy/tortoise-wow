@@ -50,6 +50,11 @@ Database.AutoUpdate.AuthUpdateName = "auth"
 Database.AutoUpdate.CharUpdateName = "character"
 Database.AutoUpdate.WorldUpdateName = "world"
 
+# Module data/sql folder names are independent from the core migration tree.
+Database.AutoUpdate.ModuleAuthUpdateName = "auth"
+Database.AutoUpdate.ModuleCharUpdateName = "char"
+Database.AutoUpdate.ModuleWorldUpdateName = "world"
+
 # Database.AutoUpdate.AllowedModules. Comma-separated module names to include for
 # module SQL updates, or "all" to scan every enabled module.
 

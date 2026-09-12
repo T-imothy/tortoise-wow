@@ -748,3 +748,33 @@ if(MSVC)
     target_compile_options(ModulePathRetryTest PRIVATE /EHsc)
 endif()
 add_test(NAME ModulePathRetryTest COMMAND ModulePathRetryTest)
+
+extract_native_fragment("${CORE_ROOT}/src/shared/Database/AutoUpdater.cpp"
+    "    bool AutoUpdater::ProcessUpdates()" "    // End configured migration dispatch." NativeModuleMigrationDispatch.inc)
+add_executable(ModuleMigrationDispatchTest ModuleMigrationDispatchTest.cpp)
+target_compile_features(ModuleMigrationDispatchTest PRIVATE cxx_std_17)
+target_include_directories(ModuleMigrationDispatchTest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+if(MSVC)
+    target_compile_options(ModuleMigrationDispatchTest PRIVATE /EHsc)
+endif()
+add_test(NAME ModuleMigrationDispatchTest COMMAND ModuleMigrationDispatchTest)
+
+extract_native_fragment("${CORE_ROOT}/src/game/HeadlessSessionMgr.cpp"
+    "bool HeadlessSessionMgr::ReclaimForNetwork(" "void HeadlessSessionMgr::PromotePending()" NativeHeadlessReclaim.inc)
+add_executable(NativeHeadlessReclaimTest NativeHeadlessReclaimTest.cpp)
+target_compile_features(NativeHeadlessReclaimTest PRIVATE cxx_std_17)
+target_include_directories(NativeHeadlessReclaimTest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+if(MSVC)
+    target_compile_options(NativeHeadlessReclaimTest PRIVATE /EHsc)
+endif()
+add_test(NAME NativeHeadlessReclaimTest COMMAND NativeHeadlessReclaimTest)
+
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/runtime/RandomBotService.cpp"
+    "void RandomBotService::UpdateMaintenance(" "void RandomBotService::Update(uint32_t diff)" ModulePopulationMaintenance.inc)
+add_executable(ModulePopulationMaintenanceTest ModulePopulationMaintenanceTest.cpp)
+target_compile_features(ModulePopulationMaintenanceTest PRIVATE cxx_std_17)
+target_include_directories(ModulePopulationMaintenanceTest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+if(MSVC)
+    target_compile_options(ModulePopulationMaintenanceTest PRIVATE /EHsc)
+endif()
+add_test(NAME ModulePopulationMaintenanceTest COMMAND ModulePopulationMaintenanceTest)

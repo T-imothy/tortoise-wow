@@ -20,6 +20,8 @@
  */
 
 #include "HeadlessSessionMgr.h"
+#include "ScriptMgr.h"
+#include "ScriptObjects.h"
 
 #include "Database/DatabaseEnv.h"
 #include "AccountMgr.h"
@@ -308,6 +310,11 @@ bool HeadlessSessionMgr::ReclaimForNetwork(ObjectGuid characterGuid, WorldSessio
         entry.accountId != accountId || session->GetTransport() != SessionTransport::Headless ||
         !player)
         return false;
+
+    // Relinquish module-owned control while the original session/player are
+    // still valid. Observers release AI, not the core-owned session itself.
+    ScriptRegistry<PlayerScript>::ForEachEnabledHook(PLAYERHOOK_ON_RELEASE_TO_CLIENT,
+        [player](PlayerScript* script) { script->OnReleaseToClient(player); });
 
     if (MasterPlayer* master = session->GetMasterPlayer())
     {

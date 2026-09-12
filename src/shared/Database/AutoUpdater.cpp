@@ -500,6 +500,11 @@ namespace DBUpdater
         auto authUpdateFolder = sConfig.GetStringDefault("Database.AutoUpdate.AuthUpdateName", "Logon");
         auto charUpdateFolder = sConfig.GetStringDefault("Database.AutoUpdate.CharUpdateName", "Char");
         auto worldUpdateFolder = sConfig.GetStringDefault("Database.AutoUpdate.WorldUpdateName", "World");
+        // Core database folder names can differ from the module convention.
+        // In particular ManTech uses "character", while native modules use "char".
+        auto moduleAuthFolder = sConfig.GetStringDefault("Database.AutoUpdate.ModuleAuthUpdateName", "auth");
+        auto moduleCharFolder = sConfig.GetStringDefault("Database.AutoUpdate.ModuleCharUpdateName", "char");
+        auto moduleWorldFolder = sConfig.GetStringDefault("Database.AutoUpdate.ModuleWorldUpdateName", "world");
         bool sortByName = sConfig.GetBoolDefault("Database.AutoUpdate.SortByName", false);
         path folderPath{ pathString };
 #ifdef TW_SOURCE_MODULES_DIR
@@ -522,13 +527,13 @@ namespace DBUpdater
         if (!ProcessTargetUpdates(worldUpdatePath, &WorldDatabase, false, sortByName))
             return false;
 
-        if (!ProcessModuleUpdates(modulesPath, authUpdateFolder, &LoginDatabase, sortByName))
+        if (!ProcessModuleUpdates(modulesPath, moduleAuthFolder, &LoginDatabase, sortByName))
             return false;
 
-        if (!ProcessModuleUpdates(modulesPath, charUpdateFolder, &CharacterDatabase, sortByName))
+        if (!ProcessModuleUpdates(modulesPath, moduleCharFolder, &CharacterDatabase, sortByName))
             return false;
 
-        if (!ProcessModuleUpdates(modulesPath, worldUpdateFolder, &WorldDatabase, sortByName))
+        if (!ProcessModuleUpdates(modulesPath, moduleWorldFolder, &WorldDatabase, sortByName))
             return false;
 
 
@@ -556,4 +561,6 @@ namespace DBUpdater
         return true;
 
     }
+    // End configured migration dispatch.
+
 }

@@ -200,3 +200,42 @@ Still required before this can replace production:
 - No local MySQL/MariaDB server or Docker executable was found on PATH; an
   isolated database runtime still needs preparation. No live schema was used
   as a substitute for an isolated test instance.
+
+
+### Native integration follow-up
+
+- Fixed independent module/core SQL folder selection: our core "character"
+  setting otherwise skipped the module's "char" directory. Defaults preserve
+  module auth/char/world conventions; optional overrides support other layouts.
+- Wired the existing generic OnReleaseToClient observer before native headless
+  session replacement. The module now drops AI immediately on a valid reclaim.
+- 76/76 regressions passed (9.35 seconds), receipt `work/modular-reclaim-tests.log`.
+  Database dispatch tests do not execute SQL; reclaim tests use mock sessions.
+
+New database/population findings that remain unresolved:
+- Module char migration 20260824090003 drops ai_playerbot_random_bots,
+  ai_playerbot_tele_cache and ai_playerbot_rarity_cache. Its world counterpart
+  drops ai_playerbot_rpg_races. They are upstream cleanup migrations, not an
+  approved ManTech data migration. Preserve/reconcile legacy state before
+  allowing cleanup; no such SQL was executed during this work.
+- RandomBotFacade::SetValue/GetValue currently stores event values only in
+  process memory. The old core persisted some event state. Save/restart parity
+  requires an explicit state inventory and migration, not a blind table drop.
+- The new random service scans the full pool for recovery/strategy/gear work
+  once per cadence and snapshots target population at initialization. Its
+  bounded admission count alone does not preserve our 6000-bot maintenance and
+  dynamic reconciliation behavior.
+- The core LFT.BotFill service and module randomBotLftEnabled service both exist.
+  Select/reconcile one population owner before enabling generic AI-controlled
+  hooks that expose new bots to the old fill service. Do not double-fill queues.
+
+
+### Population maintenance port
+
+The expensive RandomBotService recovery/strategy/gear loop is now bounded by
+candidate count and a soft elapsed-time budget, with round-robin fairness and
+independent timer accounting. Player/record identity is resolved again after
+recovery. ModulePopulationMaintenanceTest uses 6,000 fixtures to verify coverage,
+both bounds, deferred timer progression and removal safety. This addresses the
+heavy-work loop noted above; cheap pool scans, persistence, dynamic population
+reconciliation and parallel AI dispatch still need work/runtime evidence.
