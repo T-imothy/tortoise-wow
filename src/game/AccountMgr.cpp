@@ -213,6 +213,7 @@ void AccountMgr::LoadGmLevels()
         case SEC_DEVELOPER:
         case SEC_ADMINISTRATOR:
         case SEC_SIGMACHAD:
+        case SEC_CONSOLE:
             if (m_accountSecurity.find(accountId) == m_accountSecurity.end() ||
                 m_accountSecurity[accountId] < secu)
                 m_accountSecurity[accountId] = secu;
