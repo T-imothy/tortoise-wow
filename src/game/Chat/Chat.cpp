@@ -151,7 +151,10 @@ ChatCommand * ChatHandler::getCommandTable()
     static ChatCommand characterCommandTable[] =
     {
         { "deleted",        SEC_DEVELOPER,     true, nullptr,                                         "", characterDeletedCommandTable },
-        { "erase",          SEC_CONSOLE,       true,  &ChatHandler::HandleCharacterEraseCommand,      "", nullptr },
+        // Keep permanent erasure restricted to the highest assignable account
+        // rank so the private, firewall-restricted SOAP service account can use
+        // the native Player::DeleteFromDB cleanup path.
+        { "erase",          SEC_SIGMACHAD,      true,  &ChatHandler::HandleCharacterEraseCommand,      "", nullptr },
         { "getname",        SEC_OBSERVER,      true,  &ChatHandler::HandleCharacterGetNameCommand,    "", nullptr },
         { "diffitems",      SEC_OBSERVER,      true,  &ChatHandler::HandleCharacterDiffItemsCommand,  "", nullptr },
         { "reputation",     SEC_DEVELOPER,     true,  &ChatHandler::HandleCharacterReputationCommand, "", nullptr },
