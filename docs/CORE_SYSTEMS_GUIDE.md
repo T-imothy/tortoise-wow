@@ -266,7 +266,7 @@ Knowing that a service touches `SPELL_EFFECT_LEARN_SPELL` is only the start. The
   match/node/team validation remain. Attempt spacing uses the existing
   per-bot qualified `last spell cast time` value, never a shared GUID map.
   `UpstreamAbCaptureTest` covers the extracted entry/state/throttle boundaries.
-  Null-owner PathInfo calls return NOPATH, not partial paths; native AB discovery
+  Null-owner PathInfo calls without an explicit map return NOPATH; native AB discovery
   retains range/eligibility/capture checks; bot broadcasts honor their global gate.
   PetIsDeadValue caches only its database fallback per value instance, not live
   pet state, and Reset/live-pet observations invalidate that fallback. Do not
@@ -516,3 +516,16 @@ module owns the logger and registers its callbacks; the core has no logging
 symbol dependency on it. Existing aura-effect apply hooks provide confirmed
 apply observations. These contracts require both optional-build configurations;
 runtime acceptance remains pending.
+
+### Modular coordinate pathfinder contract (2026-09-12)
+
+PathInfo's map constructor now supports explicit start/end coordinate queries
+through the native Detour path algorithm. Unit-owned behavior stays on the same
+implementation. Coordinate callers must provide valid finite coordinates and
+loaded map tiles; they exclude steep polygons and cannot force a destination.
+Missing meshes/tiles fail closed. Reset preserves the strict coordinate filter.
+The per-thread query is map-scoped, as in native unit pathfinding; instanceId is
+not a separate navmesh. Unsupported area-cost/fish APIs are not enabled.
+CoordinatePathTest compiles production PathInfo with real Detour tiles and mock
+host lookup, covering valid routes, gaps, steep polygons, missing maps, invalid
+coordinates, reset and unit-owned requests. This does not validate live map assets.

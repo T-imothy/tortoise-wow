@@ -67,8 +67,9 @@ class PathInfo
 {
     public:
         PathInfo(Unit const* owner);
-        // bot calls PathFinder(mapId, instanceId) for global map paths.
-        PathInfo(uint32 /*mapId*/, uint32 /*instanceId*/) : PathInfo((Unit const*)nullptr) {}
+        // Coordinate queries use the same native navmesh and smoothing as a
+        // moving unit, without inventing a Player or permitting direct shortcuts.
+        PathInfo(uint32 mapId, uint32 instanceId);
         // bot calls PathFinder(player, true) for transport pathing.
         PathInfo(Unit const* owner, bool /*offsets*/) : PathInfo(owner) {}
         ~PathInfo();
@@ -134,6 +135,7 @@ class PathInfo
         Vector3        m_actualEndPosition;  // {x, y, z} of the closest possible point to given destination
         Transport*     m_transport;
         const Unit* const       m_sourceUnit;       // the unit that is moving
+        uint32 m_coordinateMapId = UINT32_MAX; // explicit ownerless query context
         const dtNavMesh*        m_navMesh;          // the nav mesh
         const dtNavMeshQuery*   m_navMeshQuery;     // the nav mesh query used to find the path
         uint32          m_targetAllowedFlags;

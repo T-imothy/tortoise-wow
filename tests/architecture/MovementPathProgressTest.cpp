@@ -14,7 +14,7 @@ struct WorldPosition;
 std::vector<std::vector<WorldPosition>> responses;
 struct WorldPosition {
  unsigned map=1;float x=0;WorldPosition(float px=0):x(px){}
- unsigned getMapId()const{return map;}
+ unsigned GetMapId()const{return map;}unsigned getMapId()const{return map;}
  float distance(WorldPosition const& p)const{return std::fabs(x-p.x);}
  bool isPathTo(std::vector<WorldPosition> const& p)const{return !p.empty()&&distance(p.back())<.01f;}
  std::vector<WorldPosition> getPathStepFrom(WorldPosition const&,std::unique_ptr<PathFinder>&,Unit const*)const{if(responses.empty())return {};auto p=responses.front();responses.erase(responses.begin());return p;}

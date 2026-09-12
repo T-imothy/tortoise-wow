@@ -11,9 +11,9 @@ runtime acceptance. Do not mark complete until equivalent behavior is establishe
 | Required area | Evidence / examples | Migration status |
 | --- | --- | --- |
 | Complete architecture work | Joined map ownership; real-client priority; bounded maintenance and admission; AI cadence; memory/cache lifecycle; safe async callbacks; 0d9d09e5, 3833da48 | Core changes retained during merge; new module scheduling adaptation and validation pending |
-| Thorn Gorge | Rules, gates, spawn containment, rewards, objectives, flag lifecycle/presentation, pathing, mounting, client map/bridge assets; a80ca1d1 and predecessors | Core/assets preserved in history and tree; module bot objectives and runtime validation pending |
+| Thorn Gorge | Rules, gates, spawn containment, rewards, objectives, flag lifecycle/presentation, pathing, mounting, client map/bridge assets; a80ca1d1 and predecessors | Core/assets preserved in history and tree; module queue/objectives/carrier/mount behavior ported and focused tests pass; runtime validation pending |
 | SOAP | Portable optional build and shutdown; dd9b7b93; character erase 0fe5b1d8; console-ranked service account 37aee50d | Retained; optional builds and lifecycle regression pass; live service behavior pending |
-| Flight paths and movement | IDs, cache geometry, route convergence, distributed destinations, taxi handoff; b68dddd3 through 258e6db5 | Native taxi-ID/sparse-node/cached-cost refresh ported; selected-module regression passes; handoff, route selection and movement audit still pending |
+| Flight paths and movement | IDs, cache geometry, route convergence, distributed destinations, taxi handoff; b68dddd3 through 258e6db5 | Native taxi-ID/sparse-node/cached-cost refresh ported; selected-module regression passes; native handoff, single-owner movement, mounting and cached geometry ported; route policy retained; runtime and remaining movement/transition audit pending |
 | CMaNGOS AHBot | Bounded market, profession supply, overrides, rebuilding, ownership/mail safety; 0c322d52, 94c76b96 | Ported to TortoiseBots/ahbot with exclusive controller selection; focused market/ownership/settlement and command tests pass; module-enabled build passes; runtime validation pending |
 | Admin commands | AH commands; playable rank five; GM flight; SOAP/account permissions | Preserve native command security/behavior and migrate module-owned commands deliberately |
 | Trainer fixes | Atomic purchases 32826645; native pet cast 5f9c0b7a; verify learning before payment b2d5a854 | All in baseline ancestry; TrainerPurchaseTest passed on candidate; live trainer variants pending |
@@ -153,13 +153,50 @@ migration workspace. The saved module-enabled offline artifact has SHA-256
 Still required before this can replace production:
 - Joined map AI scheduling plus thread-safe shared module state and lifecycle
   transitions. Sagiroth currently drives all AI in the world-owner update loop.
-- Port/reconcile Thorn Gorge bot objectives, mounting and safe traversal.
+- Live-validate ported Thorn Gorge queue/objectives/mounting; finish generic jump/transition handling.
 - Compare all flight-master, taxi handoff and route-selection fixes. The current
-  module disables walking graph generation for its pinned core; resolve the
-  capability against this core instead of silently accepting direct movement.
+  module now uses native coordinate pathfinding for opt-in walking generation;
+  verify real map assets and route connectivity in isolated preparation.
 - Remove the retired bot tree and remaining legacy command/lifetime stubs only
   after replacements and tests exist. Adapt legacy tests to active code paths.
 - Review random-account provisioning, population/admission, LFT/BG fill,
   native data migration order, transport behavior and shared diagnostic state.
 - Finish optional-build matrix and isolated database/client acceptance. No
   production database, running server or client assets have been changed.
+
+### Travel checkpoint (2026-09-12)
+
+- Active module now supplies Thorn queue/strategy/value/action behavior, mount
+  preparation, safe native taxi handoff, strict ground-route handling and
+  single-owner movement dispatch. Cached route geometry and opt-in walking graph
+  generation use the native coordinate pathfinder.
+- 72/72 architecture tests passed (5.23 seconds) in
+  `work/modular-travel-lifecycle-tests.log`. Carrier/mount/taxi/path tests now
+  extract the selected module. ModuleTravelGenerationTest covers startup opt-in,
+  failure propagation, bounded cost work and cached geometry. CoordinatePathTest
+  uses production pathfinding with real Detour tiles and mock host services.
+- Other legacy tests still explicitly target reference code until ported. No
+  runtime gameplay or architecture performance parity is claimed by these tests.
+- The previous saved binary/hash above is historical and predates these ports.
+  Current build receipts are `work/modular-walking-build.log` and the incremental
+  travel build. Production databases, processes and client assets remain unchanged.
+
+
+### Ground recovery and scheduler classification checkpoint
+
+- Generic bounded jump recovery and failed-path retry invalidation are ported.
+  GroundTraversalTest now extracts TortoiseBots. Native route preference test
+  now includes the active module's TravelRoutePolicy.
+- Core machine-driven/critical hooks are connected; the human-interest bug
+  (checking the bot roster for human observers) is fixed with instance-safe
+  network-player/camera checks. This is classification only. Parallel map AI
+  dispatch and shared-state/lifecycle migration are still pending.
+- 74/74 architecture regressions passed in 5.93 seconds, receipt
+  `work/modular-ground-tests.log`. Generic jump, retry timer wrap, 64-bit
+  transition invalidation and human-interest boundaries are covered.
+- Baseline build cache confirms production uses Release, SOAP on, Eluna off,
+  Discord off, extractors off, LTO on. Candidate checks so far use LTO off;
+  the matching LTO build and final bots-disabled build remain required.
+- No local MySQL/MariaDB server or Docker executable was found on PATH; an
+  isolated database runtime still needs preparation. No live schema was used
+  as a substitute for an isolated test instance.

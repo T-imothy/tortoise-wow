@@ -257,9 +257,9 @@ add_executable(BotRetryIntegrationTest BotRetryIntegrationTest.cpp)
 target_compile_features(BotRetryIntegrationTest PRIVATE cxx_std_17)
 target_include_directories(BotRetryIntegrationTest PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 add_test(NAME BotRetryIntegrationTest COMMAND BotRetryIntegrationTest)
-extract_native_fragment("${TRAVEL_ROOT}/strategy/actions/MovementActions.cpp"
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/strategy/actions/MovementActions.cpp"
     "bool MovementAction::UseTaxi(" "bool MovementAction::MoveOnTransport(" BotTaxiUse.inc)
-extract_native_fragment("${TRAVEL_ROOT}/strategy/actions/MovementActions.cpp"
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/strategy/actions/MovementActions.cpp"
     "    //Taxi handling: Start taxi" "   //Transport handling:" BotTaxiLeg.inc)
 add_executable(BotTaxiIntegrationTest BotTaxiIntegrationTest.cpp)
 target_compile_features(BotTaxiIntegrationTest PRIVATE cxx_std_17)
@@ -595,9 +595,9 @@ endif()
 add_test(NAME ThornMovementDiagnosticsTest COMMAND ThornMovementDiagnosticsTest)
 extract_native_fragment("${CORE_ROOT}/src/game/Battlegrounds/BattleGround.cpp"
     "bool BattleGround::AddObject(" "//some doors aren't despawned" BattlegroundObjectScaleNative.inc)
-extract_native_fragment("${TRAVEL_ROOT}/strategy/triggers/PvpTriggers.cpp"
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/strategy/triggers/PvpTriggers.cpp"
     "bool ThornFlagDelivery::IsActive()" "#endif" ThornCarrierTriggerNative.inc)
-extract_native_fragment("${TRAVEL_ROOT}/strategy/generic/BattlegroundStrategy.cpp"
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/strategy/generic/BattlegroundStrategy.cpp"
     "void ThornGorgeStrategy::InitNonCombatTriggers(" "#endif" ThornCarrierStrategyNative.inc)
 extract_native_fragment("${CORE_ROOT}/src/game/Battlegrounds/BattleGroundTG.cpp"
     "bool BattleGroundTG::GetObjective(" "void BattleGroundTG::Trace(" ThornObjectiveNative.inc)
@@ -607,9 +607,9 @@ extract_native_fragment("${CORE_ROOT}/src/game/Maps/PathFinder.cpp"
     "void PathInfo::createFilter()" "void PathInfo::updateFilter()" PlayerWalkableFilterNative.inc)
 extract_native_fragment("${CORE_ROOT}/src/game/Maps/PathFinder.cpp"
     "dtPolyRef PathInfo::getPolyByLocation(" "void PathInfo::BuildPolyPath(" PlayerWalkableLookupNative.inc)
-extract_native_fragment("${TRAVEL_ROOT}/strategy/actions/MovementActions.cpp"
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/strategy/actions/MovementActions.cpp"
     "bool JumpAction::TryGroundTraversal(" "bool JumpAction::Execute(" GroundTraversalNative.inc)
-extract_native_fragment("${TRAVEL_ROOT}/WorldPosition.cpp"
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/WorldPosition.cpp"
     "std::vector<WorldPosition> WorldPosition::getPathFromPath(" "bool WorldPosition::ClosestCorrectPoint(" MovementPathProgressNative.inc)
 foreach(test IN ITEMS BattlegroundObjectScaleTest ThornCarrierStrategyTest ThornObjectiveAssignmentTest ThornClientStateTest PlayerWalkableFilterTest GroundTraversalTest MovementPathProgressTest)
     add_executable(${test} ${test}.cpp)
@@ -622,13 +622,13 @@ foreach(test IN ITEMS BattlegroundObjectScaleTest ThornCarrierStrategyTest Thorn
     add_test(NAME ${test} COMMAND ${test})
 endforeach()
 
-extract_native_fragment("${TRAVEL_ROOT}/strategy/actions/MovementActions.cpp"
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/strategy/actions/MovementActions.cpp"
     "TravelPath MovementAction::ResolveMovePath(" "bool MovementAction::HandleSpecialMovement(" StrictResolverNative.inc)
 extract_native_fragment("${CORE_ROOT}/src/game/Movement/spline/MoveSplineInit.cpp"
     "void MoveSplineInit::Move(PathFinder const*" "// A map can change workers" StrictSplineMoveNative.inc)
 extract_native_fragment("${CORE_ROOT}/src/game/Movement/spline/MoveSplineInit.h"
     "    inline void MoveSplineInit::MoveTo(float" "    inline void MoveSplineInit::SetFacing(Vector3" StrictSplineToNative.inc)
-extract_native_fragment("${TRAVEL_ROOT}/strategy/actions/CheckMountStateAction.cpp"
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/strategy/actions/CheckMountStateAction.cpp"
     "    if (hasEnemy)" "    bool IsMounted" MountTargetDecisionNative.inc)
 foreach(test IN ITEMS StrictPathHandoffTest MountTargetDecisionTest)
     add_executable(${test} ${test}.cpp)
@@ -640,7 +640,7 @@ foreach(test IN ITEMS StrictPathHandoffTest MountTargetDecisionTest)
     add_test(NAME ${test} COMMAND ${test})
 endforeach()
 
-extract_native_fragment("${TRAVEL_ROOT}/strategy/actions/MovementActions.cpp"
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/strategy/actions/MovementActions.cpp"
     "bool MovementAction::TryMountForTravel(" "bool MovementAction::MoveTo2(" TravelMountPreparationNative.inc)
 add_executable(TravelMountPreparationTest TravelMountPreparationTest.cpp)
 target_compile_features(TravelMountPreparationTest PRIVATE cxx_std_17)
@@ -677,3 +677,74 @@ if(MSVC)
     target_compile_options(NativeModuleCommandPermissionTest PRIVATE /EHsc)
 endif()
 add_test(NAME NativeModuleCommandPermissionTest COMMAND NativeModuleCommandPermissionTest)
+
+# Active module dispatch must choose a single native movement owner.
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/strategy/actions/MovementActions.cpp"
+    "void MovementAction::DispatchMovement(" "Unit* MovementAction::GetMover(" ModuleMovementDispatchNative.inc)
+add_executable(ModuleMovementDispatchTest ModuleMovementDispatchTest.cpp)
+target_compile_features(ModuleMovementDispatchTest PRIVATE cxx_std_17)
+target_include_directories(ModuleMovementDispatchTest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+if(MSVC)
+    target_compile_options(ModuleMovementDispatchTest PRIVATE /EHsc)
+endif()
+add_test(NAME ModuleMovementDispatchTest COMMAND ModuleMovementDispatchTest)
+
+extract_native_fragment("${CORE_ROOT}/src/game/Maps/PathFinder.h"
+    "#define MAX_PATH_LENGTH" "#endif" CoordinatePathClass.inc)
+extract_native_fragment("${CORE_ROOT}/src/game/Maps/PathFinder.cpp"
+    "PathInfo::PathInfo(const Unit*" "// Nostalrius\nbool PathInfo::UpdateForCaster(" CoordinatePathImplementation.inc)
+extract_native_fragment("${CORE_ROOT}/src/game/Maps/PathFinder.cpp"
+    "bool PathInfo::inRangeYZX(" "// End native path math." CoordinatePathMath.inc)
+extract_native_fragment("${CMAKE_CURRENT_SOURCE_DIR}/NavMeshLifetimeTest.cpp"
+    "static dtTileRef AddFlatTile(" "static void CheckGate(" CoordinatePathFlatTile.inc)
+add_executable(CoordinatePathTest CoordinatePathTest.cpp
+    ${DETOUR_DIR}/Source/DetourAlloc.cpp ${DETOUR_DIR}/Source/DetourAssert.cpp
+    ${DETOUR_DIR}/Source/DetourCommon.cpp ${DETOUR_DIR}/Source/DetourNavMesh.cpp
+    ${DETOUR_DIR}/Source/DetourNavMeshBuilder.cpp ${DETOUR_DIR}/Source/DetourNavMeshQuery.cpp
+    ${DETOUR_DIR}/Source/DetourNode.cpp)
+target_compile_features(CoordinatePathTest PRIVATE cxx_std_17)
+target_compile_definitions(CoordinatePathTest PRIVATE DT_VIRTUAL_QUERYFILTER=1)
+target_include_directories(CoordinatePathTest PRIVATE ${DETOUR_DIR}/Include ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(CoordinatePathTest PRIVATE Threads::Threads)
+if(MSVC)
+    target_compile_options(CoordinatePathTest PRIVATE /EHsc)
+endif()
+add_test(NAME CoordinatePathTest COMMAND CoordinatePathTest)
+
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/TravelNode.cpp"
+    "void TravelNodeMap::generateAll()" "void TravelNodeMap::printMap()" ModuleGenerateAll.inc)
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/TravelNode.cpp"
+    "void TravelNodeMap::calculatePathCosts()" "void TravelNodeMap::generatePaths(" ModulePathCosts.inc)
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/TravelNode.cpp"
+    "bool TravelNodePath::recalculateGeometry()" "//The cost to travel this path." ModuleGeometry.inc)
+add_executable(ModuleTravelGenerationTest ModuleTravelGenerationTest.cpp)
+target_compile_features(ModuleTravelGenerationTest PRIVATE cxx_std_17)
+target_include_directories(ModuleTravelGenerationTest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+if(MSVC)
+    target_compile_options(ModuleTravelGenerationTest PRIVATE /EHsc)
+endif()
+add_test(NAME ModuleTravelGenerationTest COMMAND ModuleTravelGenerationTest)
+
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/PlayerbotAI.cpp"
+    "bool PlayerbotAI::HasPlayerNearby(WorldPosition pos," "bool PlayerbotAI::HasPlayerNearby(float" ModuleHumanInterest.inc)
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/host/BotPlayerAdapter.cpp"
+    "bool BotPlayerAdapter::IsMachineDriven(" "void BotPlayerAdapter::OnLogin(" ModuleSchedulerTraits.inc)
+add_executable(ModuleHumanInterestTest ModuleHumanInterestTest.cpp)
+target_compile_features(ModuleHumanInterestTest PRIVATE cxx_std_17)
+target_include_directories(ModuleHumanInterestTest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+if(MSVC)
+    target_compile_options(ModuleHumanInterestTest PRIVATE /EHsc)
+endif()
+add_test(NAME ModuleHumanInterestTest COMMAND ModuleHumanInterestTest)
+
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/strategy/actions/MovementActions.cpp"
+    "    int32 const destinationCellX" "    bool detailedMove" ModulePathFailureGate.inc)
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/strategy/values/LastMovementValue.h"
+    "        void clearPathFailure()" "        void Set(Unit*" ModuleClearPathFailure.inc)
+add_executable(ModulePathRetryTest ModulePathRetryTest.cpp)
+target_compile_features(ModulePathRetryTest PRIVATE cxx_std_17)
+target_include_directories(ModulePathRetryTest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+if(MSVC)
+    target_compile_options(ModulePathRetryTest PRIVATE /EHsc)
+endif()
+add_test(NAME ModulePathRetryTest COMMAND ModulePathRetryTest)

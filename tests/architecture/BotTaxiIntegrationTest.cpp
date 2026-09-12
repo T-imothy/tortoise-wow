@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
@@ -5,7 +6,7 @@
 #include <map>
 #include <set>
 #include <vector>
-using uint32=uint32_t; using ObjectGuid=uint32;
+using uint64=uint64_t; using uint32=uint32_t; using ObjectGuid=uint32;
 #define CHECK(x) do {if(!(x)){std::cerr<<"line "<<__LINE__<<": " #x <<'\n';std::exit(1);}}while(0)
 constexpr int ALLIANCE=1, UNIT_NPC_FLAG_FLIGHTMASTER=1;
 constexpr float INTERACTION_DISTANCE=5;
@@ -20,6 +21,7 @@ struct TaxiMask {std::set<uint32> known; bool IsTaximaskNodeKnown(uint32 n){retu
 struct Session {TaxiMask* mask=nullptr; bool learn=true; int learns=0; void SendLearnNewTaxiNode(Creature* c){++learns;if(learn)mask->known.insert(c->node);}};
 struct Point {float distance=0; float sqDistance(Player*){return distance*distance;}};
 struct Player {
+    TaxiMask& GetTaxi(){return m_taxi;} void CleanupFlagsOnTaxiPathFinished(){}
     TaxiMask m_taxi; Session session{&m_taxi}; Creature npc; uint32 money=100; bool cheat=false, activation=true; int activates=0,teleports=0,liveLookups=0,team=ALLIANCE;
     int GetTeam(){return team;} bool isTaxiCheater(){return cheat;}
     Creature* GetNPCIfCanInteractWith(ObjectGuid,int){return npc.interactable?&npc:nullptr;}
@@ -84,7 +86,8 @@ int main(){
     ai.bot.team=0;ai.bot.m_taxi.known={1,2};CHECK(MovementAction::UseTaxi(&ai,1,true));
     ai.bot.cheat=true;ai.bot.m_taxi.known.clear();CHECK(MovementAction::UseTaxi(&ai,1,false));
     sTaxiNodesStore.rows.erase(2);CHECK(!MovementAction::UseTaxi(&ai,1,false));
-    ai.click=true;CHECK(MovementAction::UseTaxi(&ai,999,false));
+    // Turtle has no later-expansion spell-click taxi fallback.
+    ai.click=true;CHECK(!MovementAction::UseTaxi(&ai,999,false));
     // Captured live mismatch: the old cached 272 is 71->5, not Southshore.
     // Correcting the graph to native 99 (14->7) must satisfy the existing
     // source/knowledge checks without weakening or bypassing the adapter.

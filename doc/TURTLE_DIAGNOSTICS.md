@@ -1146,3 +1146,12 @@ The independent bounded Thorn movement/spline diagnostics remain in place.
 
 This is not evidence that the new AI preserves prior parallel logging safety:
 the map-scheduling port and shared logger state audit remain migration gates.
+
+### Modular travel checkpoint, 2026-09-12
+
+No new per-tick movement log was added by the route/generic recovery port.
+Travel preparation reports missing datasets, pending generation and failed cost
+work; existing observability and core Thorn diagnostics remain separately
+controlled. The old TryGroundTraversal-specific BG trace is not transplanted.
+Per-match movement evidence and architecture load telemetry still require an
+isolated runtime acceptance run; unit-test timing is not server performance.

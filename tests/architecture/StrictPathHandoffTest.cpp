@@ -18,15 +18,16 @@ struct Unit{int bg=6;bool strict=true;int type=1;BattleGroundTG battle;int GetBa
 struct WorldPosition{
  float x=0,y=0,z=0;uint32 map=821;
  float distance(const WorldPosition& p)const{return std::sqrt((x-p.x)*(x-p.x)+(y-p.y)*(y-p.y)+(z-p.z)*(z-p.z));}
- uint32 getMapId()const{return map;}float getX()const{return x;}float getY()const{return y;}float getZ()const{return z;}
+ uint32 GetMapId()const{return map;}uint32 getMapId()const{return map;}float getX()const{return x;}float getY()const{return y;}float getZ()const{return z;}
  std::vector<WorldPosition> getPathTo(const WorldPosition&,Unit*)const;
+ std::vector<WorldPosition> GetPathTo(const WorldPosition& p,Unit* u)const{return getPathTo(p,u);}
 };
 std::vector<WorldPosition> generated;
 std::vector<WorldPosition> WorldPosition::getPathTo(const WorldPosition&,Unit*)const{return generated;}
-struct TravelPath{std::vector<WorldPosition> p;bool empty()const{return p.empty();}WorldPosition getBack()const{return p.back();}void addPath(std::vector<WorldPosition> v){p=v;}void addPoint(WorldPosition v){p.push_back(v);}};
+struct TravelPath{std::vector<WorldPosition> p;bool empty()const{return p.empty();}WorldPosition GetBack()const{return p.back();}WorldPosition getBack()const{return p.back();}void addPath(std::vector<WorldPosition> v){p=v;}void addPoint(WorldPosition v){p.push_back(v);}};
 struct LastMovement{TravelPath lastPath;};
 struct Config{float sightDistance=60;}sPlayerbotAIConfig;
-struct Nodes{std::vector<int> getNodes(){return {};}TravelPath getFullPath(WorldPosition,WorldPosition,Unit*){return {};}}sTravelNodeMap;
+struct Nodes{std::vector<int> GetNodes(){return {};}TravelPath GetFullPath(WorldPosition,WorldPosition,Unit*){return {};}std::vector<int> getNodes(){return {};}TravelPath getFullPath(WorldPosition,WorldPosition,Unit*){return {};}}sTravelNodeMap;
 struct MovementAction{Unit* bot;TravelPath ResolveMovePath(const WorldPosition&,const WorldPosition&,Unit*,LastMovement&,bool);};
 #include "StrictResolverNative.inc"
 enum{PATHFIND_NORMAL=1,PATHFIND_INCOMPLETE=2,PATHFIND_NOPATH=4,PATHFIND_SHORTCUT=8,PATHFIND_NOT_USING_PATH=16,PATHFIND_FLYPATH=32,PATHFIND_UNDERWATER=64};
