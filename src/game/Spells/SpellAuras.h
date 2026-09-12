@@ -81,6 +81,7 @@ class Unit;
 class Player;
 class Item;
 class WorldObject;
+class Player;
 class DynamicObject;
 class SpellEntry;
 struct AuraScript;

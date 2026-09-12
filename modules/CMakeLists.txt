@@ -13,7 +13,7 @@ set(MODULES_ENABLED_MODULES)
 # It gets its own static library instead - still fully static-linked into
 # mangosd (no export/import boundary, since core and playerbots call into
 # each other directly with no dllexport plumbing), just a second archive.
-set(MODULES_SPLIT_STATIC_MODULES mod-playerbots)
+set(MODULES_SPLIT_STATIC_MODULES mod-playerbots TortoiseBots)
 set(MODULES_PLAYERBOTS_STATIC_SOURCES)
 set(MODULES_PLAYERBOTS_PUBLIC_INCLUDES)
 
@@ -58,12 +58,21 @@ set(MODULES_COMMON_INCLUDES
   ${CMAKE_SOURCE_DIR}/src/game/Movement/spline
   ${CMAKE_SOURCE_DIR}/src/game/Objects
   ${CMAKE_SOURCE_DIR}/src/game/OutdoorPvP
-  ${CMAKE_SOURCE_DIR}/src/game/PlayerBots
   ${CMAKE_SOURCE_DIR}/src/game/Protocol
   ${CMAKE_SOURCE_DIR}/src/game/Spells
   ${CMAKE_SOURCE_DIR}/src/game/Threat
   ${CMAKE_SOURCE_DIR}/src/game/Transports
   ${CMAKE_SOURCE_DIR}/src/game/vmap
+  ${CMAKE_SOURCE_DIR}/src/game/LFT
+  ${CMAKE_SOURCE_DIR}/src/game/MapNodes
+  ${CMAKE_SOURCE_DIR}/src/game/PacketBroadcast
+  ${CMAKE_SOURCE_DIR}/src/game/Logging
+  ${CMAKE_SOURCE_DIR}/src/game/Shop
+  ${CMAKE_SOURCE_DIR}/src/game/TWDebuff
+  ${CMAKE_SOURCE_DIR}/src/game/GuildBank
+  ${CMAKE_SOURCE_DIR}/src/game/HttpApi
+  ${CMAKE_SOURCE_DIR}/src/game/DiscordBot
+  ${CMAKE_SOURCE_DIR}/src/game/Analysis
   ${CMAKE_SOURCE_DIR}/dep/include
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation
   ${CMAKE_SOURCE_DIR}/dep/include/g3dlite
@@ -235,6 +244,11 @@ foreach(SOURCE_MODULE ${MODULES_MODULE_LIST})
   endif()
 endforeach()
 
+# Migration must never register two independent bot session/AI owners.
+if("TortoiseBots" IN_LIST MODULES_ENABLED_MODULES AND "mod-playerbots" IN_LIST MODULES_ENABLED_MODULES)
+  message(FATAL_ERROR "Select TortoiseBots or the retired mod-playerbots, never both. Native migration uses BUILD_PLAYERBOTS=OFF and MODULE_MOD_PLAYERBOTS=disabled.")
+endif()
+
 ConfigureModuleLoader("static" MODULE_STATIC_LOADER OFF ${MODULES_STATIC_MODULES})
 
 add_library(modules STATIC
@@ -281,7 +295,11 @@ foreach(SOURCE_MODULE ${MODULES_ENABLED_MODULES})
   endif()
   set(TORTOISE_CURRENT_MODULE "${SOURCE_MODULE}")
   set(TORTOISE_CURRENT_MODULE_VARIABLE "${MODULE_VARIABLE}")
+  if(TORTOISE_CURRENT_MODULE_LINKAGE STREQUAL "static" AND SOURCE_MODULE IN_LIST MODULES_SPLIT_STATIC_MODULES)
+    set(TORTOISE_CURRENT_MODULE_TARGET modules_playerbots)
+  endif()
   include("${CMAKE_SOURCE_DIR}/modules/${SOURCE_MODULE}/${SOURCE_MODULE}.cmake" OPTIONAL)
+  unset(TORTOISE_CURRENT_MODULE_TARGET)
   unset(TORTOISE_CURRENT_MODULE_VARIABLE)
   unset(TORTOISE_CURRENT_MODULE)
   unset(TORTOISE_CURRENT_MODULE_LINKAGE)

@@ -93,9 +93,9 @@ if(MSVC)
     target_compile_options(SocketlessSpeedUpdateTest PRIVATE /EHsc)
 endif()
 add_test(NAME SocketlessSpeedUpdateTest COMMAND SocketlessSpeedUpdateTest)
-extract_native_fragment("${TRAVEL_ROOT}/PlayerbotAI.cpp"
-    "bool ChatHandler::HandleAhBotCommand(char* args)" "float PlayerbotAI::GetRange" NativeAhBotChatDispatch.inc)
-extract_native_fragment("${CORE_ROOT}/modules/mod-playerbots/src/ahbot/AhBot.cpp"
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/commands/BotCommands.cpp"
+    "static bool HandleAhBot(ChatHandler* handler" "// pi-lens-ignore:" NativeAhBotChatDispatch.inc)
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ahbot/AhBot.cpp"
     "bool AhBot::HandleAhBotCommand(ChatHandler* handler, char const* args)" "uint32 AhBot::auctionIds" NativeAhBotModuleDispatch.inc)
 add_executable(AhBotChatDispatchTest AhBotChatDispatchTest.cpp)
 target_compile_features(AhBotChatDispatchTest PRIVATE cxx_std_17)
@@ -105,7 +105,7 @@ if(MSVC)
 endif()
 add_test(NAME AhBotChatDispatchTest COMMAND AhBotChatDispatchTest)
 # Replace tests for the retired category engine with production CMaNGOS paths.
-set(AHBOT_ROOT "${CORE_ROOT}/modules/mod-playerbots/src/ahbot")
+set(AHBOT_ROOT "${CORE_ROOT}/modules/TortoiseBots/ahbot")
 extract_native_fragment("${AHBOT_ROOT}/AhBot.cpp"
     "bool AhBot::Publish(" "void AhBot::ScanOne(" NativeAuctionPublish.inc)
 extract_native_fragment("${CORE_ROOT}/src/game/Objects/Item.cpp"
@@ -649,3 +649,31 @@ if(MSVC)
     target_compile_options(TravelMountPreparationTest PRIVATE /EHsc)
 endif()
 add_test(NAME TravelMountPreparationTest COMMAND TravelMountPreparationTest)
+
+# Execute the selected module's taxi refresh against sparse native DBC fixtures.
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/TravelNode.cpp"
+    "void TravelNodeMap::generateTaxiPaths()" "void TravelNodeMap::removeLowNodes()" ModuleTaxiGeneration.inc)
+extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/TravelNode.h"
+    "        void setPathAndCost(" "        //void setPortal(" ModuleTravelSetCost.inc)
+add_executable(ModuleTaxiCacheRefreshTest ModuleTaxiCacheRefreshTest.cpp)
+target_compile_features(ModuleTaxiCacheRefreshTest PRIVATE cxx_std_17)
+target_include_directories(ModuleTaxiCacheRefreshTest PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+if(MSVC)
+    target_compile_options(ModuleTaxiCacheRefreshTest PRIVATE /EHsc)
+endif()
+add_test(NAME ModuleTaxiCacheRefreshTest COMMAND ModuleTaxiCacheRefreshTest)
+set_tests_properties(ModuleTaxiCacheRefreshTest PROPERTIES TIMEOUT 20)
+
+extract_native_fragment("${CORE_ROOT}/src/game/Chat/Chat.h"
+    "        bool IsCommandAvailable(" "        bool isValidChatMessage(" NativeModulePermissionQuery.inc)
+extract_native_fragment("${CORE_ROOT}/src/game/Chat/Chat.cpp"
+    "bool ChatHandler::isAvailable(" "std::string ChatHandler::GetNameLink()" NativeGameCommandPermission.inc)
+extract_native_fragment("${CORE_ROOT}/src/game/Chat/Chat.cpp"
+    "bool CliHandler::isAvailable(" "void CliHandler::SendSysMessage(" NativeCliCommandPermission.inc)
+add_executable(NativeModuleCommandPermissionTest NativeModuleCommandPermissionTest.cpp)
+target_compile_features(NativeModuleCommandPermissionTest PRIVATE cxx_std_17)
+target_include_directories(NativeModuleCommandPermissionTest PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+if(MSVC)
+    target_compile_options(NativeModuleCommandPermissionTest PRIVATE /EHsc)
+endif()
+add_test(NAME NativeModuleCommandPermissionTest COMMAND NativeModuleCommandPermissionTest)

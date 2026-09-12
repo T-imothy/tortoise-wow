@@ -1012,12 +1012,10 @@ ChatCommand * ChatHandler::getCommandTable()
         // Bot module commands. .rndbot is SEC_PLAYER so a single human can
         // manage their own random-bot pool without keeping a GM alt logged in;
         // a server operator who wants tighter control can raise it.
-        { "bot",            SEC_PLAYER,           false, &ChatHandler::HandlePlayerbotCommand,           "", nullptr },
         { "rndbot",         SEC_PLAYER,          true,  &ChatHandler::HandleRandomPlayerbotCommand,     "", nullptr },
         // Match the CMaNGOS AHBot command family: these operations can reload
         // server configuration or rebuild the whole market, so they remain
         // administrator-only.
-        { "ahbot",          SEC_ADMINISTRATOR,   true,  &ChatHandler::HandleAhBotCommand,               "", nullptr },
         { "perfmon",        SEC_MODERATOR,       true,  &ChatHandler::HandlePerfMonCommand,             "", nullptr },
         { nullptr,          0,                   false, nullptr,                                        "", nullptr }
     };
@@ -1405,7 +1403,7 @@ void ChatHandler::CheckIntegrity(ChatCommand *table, ChatCommand *parentCommand)
 
         if (command->ChildCommands)
         {
-            if (command->Handler)
+            if (command->Handler || command->ModuleHandler)
             {
                 if (parentCommand)
                     sLog.outError("Subcommand '%s' of command '%s' have handler and subcommands in same time, must be used '' subcommand for handler instead.",
@@ -1420,7 +1418,7 @@ void ChatHandler::CheckIntegrity(ChatCommand *table, ChatCommand *parentCommand)
 
             CheckIntegrity(command->ChildCommands, command);
         }
-        else if (!command->Handler)
+        else if (!command->Handler && !command->ModuleHandler)
         {
             if (parentCommand)
                 sLog.outError("Subcommand '%s' of command '%s' not have handler and subcommands in same time. Must have some from its!",
@@ -1547,7 +1545,7 @@ ChatCommandSearchResult ChatHandler::FindCommand(ChatCommand* table, char const*
         }
 
         // must be have handler is explicitly selected
-        if (!table[i].Handler)
+        if (!table[i].Handler && !table[i].ModuleHandler)
             continue;
 
         // command found directly in to table
@@ -1681,7 +1679,10 @@ void ChatHandler::ExecuteCommand(const char* text)
                 }
             }
 
-            if ((this->*(command->Handler))((char*)text))   // text content destroyed at call
+            bool const handled = command->ModuleHandler
+                ? command->ModuleHandler(this, (char*)text)
+                : (this->*(command->Handler))((char*)text);   // text content destroyed at call
+            if (handled)
             {
                 if (m_session && command->Flags & COMMAND_FLAGS_CRITICAL)
                 {

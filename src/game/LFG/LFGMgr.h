@@ -105,22 +105,12 @@ class LFGQueue
         void AddToQueue(Player* leader, uint32 queAreaID);
         void RestoreOfflinePlayer(Player* player);
         bool IsPlayerInQueue(const ObjectGuid& plrGuid) const;
-        // GetDungeonsForPlayer: cmangos LFG returns meeting stone set. Stub returns empty.
-        std::vector<MeetingStoneInfo> GetDungeonsForPlayer(class Player* /*player*/) const { return {}; }
-        // AddToQueue 1-arg form (cmangos signature).
-        void AddToQueue(class Player* leader) { AddToQueue(leader, 0); }
-        // CalculateTalentRoles / GetPriority (cmangos LFG matchmaking).
-        ClassRoles CalculateTalentRoles(class Player* /*player*/) const { return LFG_ROLE_NONE; }
-        RolesPriority GetPriority(Classes /*classId*/, ClassRoles /*roles*/) const { return LFG_PRIORITY_NONE; }
-        // bot calls these forms.
-        bool IsGroupInQueue(uint32 groupId) const { return m_QueuedGroups.find(groupId) != m_QueuedGroups.end(); }
-        void GetGroupQueueInfo(LFGGroupQueueInfo* info, uint32 groupId) const {
-            auto it = m_QueuedGroups.find(groupId);
-            if (it != m_QueuedGroups.end() && info) *info = it->second;
-        }
-        void GetPlayerQueueInfo(LFGPlayerQueueInfo* info, ObjectGuid plrGuid) const {
+        // Read access for modules: the queue entry of one player, if queued.
+        void GetPlayerQueueInfo(LFGPlayerQueueInfo* info, ObjectGuid plrGuid) const
+        {
             auto it = m_QueuedPlayers.find(plrGuid);
-            if (it != m_QueuedPlayers.end() && info) *info = it->second;
+            if (it != m_QueuedPlayers.end() && info)
+                *info = it->second;
         }
         void RemovePlayerFromQueue(const ObjectGuid& plrGuid, PlayerLeaveMethod leaveMethod = PLAYER_CLIENT_LEAVE); // 0 == by default system (cmsg, leader leave), 1 == by lfg system (no need report text you left queu)
         void RemoveGroupFromQueue(uint32 groupId, GroupLeaveMethod leaveMethod = GROUP_CLIENT_LEAVE);

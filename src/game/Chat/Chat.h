@@ -71,6 +71,8 @@ public:
         uint8              Flags;
         std::string        FullName;
         uint32             PermissionMask = 0;
+        // A module binds a free function here; Handler is the core's member pointer.
+        bool             (*ModuleHandler)(ChatHandler* handler, char* args) = nullptr;
 };
 
 enum ChatCommandSearchResult
@@ -115,6 +117,9 @@ class ChatHandler
 
         bool ParseCommands(const char* text);
         ChatCommand const* FindCommand(char const* text);
+        // Modules can authorize an alias through the same native policy as
+        // dispatch, including console/SOAP and configured RBAC permissions.
+        bool IsCommandAvailable(ChatCommand const& command) const { return isAvailable(command); }
 
         bool isValidChatMessage(const char* msg);
         bool HasSentErrorMessage() { return sentErrorMessage;}

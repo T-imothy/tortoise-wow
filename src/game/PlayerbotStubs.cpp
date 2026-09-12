@@ -7,7 +7,7 @@
 // core through is a module hook now, and a hook needs no stub - the virtual
 // has an empty body and nothing registers it. What is left are the few
 // symbols that are genuinely core-side: the module bootstrap, the damage-log
-// probes compiled into Unit.cpp, and the chat commands Chat.cpp registers
+// probes have moved to generic script observations. Chat.cpp still registers
 // whether or not the module exists.
 
 #include "Objects/Player.h"
@@ -23,12 +23,6 @@ void World::InitPlayerbotsAtStartup()         {}
 class Player;
 void Playerbot_OnPlayerDestroyed(Player const*) {}
 
-void BotActionLog_LogCastStart  (WorldObject*, uint32, uint64, uint32)         {}
-void BotActionLog_LogCastResult (WorldObject*, uint32, uint8, const char*)     {}
-void BotActionLog_LogDamage     (Unit*, Unit*, uint32, uint32, const char*)    {}
-void BotActionLog_LogAuraAttempt(Unit*, uint32, int32, uint64)                 {}
-void BotActionLog_LogAuraApply  (Unit*, uint32, int32, uint64)                 {}
-void BotActionLog_LogAuraRemove (Unit*, uint32, uint64)                        {}
 
 // ChatHandler bot-command stubs. Chat.cpp registers `.bot`, `.rndbot`,
 // `.ahbot`, and `.perfmon` in the command table unconditionally (no

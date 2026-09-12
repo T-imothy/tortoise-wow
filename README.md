@@ -1,9 +1,18 @@
 
 # Tortoise-WoW
 
-> **ManTech fork:** development continues on `mantech-turtle`.
-> Our upstream [Shyalya/tortoise-wow](https://github.com/Shyalya/tortoise-wow) has announced archival after 30 September 2026. That announcement applies to Shyalya's fork.
-> Its 16 branch tips and their history are preserved under `archive/shyalya/2026-09-09/*` in this repository.
+> **ManTech modular migration candidate:** this branch integrates the maintained
+> [tortoise-wow core](https://github.com/tortoise-wow/tortoise-wow) and our
+> [TortoiseBots fork](https://github.com/T-imothy/TortoiseBots). Production remains
+> on `mantech-turtle`; all previous branches and history are preserved.
+> See [the migration checklist](docs/MODULAR_MIGRATION_CHECKLIST.md) for required
+> feature preservation, passing checks and remaining gaps. This candidate is
+> not ready to replace production.
+>
+> Select `BUILD_PLAYERBOTS=OFF`, `MODULE_MOD_PLAYERBOTS=disabled`, and
+> `MODULE_TORTOISEBOTS=static` for the candidate. The embedded bot source remains
+> temporarily as a disabled porting reference. The inherited description below
+> describes the former integrated implementation, not the migration build.
 
 This is an unofficial, community driven, restoration of the 1.18.1 patch of Turtle-WoW, with some additions for solo play.  
 This project is not to be used for profit or to misrepresent itself, or anyone using it, as the original creators  

@@ -487,3 +487,32 @@ with a walking delay. Idle/reaction/direct movement, combat and movement modes
 that cannot safely prepare a mount are excluded. Native mount refusal never makes
 the journey fail. TravelMountPreparationTest extracts this actual method; it does
 not mock an alternative mount selector. Live mixed-content validation remains.
+
+### Modular migration candidate (2026-09-12; not deployed)
+
+`feature/modular-playerbots` preserves `mantech-turtle` at
+`37aee50d6bfbf9194dd5e3c79a156d9bfcb4f569` while integrating upstream's
+generic headless-session manager and the `modules/TortoiseBots` submodule.
+See [MODULAR_MIGRATION_CHECKLIST.md](MODULAR_MIGRATION_CHECKLIST.md) for gaps.
+
+The CMaNGOS AH service now lives in `modules/TortoiseBots/ahbot`. It uses the
+module's verified random-account policy and runs on its world hook after the
+map/session owners join. `AiPlayerbot.AhMarketUseCMaNGOS` selects one market
+controller. The alternative module market consumes native auction snapshot
+pages and retains house ownership while resolving/acting on a live entry;
+it captures identity before native buyout can delete that entry. Appraisal
+and cancellation use copied entries/counts; no raw auction-map getter was
+restored. Native mail/expiry and ownerless random-property initialization remain.
+
+The module registers `.bot` and `.ahbot` through `CommandScript::GetCommands`
+and `ChatCommand::ModuleHandler`. `HandleAhBot` additionally enforces
+the registered AH command through `IsCommandAvailable` so `.bot ah` and SOAP cannot bypass
+the auction permission gate. The old core table no longer shadows these commands.
+
+Combat diagnostics use generic read-only UnitScript attempt/removal observers
+and AllSpellScript cast attempt/finish observers at the original native probe
+positions. They cannot change amounts or veto native eligibility. The optional
+module owns the logger and registers its callbacks; the core has no logging
+symbol dependency on it. Existing aura-effect apply hooks provide confirmed
+apply observations. These contracts require both optional-build configurations;
+runtime acceptance remains pending.

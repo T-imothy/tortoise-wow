@@ -23,12 +23,8 @@
 
 #include "SharedDefines.h"
 
-// Without the precompiled header (USE_PCH=OFF - the usual escape from MSVC's
-// PCH size limits) nothing above declares these before ConditionEntry uses
-// them in signatures: 2026-09-04, Windows build of CustomMerchantMgr.cpp,
-// C2061 "WorldObject"; the same on Linux without PCH.
-class WorldObject;
 class Map;
+class WorldObject;
 
 enum ConditionType
 {

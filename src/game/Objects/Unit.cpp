@@ -758,12 +758,8 @@ uint32 Unit::DealDamage(Unit* pVictim, uint32 damage, CleanDamage const* cleanDa
     if (pVictim && pVictim->IsPlayer() && pVictim->ToPlayer()->m_disableGeneralDamage == true)
         return 0;
 
-    // bot logging suite — hook damage events.
-    // Wrapper checks attacker AND victim for bot AI; non-bot ↔ non-bot
-    // case is two cheap pointer-null-checks. Sampled 1/5 to avoid spam
-    // in heavy-DoT raid scenarios.
+    // Observe the attempted damage before native modifiers run.
     {
-        extern void BotActionLog_LogDamage(Unit* attacker, Unit* victim, uint32 damage, uint32 spellId, const char* damageType);
         const char* dt = "?";
         switch (damagetype) {
             case DIRECT_DAMAGE: dt = "DIRECT"; break;
@@ -773,7 +769,10 @@ uint32 Unit::DealDamage(Unit* pVictim, uint32 damage, CleanDamage const* cleanDa
             case NODAMAGE: dt = "NODAMAGE"; break;
             case SELF_DAMAGE: dt = "SELF"; break;
         }
-        BotActionLog_LogDamage(this, pVictim, damage, spellProto ? spellProto->Id : 0, dt);
+        ScriptRegistry<UnitScript>::ForEachEnabledHook(UNITHOOK_ON_DAMAGE_ATTEMPT, [&](UnitScript* script)
+        {
+            script->OnDamageAttempt(this, pVictim, damage, spellProto ? spellProto->Id : 0, dt);
+        });
     }
 
     if (pVictim)
@@ -1832,9 +1831,12 @@ void Unit::CalculateMeleeDamage(Unit* pVictim, uint32 damage, CalcDamageInfo *da
             // High end : 1.2 - 0.03*(defense - skill) min of 0.2 and max of 0.99
             // If the attacker is a caster then this is reduced by 0.3
 
-            int32 skillDiff = pVictim->GetDefenseSkillValue(this) - GetWeaponSkillValue(damageInfo->attackType, pVictim);
-            float low = 1.3f - 0.05f * skillDiff;
-            float high = 1.2f - 0.03f * skillDiff;
+            int32 const weaponSkill = GetWeaponSkillValue(damageInfo->attackType, pVictim);
+            int32 skillDiff = pVictim->GetDefenseSkillValue(this) - weaponSkill;
+            int32 const extraWeaponSkill = std::max(weaponSkill - int32(GetSkillMaxForLevel(pVictim)), 0);
+
+            float low = 1.3f - 0.05f * skillDiff - 0.03f * extraWeaponSkill;
+            float high = 1.2f - 0.03f * skillDiff - 0.01f * extraWeaponSkill;
             float lowCap = 0.91f;
             float highCap = 0.99f;
 
@@ -2996,10 +2998,8 @@ float Unit::MeleeMissChanceCalc(Unit const* pVictim, WeaponAttackType attType) c
     // PvP - PvE melee chances
     if (pVictim->IsPlayer())
         skillDiffBonus = skillDiff * 0.04f;
-    else if (skillDiff < -10)
-        skillDiffBonus = skillDiff * 0.2f;
     else
-        skillDiffBonus = skillDiff * 0.1f;
+        skillDiffBonus = skillDiff * 0.2f;
     missChance -= skillDiffBonus;
 
     // Low level reduction
@@ -3027,12 +3027,6 @@ float Unit::MeleeMissChanceCalc(Unit const* pVictim, WeaponAttackType attType) c
                 hitChance += owner->m_modSpellHitChance * aura->GetModifier()->m_amount / 100.0f;
         }
     }
-
-    // There is some code in 1.12 that explicitly adds a modifier that causes the first 1% of +hit gained from
-    // talents or gear to be ignored against monsters with more than 10 Defense Skill above the attacking player’s Weapon Skill.
-    // https://us.forums.blizzard.com/en/wow/t/bug-hit-tables/185675/33
-    if (skillDiff < -10 && hitChance > 0.0f)
-        hitChance -= 1.0f;
 
     missChance -= hitChance;
 
@@ -3649,17 +3643,11 @@ bool Unit::AddSpellAuraHolder(SpellAuraHolder *holder)
 {
     SpellEntry const* aurSpellInfo = holder->GetSpellProto();
 
-    // aura-attempt hook. Logged BEFORE any
-    // early-returns (refresh, stack, dead target, debuff-limit, etc.) so the bot
-    // log captures every aura that any code path tries to put on a bot — even
-    // those that get rejected or merged into an existing holder. This was needed
-    // to debug a self-applied Bash 25515 that was invisible to the post-success
-    // hook below (refreshes never reach it). Logged with tag AURA_ATTEMPT so it's
-    // distinguishable from the AURA_APPLY tag that fires on confirmed first-apply.
+    // Observe attempts before refresh/stack/eligibility early returns.
+    ScriptRegistry<UnitScript>::ForEachEnabledHook(UNITHOOK_ON_AURA_HOLDER_ATTEMPT, [&](UnitScript* script)
     {
-        extern void BotActionLog_LogAuraAttempt(Unit* target, uint32 spellId, int32 durationMs, uint64 casterGuidRaw);
-        BotActionLog_LogAuraAttempt(this, holder->GetId(), holder->GetAuraMaxDuration(), holder->GetCasterGuid().GetRawValue());
-    }
+        script->OnAuraHolderAttempt(this, holder->GetId(), holder->GetAuraMaxDuration(), holder->GetCasterGuid().GetRawValue());
+    });
 
     // ghost spell check, allow apply any auras at player loading in ghost mode (will be cleanup after load)
     if (!IsAlive() && !aurSpellInfo->IsDeathPersistentSpell() && !aurSpellInfo->CanTargetDeadTarget() &&
@@ -3879,14 +3867,16 @@ bool Unit::AddSpellAuraHolder(SpellAuraHolder *holder)
     // When we call _AddSpellAuraHolder, we must have a free aura slot
     holder->_AddSpellAuraHolder();
 
-    // bot logging suite — hook aura applies. The
-    // wrapper checks if `this` is a bot Player; non-bots cost only the
-    // GetPlayerbotAI() null check. Resolves at final mangosd link.
-    {
-        extern void BotActionLog_LogAuraApply(Unit* target, uint32 spellId, int32 durationMs, uint64 casterGuidRaw);
-        int32 durMs = holder->GetAuraMaxDuration();
-        BotActionLog_LogAuraApply(this, holder->GetId(), durMs, holder->GetCasterGuid().GetRawValue());
-    }
+    // Module hook: a positive aura from another player, first application only --
+    // a refresh is not a new gift.
+    if (holder->IsPositive())
+        if (Unit* caster = holder->GetCaster())
+            if (caster != this && caster->IsPlayer())
+            {
+                const uint32 buffId = holder->GetId();
+                ScriptRegistry<UnitScript>::ForEachEnabledHook(UNITHOOK_ON_BUFF_RECEIVED,
+                    [&](UnitScript* s) { s->OnBuffReceived(this, (Player*)caster, buffId); });
+            }
 
     return true;
 }
@@ -4462,12 +4452,11 @@ void Unit::DeleteAuraHolder(SpellAuraHolder *holder)
 
 void Unit::RemoveSpellAuraHolder(SpellAuraHolder *holder, AuraRemoveMode mode)
 {
-    // bot logging suite — hook aura removes. Logged
-    // BEFORE the holder is destroyed so the caster GUID is still valid.
+    // Observe removal while the holder and caster identity remain valid.
+    ScriptRegistry<UnitScript>::ForEachEnabledHook(UNITHOOK_ON_AURA_HOLDER_REMOVAL, [&](UnitScript* script)
     {
-        extern void BotActionLog_LogAuraRemove(Unit* target, uint32 spellId, uint64 casterGuidRaw);
-        BotActionLog_LogAuraRemove(this, holder->GetId(), holder->GetCasterGuid().GetRawValue());
-    }
+        script->OnAuraHolderRemoval(this, holder->GetId(), holder->GetCasterGuid().GetRawValue());
+    });
 
     // Statue unsummoned at holder remove
     Totem* statue = nullptr;

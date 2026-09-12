@@ -317,9 +317,11 @@ class Group
         bool UpdateCrossfaction();
 
         void SetTargetIcon(uint8 id, ObjectGuid targetGuid);
+        ObjectGuid GetTargetIcon(uint8 id) const
+        {
+            return id < TARGET_ICON_COUNT ? m_targetIcons[id] : ObjectGuid();
+        }
         void ClearTargetIcon(ObjectGuid targetGuid);
-        // bot calls grp->GetTargetIcon(id) returning the GUID stored at slot.
-        ObjectGuid GetTargetIcon(uint8 id) const { return id < TARGET_ICON_COUNT ? m_targetIcons[id] : ObjectGuid(); }
         uint16 InInstance();
         bool InCombatToInstance(uint32 instanceId);
         void ResetInstances(InstanceResetMethod method, Player* SendMsgTo);

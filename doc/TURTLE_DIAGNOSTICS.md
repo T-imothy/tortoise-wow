@@ -1129,3 +1129,20 @@ lambda leaves generic failure handling intact. LogLevel1 omits these details;
 per-bot traversal cooldown bound gameplay query attempts separately from logs.
 Monitor tick time when many bots are blocked;16candidate arcs is a ceiling,
 not a guarantee that every blocked actor will recover or that geometry is sound.
+
+## Modular migration telemetry (2026-09-12, candidate only)
+
+The former direct `BotActionLog_*` core references are replaced by generic
+script observations; `TortoiseBots/host/BotCombatTelemetry.cpp` owns diagnostic
+registration and calls the module-local log helpers. `AiPlayerbot.Enabled` and
+`AiPlayerbot.EnableActionLog` gate logging before AI lookup or formatting.
+Without the module there is no logger and no linker stub for these events.
+Damage sampling remains one in five events per unit in the existing helper.
+Aura attempts precede early rejection/refresh/stack returns, and holder removal
+is observed before destruction. Confirmed AURA_APPLY follows native per-effect
+application (multi-effect spells can therefore produce multiple apply records).
+Cast attempts precede the native spell-ID check; finish includes success/failure.
+The independent bounded Thorn movement/spline diagnostics remain in place.
+
+This is not evidence that the new AI preserves prior parallel logging safety:
+the map-scheduling port and shared logger state audit remain migration gates.

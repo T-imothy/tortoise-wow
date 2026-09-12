@@ -158,30 +158,10 @@ class MotionMaster : std::stack<MovementGenerator *>
         void MoveDistance(Unit* target, float distance);
         void ReInitializePatrolMovement();
 
-        // The bot module supplies a precomputed path of points and expects the
-        // unit to travel along it (chase, flee, travel and transport movement).
-        // Launches a spline through the points; walk == false selects run speed.
-        // moveMode is the bot's FORCED_MOVEMENT_* hint and is currently unused
-        // (run vs walk is driven by the explicit walk flag).
+        // A module supplies a precomputed path and expects the unit to travel along
+        // it: a spline through the points, walk == false selects run speed.
         void MovePath(Movement::PointsArray const& pointPath, uint32 moveMode, bool flying, bool walk = false);
-        // AzerothCore spelling, and it takes the path by pointer.
-        void MoveSplinePath(Movement::PointsArray const* pointPath, uint32 moveMode)
-        { if (pointPath) MovePath(*pointPath, moveMode, false, false); }
-        // Drop straight down to the first floor below. Returns false when
-        // there is nothing to fall to. Implemented in MotionMaster.cpp - it
-        // was a stub returning false for the whole life of this port, which
-        // is why no dungeon drop-down ever happened.
         bool MoveFall();
-        // DistanceYourself: cmangos move-away action. Stub no-op (multiple forms).
-        void DistanceYourself(float /*distance*/) {}
-        void DistanceYourself(Unit* /*target*/) {}
-        void DistanceYourself(Unit* /*target*/, float /*distance*/) {}
-        // MoveInFormation: cmangos formation movement. Stub no-op.
-        template<typename T> void MoveInFormation(T /*formationData*/, bool /*main*/ = false) {}
-        // PauseWaypoints: cmangos pauses waypoint movement. Stub no-op.
-        void PauseWaypoints(uint32 /*timer*/ = 0) {}
-        // MoveChase 7-arg form: cmangos has extra angle/options/relativeAngle args.
-        void MoveChase(Unit* target, float dist, float angle, bool /*moveBackward*/, bool /*walk*/, bool /*combatMove*/, bool /*delayedPathCalculation*/) { MoveChase(target, dist, angle); }
 
         MovementGeneratorType GetCurrentMovementGeneratorType() const;
         static char const* GetMovementGeneratorTypeName(MovementGeneratorType generator);
