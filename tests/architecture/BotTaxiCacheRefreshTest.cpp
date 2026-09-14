@@ -78,20 +78,23 @@ struct Log
 {
     uint32 generated = 0, corrected = 0, incomplete = 0, summaries = 0;
     void outString(char const*) {}
+    void outError(char const*) {}
     void outString(char const*, uint32 g, uint32 c, uint32 i)
     { generated = g; corrected = c; incomplete = i; ++summaries; events.push_back("taxi"); }
 } sLog;
 struct { void LoadMapTransfers() { events.push_back("transfers"); } } sTravelMgr;
+struct { bool generateTravelNodes = false; } sPlayerbotAIConfig;
 struct TravelNodeMap
 {
     bool hasToGen = false, hasToFullGen = false, hasToSave = false;
-    std::vector<TravelNode*> graph;
+    std::vector<TravelNode*> m_nodes;
+    std::vector<TravelNode*>& graph = m_nodes;
     void LoadMaps() { events.push_back("maps"); }
     void generateNodes() { events.push_back("nodes"); }
     void calcMapOffset() { events.push_back("offsets"); }
-    void generatePaths(bool helpers) { CHECK(!helpers); events.push_back("walking"); generateTaxiPaths(); }
-    std::vector<TravelNode*> getNodes() { return graph; }
-    TravelNode* getNode(WorldPosition p, std::nullptr_t, float range)
+    void generatePaths(bool helpers) { CHECK(!helpers); events.push_back("walking"); }
+    std::vector<TravelNode*> GetNodes() { return graph; }
+    TravelNode* GetNode(WorldPosition p, std::nullptr_t, float range)
     {
         TravelNode* nearest = nullptr;
         for (auto node : graph)
@@ -154,6 +157,7 @@ int main()
     }
     // Partial and full generation already call the flight generator: do not
     // duplicate it, and retain the native save and map-generation lifecycle.
+    sPlayerbotAIConfig.generateTravelNodes = true;
     for (bool full : {false, true})
     {
         sTravelNodeMap.hasToGen = !full; sTravelNodeMap.hasToFullGen = full;

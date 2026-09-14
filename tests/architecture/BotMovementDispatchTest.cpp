@@ -104,14 +104,14 @@ struct WorldPosition
     WorldPosition(Player* bot):value(bot->position){}
     WorldPosition(float x,float y,float z):value{x,y,z}{}
     float getX()const{return value.x;}float getY()const{return value.y;}float getZ()const{return value.z;}
-    uint32 getMapId()const{return 0;}
+    uint32 GetMapId()const{return 0;}
     float distance(Player* p)const
     {return std::sqrt(std::pow(getX()-p->position.x,2)+std::pow(getY()-p->position.y,2)+std::pow(getZ()-p->position.z,2));}
-    float getPathLength(const std::vector<WorldPosition>& p)const{return float(p.size()*5);}
+    float GetPathLength(const std::vector<WorldPosition>& p)const{return float(p.size()*5);}
     Movement::PointsArray toPointsArray(const std::vector<WorldPosition>& p)const
     {Movement::PointsArray result;for(auto& v:p)result.push_back(v.value);return result;}
 };
-struct TravelPath {std::vector<WorldPosition> points;std::vector<WorldPosition> getPointPath()const{return points;}};
+struct TravelPath {std::vector<WorldPosition> points;std::vector<WorldPosition> GetPointPath()const{return points;}};
 struct MovementAction
 {
     Player* bot;bool hazard=false;uint32 avoids=0,waits=0;

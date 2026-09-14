@@ -20,7 +20,7 @@ struct Config{uint32 randomBotMaintenanceBatch=128,randomBotMaintenanceBudgetMs=
     uint32 minRandomBotRandomizeTime=1,maxRandomBotRandomizeTime=1;bool randomGearUpgradeEnabled=true;}sPlayerbotAIConfig;
 namespace TortoiseBots{bool NeedsInitialGearSeeding(uint32,uint32){return false;}}
 std::vector<uint32> visited,strategies;uint32 removeDuringRecovery=0;
-struct Facade{void ProcessBot(Player*p){uint32 guid=p->guid;visited.push_back(guid);clockNow+=workCost;if(guid==removeDuringRecovery){players.erase(guid);records.erase(guid);}}
+struct Facade{bool ProcessBot(Player*p){uint32 guid=p->guid;visited.push_back(guid);clockNow+=workCost;if(guid==removeDuringRecovery){players.erase(guid);records.erase(guid);}return true;}
     void ChangeStrategy(Player*p){strategies.push_back(p->guid);}uint32 GetValue(uint32,const char*){return 1;}
     void UpdateGearSpells(Player*){}void SetValue(uint32,const char*,uint32){} }sRandomBotFacade;
 class RandomBotService {public:struct Candidate{uint32 characterGuid;};std::vector<Candidate>m_candidates;

@@ -25,7 +25,7 @@ struct dtNavMeshQuery {
     }
 } query;
 namespace MMAP {
-struct MMapManager { bool available=true; const dtNavMeshQuery* GetNavMeshQuery(uint32,uint32){return available?&query:nullptr;} } manager;
+struct MMapManager { bool available=true; const dtNavMeshQuery* GetNavMeshQuery(uint32){return available?&query:nullptr;} } manager;
 struct MMapFactory {static MMapManager* createOrGetMMapManager(){return &manager;}};
 }
 constexpr int TYPEID_UNIT=3, TYPEID_PLAYER=4, IDLE_MOTION_TYPE=0, GRIND_ACTIVITY=1;
@@ -43,11 +43,11 @@ struct GuidPosition {
     Unit* GetWorldObject(uint32){static Creature c;return present?&c:nullptr;}
 };
 struct WorldPosition {
-    float coord_x=10,coord_y=20,coord_z=30; uint32 map=0;
-    WorldPosition(uint32 m,float x,float y,float z):coord_x(x),coord_y(y),coord_z(z),map(m){}
+    float x=10,y=20,z=30; uint32 map=0;
+    WorldPosition(uint32 m,float x,float y,float z):x(x),y(y),z(z),map(m){}
     WorldPosition(GuidPosition const&){}
     uint32 getMapId() const{return map;}
-    float getX() const{return coord_x;} float getY() const{return coord_y;} float getZ() const{return coord_z;}
+    float getX() const{return x;} float getY() const{return y;} float getZ() const{return z;}
     float distance(Player*) const{return 10;}
     bool ClosestCorrectPoint(float,float,uint32);
 };
@@ -61,6 +61,7 @@ struct PlayerbotAI {
     void TellDebug(Player*,std::string,const char*){} void TellPlayerNoFacing(Player*,const char*){}
 };
 PlayerbotAI* GetBotAI(Player* p){return p->brain;}
+struct PlayerbotAIStorage { static PlayerbotAIStorage& Instance() { static PlayerbotAIStorage storage; return storage; } PlayerbotAI* GetAI(Player* p) { return p->brain; } };
 namespace ai { namespace botdiag { void TraceBehavior(PlayerbotAI*, const char*, const char*) {} } }
 struct {std::unordered_map<ObjectGuid,Player*> players; int lookups=0; Player* GetPlayer(ObjectGuid id){++lookups;auto i=players.find(id);return i==players.end()?nullptr:i->second;}} sObjectMgr;
 #define PAI_VALUE(type,name) player->brain->target
@@ -104,7 +105,7 @@ int main(){
     query={};MMAP::manager.available=true;
     Player player;PlayerbotAI ai;Creature npc;MoveToRpgTargetAction action{&player,&ai};
     CHECK(action.Approach(&player));CHECK(player.motion.pauses==0);CHECK(action.movedX==11&&action.movedY==21&&action.movedZ==31);
-    CHECK(action.Approach(&npc));CHECK(npc.motion.pauses==1);
+    CHECK(action.Approach(&npc));CHECK(npc.motion.pauses==0); // Native core exposes no waypoint pause operation.
     int before=action.moves;query.status=0;rpgTarget.id=7;ignored.clear();
     CHECK(!action.Approach(&npc));CHECK(action.moves==before&&rpgTarget.id==0&&ignored.count(7));
     query={};query.point[1]=50;rpgTarget.id=8;

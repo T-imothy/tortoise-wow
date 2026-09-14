@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 using uint32 = std::uint32_t;
-static void require(bool v) { if (!v) std::abort(); }
+#define require(v) do { if (!(v)) { std::cerr << "line " << __LINE__ << ": " #v << "\n"; std::abort(); } } while(0)
 
 struct Vector3 { float x, y, z; Vector3(float a, float b, float c) : x(a), y(b), z(c) {} };
 struct PathOwner { int calls = 0; void GetSafePosition(float& x, float& y, float& z, void*) { ++calls; x=1; y=2; z=3; } };
@@ -46,10 +46,15 @@ static uint32 now = 0;
 uint32 getMSTime() { return now; }
 uint32 getMSTimeDiff(uint32 before,uint32 after) { return after-before; }
 }
-enum { ALIVE=0, DEAD=1 };
+enum { ALIVE=0, DEAD=1, CLASS_HUNTER=3 };
 struct Pet { int state = ALIVE; };
 struct Bot {
     Pet* pet = nullptr;
+    unsigned level = 60, playerClass = CLASS_HUNTER;
+    bool mounted = false;
+    unsigned GetLevel() { return level; }
+    unsigned GetClass() { return playerClass; }
+    bool IsMounted() { return mounted; }
     Pet* GetPet() { return pet; }
     uint32 GetGUIDLow() { return 34; }
     uint32 GetPetGuid() { return pet ? 7 : 0; }
@@ -120,6 +125,11 @@ int main() {
     require(value.Calculate() && CharacterDatabase.calls==4);
     WorldTimer::now=10; require(value.Calculate() && CharacterDatabase.calls==4);
     WorldTimer::now=30000; require(value.Calculate() && CharacterDatabase.calls==5);
+
+    bot.level=9; value.petDbCached=false;
+    require(!value.Calculate() && CharacterDatabase.calls==5);
+    bot.level=60;bot.mounted=true;
+    require(!value.Calculate() && CharacterDatabase.calls==5);
 
     Context context{{1,2,3,4,99}};
     BannerAI ai{{{1,{1,1.5f}},{2,{1,5.0f}},{3,{1,5.1f}},{4,{2,1.0f}}}};

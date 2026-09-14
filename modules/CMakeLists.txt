@@ -13,7 +13,7 @@ set(MODULES_ENABLED_MODULES)
 # It gets its own static library instead - still fully static-linked into
 # mangosd (no export/import boundary, since core and playerbots call into
 # each other directly with no dllexport plumbing), just a second archive.
-set(MODULES_SPLIT_STATIC_MODULES mod-playerbots TortoiseBots)
+set(MODULES_SPLIT_STATIC_MODULES mod-playerbots TortoiseBots ManTechPlayerbots)
 set(MODULES_PLAYERBOTS_STATIC_SOURCES)
 set(MODULES_PLAYERBOTS_PUBLIC_INCLUDES)
 
@@ -244,9 +244,15 @@ foreach(SOURCE_MODULE ${MODULES_MODULE_LIST})
   endif()
 endforeach()
 
-# Migration must never register two independent bot session/AI owners.
-if("TortoiseBots" IN_LIST MODULES_ENABLED_MODULES AND "mod-playerbots" IN_LIST MODULES_ENABLED_MODULES)
-  message(FATAL_ERROR "Select TortoiseBots or the retired mod-playerbots, never both. Native migration uses BUILD_PLAYERBOTS=OFF and MODULE_MOD_PLAYERBOTS=disabled.")
+# Every bot implementation shares the native session/AI ownership contract.
+set(MODULES_BOT_OWNER_COUNT 0)
+foreach(MODULES_BOT_OWNER mod-playerbots TortoiseBots ManTechPlayerbots)
+  if("${MODULES_BOT_OWNER}" IN_LIST MODULES_ENABLED_MODULES)
+    math(EXPR MODULES_BOT_OWNER_COUNT "${MODULES_BOT_OWNER_COUNT} + 1")
+  endif()
+endforeach()
+if(MODULES_BOT_OWNER_COUNT GREATER 1)
+  message(FATAL_ERROR "Select exactly one playerbot module; multiple session/AI owners cannot run together.")
 endif()
 
 ConfigureModuleLoader("static" MODULE_STATIC_LOADER OFF ${MODULES_STATIC_MODULES})
@@ -310,3 +316,14 @@ set(WORLDSERVER_DYNAMIC_MODULES_DEPENDENCIES ${MODULES_DYNAMIC_PROJECTS} PARENT_
 set(WORLDSERVER_DYNAMIC_MODULES ${MODULES_DYNAMIC_MODULES} PARENT_SCOPE)
 set(WORLDSERVER_ENABLED_MODULES ${MODULES_ENABLED_MODULES} PARENT_SCOPE)
 set(MODULES_BUILD_RUNTIME_DIR "${MODULES_BUILD_RUNTIME_DIR}" PARENT_SCOPE)
+
+# Core realm policy is deliberately outside the fetched bot behavior module.
+if("ManTechPlayerbots" IN_LIST MODULES_ENABLED_MODULES)
+  if("ManTechPlayerbots" IN_LIST MODULES_STATIC_MODULES)
+    set(MANTECH_LOOT_POLICY_TARGET modules_playerbots)
+  else()
+    GetModuleProjectName("ManTechPlayerbots" MANTECH_LOOT_POLICY_TARGET)
+  endif()
+  include("${CMAKE_SOURCE_DIR}/cmake/playerbot_loot_policy.cmake")
+  unset(MANTECH_LOOT_POLICY_TARGET)
+endif()

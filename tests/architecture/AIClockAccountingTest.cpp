@@ -37,7 +37,7 @@ struct Script : ScriptBase
 bool Tick(Player& p, Script& script, uint32 now, bool budget, bool legacy = false,
           bool immediate = false, bool valid = true, uint32 cap = 1000)
 {
-    uint32 elapsed = std::min(cap, legacy ? p.ConsumeAIElapsed(now) : p.GetAIElapsed(now));
+    uint32 elapsed = legacy ? std::min(cap, p.ConsumeAIElapsed(now)) : p.GetAIElapsed(now);
     bool due = immediate || script.IsAIUpdateDue(&p, elapsed);
     if (!due) { if (!legacy) p.ConsumeAIElapsed(now); return false; }
     if ((!budget && !immediate) || !valid) return false;
@@ -79,8 +79,8 @@ int main()
     Require(Tick(p, script, 0x20, true)); // native unsigned wrap
 
     p.m_lastAIUpdateMs = 1000; ai.aiInternalUpdateDelay = 5000;
-    Require(!Tick(p, script, 10000, true, false, false, true, 1000));
-    Require(ai.aiInternalUpdateDelay == 4000); // existing catch-up cap unchanged
+    Require(Tick(p, script, 10000, true, false, false, true, 1000));
+    Require(ai.aiInternalUpdateDelay == 0); // five-second wait expires after nine real seconds
     ai.pending = true;
     Require(Tick(p, script, 10001, true));
     ai.pending = false;
@@ -88,5 +88,5 @@ int main()
     Require(!Tick(p, script, 11000, true));
     sPlayerbotAIConfig.enabled = true;
     Require(Tick(p, script, 11100, false, false, true)); // foreground bypasses idle budget
-    std::cout << "Native elapsed accounting: deferral, not-due, stale, wrap, cap, transition passed\n";
+    std::cout << "Native elapsed accounting: deferral, not-due, stale, wrap, elapsed waits, transition passed\n";
 }

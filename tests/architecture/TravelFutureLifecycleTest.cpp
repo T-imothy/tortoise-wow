@@ -83,6 +83,15 @@ int main()
     ResetFuture(&future);
     Require(!future.valid(), "completed stale result must be discarded");
 
+    bool deferredRan = false;
+    auto deferred = std::async(std::launch::deferred, [&] { deferredRan = true; return PartitionedTravelList{8}; });
+    Require(!IsTravelSearchPending(deferred), "deferred work cannot wait for another worker");
+    Require(deferred.get().at(0) == 8 && deferredRan, "deferred work must remain consumable");
+    deferred = std::async(std::launch::deferred, [&] { deferredRan = true; return PartitionedTravelList{}; });
+    deferredRan = false;
+    ResetFuture(&deferred);
+    Require(!deferred.valid() && !deferredRan, "reset must discard unstarted deferred work");
+
     // An exceptional worker must not permanently consume one of the five slots.
     for (unsigned i = 0; i != 12; ++i)
     {

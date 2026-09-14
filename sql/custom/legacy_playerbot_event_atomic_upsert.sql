@@ -1,3 +1,4 @@
+-- Manual legacy-only reference. Not part of native core/module startup.
 -- Playerbot event updates used to DELETE then INSERT while mass bot
 -- activation held a transaction. Concurrent login/update callbacks could
 -- lock the same secondary-index ranges in opposite order and deadlock.

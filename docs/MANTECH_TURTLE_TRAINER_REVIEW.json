@@ -1,0 +1,569 @@
+[
+  {
+    "cls": 8,
+    "spell": 51995,
+    "name": "Icicles",
+    "description": "Draw upon frost leylines, becoming frozen in place, and launch icicles at the enemy, dealing $51996m1 Frost damage every $51996d for $51993d.  Damage taken has a high chance to shatter your icy prison, dealing 30% of your base health as Frost damage to you.  Cancelling the effect early will not remove the freeze effect.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 8,
+    "spell": 51997,
+    "name": "Icicles",
+    "description": "Draw upon frost leylines, becoming frozen in place, and launch icicles at the enemy, dealing $51998m1 Frost damage every $51998d for $51993d.  Damage taken has a high chance to shatter your icy prison, dealing 30% of your base health as Frost damage to you.  Cancelling the effect early will not remove the freeze effect.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 8,
+    "spell": 51936,
+    "name": "Arcane Surge",
+    "description": "Blast your target with overloaded mana, dealing $s1 Arcane damage.  Only usable after one of your spells has been partially or fully resisted.  This spell cannot be partially or fully resisted.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 8,
+    "spell": 51935,
+    "name": "Arcane Surge",
+    "description": "Blast your target with overloaded mana, dealing $s1 Arcane damage.  Only usable after one of your spells has been partially or fully resisted.  This spell cannot be partially or fully resisted.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 8,
+    "spell": 51934,
+    "name": "Arcane Surge",
+    "description": "Blast your target with overloaded mana, dealing $s1 Arcane damage.  Only usable after one of your spells has been partially or fully resisted.  This spell cannot be partially or fully resisted.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 8,
+    "spell": 51933,
+    "name": "Arcane Surge",
+    "description": "Blast your target with overloaded mana, dealing $s1 Arcane damage.  Only usable after one of your spells has been partially or fully resisted.  This spell cannot be partially or fully resisted.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 8,
+    "spell": 51950,
+    "name": "Arcane Rupture",
+    "description": "Rupture your target with the force of concentrated arcane energy, dealing $s1 Arcane damage and increasing the damage and mana cost of your Arcane Missiles spell by $52502s1% for $52502d.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 8,
+    "spell": 51951,
+    "name": "Arcane Rupture",
+    "description": "Rupture your target with the force of concentrated arcane energy, dealing $s1 Arcane damage and increasing the damage and mana cost of your Arcane Missiles spell by $52502s1% for $52502d.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 8,
+    "spell": 51952,
+    "name": "Arcane Rupture",
+    "description": "Rupture your target with the force of concentrated arcane energy, dealing $s1 Arcane damage and increasing the damage and mana cost of your Arcane Missiles spell by $52502s1% for $52502d.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 8,
+    "spell": 51953,
+    "name": "Arcane Rupture",
+    "description": "Rupture your target with the force of concentrated arcane energy, dealing $s1 Arcane damage and increasing the damage and mana cost of your Arcane Missiles spell by $52502s1% for $52502d.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 8,
+    "spell": 51954,
+    "name": "Arcane Rupture",
+    "description": "Rupture your target with the force of concentrated arcane energy, dealing $s1 Arcane damage and increasing the damage and mana cost of your Arcane Missiles spell by $52502s1% for $52502d.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 8,
+    "spell": 51991,
+    "name": "Icicles",
+    "description": "Draw upon frost leylines, becoming frozen in place, and launch icicles at the enemy, dealing $51992m1 Frost damage every $51992d for $51993d.  Damage taken has a high chance to shatter your icy prison, dealing 30% of your base health as Frost damage to you.  Cancelling the effect early will not remove the freeze effect.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 5,
+    "spell": 45555,
+    "name": "Pain Spike",
+    "description": "Causes $s1 Shadow damage instantly, but the damage caused will begin healing itself after landing.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 5,
+    "spell": 51479,
+    "name": "Chastise",
+    "description": "Chastise the target, causing $s1 Holy damage.  If the target is an enemy, they are disoriented for up to $51569d or until they take damage.  If the target is an ally, their attack and casting speed is increased by $51482s1% for $51482d, increased to $52659d if the damage results in a critical strike.  Cannot be used on allies with less than 80% health or below level 45.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 5,
+    "spell": 51480,
+    "name": "Chastise",
+    "description": "Chastise the target, causing $s1 Holy damage.  If the target is an enemy, they are disoriented for up to $51569d or until they take damage.  If the target is an ally, their attack and casting speed is increased by $51483s1% for $51483d, increased to $52660d if the damage results in a critical strike.  Cannot be used on allies with less than 80% health or below level 55.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 5,
+    "spell": 52640,
+    "name": "Searing Shot",
+    "description": "Fire a searing arrow, dealing weapon damage plus $s1 Fire damage.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 5,
+    "spell": 52642,
+    "name": "Searing Shot",
+    "description": "Fire a searing arrow, dealing weapon damage plus $s1 Fire damage.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 5,
+    "spell": 52644,
+    "name": "Searing Shot",
+    "description": "Fire a searing arrow, dealing weapon damage plus $s1 Fire damage.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 5,
+    "spell": 57701,
+    "name": "Pain Spike",
+    "description": "Causes $s1 Shadow damage instantly, but the damage caused will begin healing itself after landing.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 5,
+    "spell": 57704,
+    "name": "Pain Spike",
+    "description": "Causes $s1 Shadow damage instantly, but the damage caused will begin healing itself after landing.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 5,
+    "spell": 57707,
+    "name": "Pain Spike",
+    "description": "Causes $s1 Shadow damage instantly, but the damage caused will begin healing itself after landing.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 9,
+    "spell": 51698,
+    "name": "Create Felstone",
+    "description": "Creates a Felstone for the caster.  When used, it causes $51697s1% of the damage dealt to be returned as healing for $51697d.  In addition, health restored this way will also heal your active demon.\\n\\nConjured items disappear if logged out for more than 15 minutes.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 9,
+    "spell": 51701,
+    "name": "Create Wrathstone",
+    "description": "Creates a Wrathstone for the caster.  When used, it increases the threat generated by your Fire spells by $51700s1% and reduces the Fire damage you take from your Hellfire spell by $51700s2% for $51700d.\\n\\nConjured items disappear if logged out for more than 15 minutes.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 9,
+    "spell": 52551,
+    "name": "Dark Harvest",
+    "description": "Reaps the target's life, dealing $*8;s1 Shadow damage over $d. While channeling, the time between periodic ticks of your Affliction spells on the target is reduced by $s2%. If the target dies while channeling, the cooldown of Dark Harvest is reset.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 9,
+    "spell": 52552,
+    "name": "Dark Harvest",
+    "description": "Reaps the target's life, dealing $*8;s1 Shadow damage over $d. While channeling, the time between periodic ticks of your Affliction spells on the target is reduced by $s2%. If the target dies while channeling, the cooldown of Dark Harvest is reset.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 9,
+    "spell": 52752,
+    "name": "Create Voidstone",
+    "description": "Creates a Voidstone for the caster.  When used, reduces threat generated by $52751s1% for $52751d.\\n\\nConjured items disappear if logged out for more than 15 minutes.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 1,
+    "spell": 45595,
+    "name": "Intervene",
+    "description": "Run at high speed towards a party member, intercepting the next melee or ranged attack made against them.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 1,
+    "spell": 45513,
+    "name": "Totemic Recall",
+    "description": "Returns your totems to the earth, refunding $s1% of the mana required to cast each totem destroyed by Totemic Recall.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 4,
+    "spell": 45878,
+    "name": "Dissolvent Poison",
+    "description": "Coats a weapon with poison that lasts for $/60;45877s1 minutes.\\nEach strike has a $45877h% chance to poison the enemy, instantly inflicting $45876s1 damage. This damage ignores armor. Only affects Elemental, Giant, Undead, and Mechanical enemies. 100 charges.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 4,
+    "spell": 45882,
+    "name": "Dissolvent Poison II",
+    "description": "Coats a weapon with poison that lasts for $/60;45881s1 minutes.\\nEach strike has a $45881h% chance to poison the enemy, instantly inflicting $45880s1 damage. This damage ignores armor. Only affects Elemental, Giant, Undead, and Mechanical enemies. 115 charges.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 4,
+    "spell": 45605,
+    "name": "Deadly Throw",
+    "description": "Hurls your thrown weapon at the target with deadly accuracy, dealing $s1% thrown weapon damage, interrupting spellcasting and preventing any spell from that school of magic from being cast for $d.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 4,
+    "spell": 45608,
+    "name": "Detection",
+    "description": "Hidden traps will become easier to spot for $d.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 4,
+    "spell": 45611,
+    "name": "Agitating Poison",
+    "description": "Coats a weapon with poison that lasts for 30 minutes.\\nEach strike has a 20% chance of poisoning the enemy which instantly inflicts $45613s1 Nature damage, and causes additional threat.  115 charges.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 4,
+    "spell": 52715,
+    "name": "Noxious Assault",
+    "description": "Strikes with both weapons, dealing $s1 damage plus 30% of your Attack Power and applies poisons from both weapons. Awards $s2 combo $lpoint:points;.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 4,
+    "spell": 52716,
+    "name": "Noxious Assault",
+    "description": "Strikes with both weapons, dealing $s1 damage plus 30% of your Attack Power and applies poisons from both weapons. Awards $s2 combo $lpoint:points;.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 2,
+    "spell": 1044,
+    "name": "Hand of Freedom",
+    "description": "Places a Blessing on the friendly target, granting immunity to movement impairing effects for $d.  Players may only have one Hand on them per Paladin at any one time.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 2,
+    "spell": 1022,
+    "name": "Hand of Protection",
+    "description": "A targeted party member is protected from all physical attacks for $d, but during that time they cannot attack or use physical abilities.  Players may only have one Hand on them per Paladin at any one time.  Once protected, the target cannot be made invulnerable by Divine Shield, Divine Protection or Blessing of Protection again for $25771d.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 2,
+    "spell": 5599,
+    "name": "Hand of Protection",
+    "description": "A targeted party member is protected from all physical attacks for $d, but during that time they cannot attack or use physical abilities.  Players may only have one Hand on them per Paladin at any one time.  Once protected, the target cannot be made invulnerable by Divine Shield, Divine Protection or Blessing of Protection again for $25771d.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 2,
+    "spell": 6940,
+    "name": "Hand of Sacrifice",
+    "description": "Places a Blessing on the party member, transfering $s1 damage taken per hit to the caster.  Lasts $d.  Players may only have one Hand on them per Paladin at any one time.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 2,
+    "spell": 10278,
+    "name": "Hand of Protection",
+    "description": "A targeted party member is protected from all physical attacks for $d, but during that time they cannot attack or use physical abilities.  Players may only have one Hand on them per Paladin at any one time.  Once protected, the target cannot be made invulnerable by Divine Shield, Divine Protection or Blessing of Protection again for $25771d.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 2,
+    "spell": 20729,
+    "name": "Hand of Sacrifice",
+    "description": "Places a Blessing on the party member, transfering $s1 damage taken per hit to the caster.  Lasts $d.  Players may only have one Hand on them per Paladin at any one time.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 2,
+    "spell": 51302,
+    "name": "Hand of Reckoning",
+    "description": "Taunts the target to attack you, but has no effect if the target is already attacking you.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 2,
+    "spell": 51565,
+    "name": "Bulwark of the Righteous",
+    "description": "Bash the target with your shield, dealing $s1 Holy damage and reducing the damage you take by $s2% for $d.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 2,
+    "spell": 51566,
+    "name": "Bulwark of the Righteous",
+    "description": "Bash the target with your shield, dealing $s1 Holy damage and reducing the damage you take by $s2% for $d.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 7,
+    "spell": 45525,
+    "name": "Earth Shield",
+    "description": "The caster is surrounded by $n globes of protective earth for $d. When a spell, melee or ranged attack hits the caster, $45526s1 Health is restored to the caster, spending one globe. This effect can only occur once every 3 sec. Additionally, you gain $s2% chance to avoid interruption caused by damage while casting. Only one elemental shield can be active on the Shaman at any one time.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 7,
+    "spell": 45527,
+    "name": "Water Shield",
+    "description": "The caster is surrounded by $n globes of rejuvenating water for $d. When a spell, melee or ranged attack hits the caster, $45528s1 Mana is restored to the caster, spending one globe. This effect can only occur once every 3 sec. Only one elemental shield can be active on the Shaman at any one time.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 7,
+    "spell": 45529,
+    "name": "Calm Elements",
+    "description": "Calms the target, reducing the range at which it will attack you by $s1 yards.  Only affects Elemental targets level $v or lower.  Lasts $d.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 7,
+    "spell": 45513,
+    "name": "Totemic Recall",
+    "description": "Returns your totems to the earth, refunding $s1% of the mana required to cast each totem destroyed by Totemic Recall.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 7,
+    "spell": 51365,
+    "name": "Earthshaker Slam",
+    "description": "Slam the target with earthen fury, taunting it to attack you. Has no effect if the target is already attacking you.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 7,
+    "spell": 51525,
+    "name": "Earth Shield",
+    "description": "The caster is surrounded by $n globes of protective earth for $d. When a spell, melee or ranged attack hits the caster, $51523s1 Health is restored to the caster, spending one globe. This effect can only occur once every 3 sec. Additionally, you gain $s2% chance to avoid interruption caused by damage while casting. Only one elemental shield can be active on the Shaman at any one time.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 7,
+    "spell": 51526,
+    "name": "Earth Shield",
+    "description": "The caster is surrounded by $n globes of protective earth for $d. When a spell, melee or ranged attack hits the caster, $51524s1 Health is restored to the caster, spending one globe. This effect can only occur once every 3 sec. Additionally, you gain $s2% chance to avoid interruption caused by damage while casting. Only one elemental shield can be active on the Shaman at any one time.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 7,
+    "spell": 51533,
+    "name": "Water Shield",
+    "description": "The caster is surrounded by $n globes of rejuvenating water for $d. When a spell, melee or ranged attack hits the caster, $51529s1 Mana is restored to the caster, spending one globe. This effect can only occur once every 3 sec. Only one elemental shield can be active on the Shaman at any one time.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 7,
+    "spell": 51534,
+    "name": "Water Shield",
+    "description": "The caster is surrounded by $n globes of rejuvenating water for $d. When a spell, melee or ranged attack hits the caster, $51530s1 Mana is restored to the caster, spending one globe. This effect can only occur once every 3 sec. Only one elemental shield can be active on the Shaman at any one time.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 7,
+    "spell": 51535,
+    "name": "Water Shield",
+    "description": "The caster is surrounded by $n globes of rejuvenating water for $d. When a spell, melee or ranged attack hits the caster, $51531s1 Mana is restored to the caster, spending one globe. This effect can only occur once every 3 sec. Only one elemental shield can be active on the Shaman at any one time.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 7,
+    "spell": 51536,
+    "name": "Water Shield",
+    "description": "The caster is surrounded by $n globes of rejuvenating water for $d. When a spell, melee or ranged attack hits the caster, $51532s1 Mana is restored to the caster, spending one globe. This effect can only occur once every 3 sec. Only one elemental shield can be active on the Shaman at any one time.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 3,
+    "spell": 45650,
+    "name": "Aspect of the Wolf",
+    "description": "The hunter takes on the aspects of a wolf, increasing melee attack power by $s1.  Only one Aspect can be active at a time.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 3,
+    "spell": 3035,
+    "name": "Steady Shot",
+    "description": "A precise shot with a ranged weapon that strikes the target for $s2% weapon damage plus an additional $s1 damage.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 3,
+    "spell": 3036,
+    "name": "Steady Shot",
+    "description": "A precise shot with a ranged weapon that strikes the target for $s2% weapon damage plus an additional $s1 damage.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 3,
+    "spell": 3037,
+    "name": "Steady Shot",
+    "description": "A precise shot with a ranged weapon that strikes the target for $s2% weapon damage plus an additional $s1 damage.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 3,
+    "spell": 3038,
+    "name": "Steady Shot",
+    "description": "A precise shot with a ranged weapon that strikes the target for $s2% weapon damage plus an additional $s1 damage.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 3,
+    "spell": 3668,
+    "name": "Steady Shot",
+    "description": "A precise shot with a ranged weapon that strikes the target for $s2% weapon damage plus an additional $s1 damage.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 3,
+    "spell": 45651,
+    "name": "Aspect of the Viper",
+    "description": "The hunter takes on the aspects of the viper, regenerating $s1% of maximum mana every $t1 sec.  Only one Aspect can be active at a time.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 3,
+    "spell": 51496,
+    "name": "Aspect of the Wolf",
+    "description": "The hunter takes on the aspects of a wolf, increasing melee attack power by $s1.  Only one Aspect can be active at a time.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 3,
+    "spell": 51497,
+    "name": "Aspect of the Wolf",
+    "description": "The hunter takes on the aspects of a wolf, increasing melee attack power by $s1.  Only one Aspect can be active at a time.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 3,
+    "spell": 51498,
+    "name": "Aspect of the Wolf",
+    "description": "The hunter takes on the aspects of a wolf, increasing melee attack power by $s1.  Only one Aspect can be active at a time.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 3,
+    "spell": 51499,
+    "name": "Aspect of the Wolf",
+    "description": "The hunter takes on the aspects of a wolf, increasing melee attack power by $s1.  Only one Aspect can be active at a time.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 3,
+    "spell": 51500,
+    "name": "Aspect of the Wolf",
+    "description": "The hunter takes on the aspects of a wolf, increasing melee attack power by $s1.  Only one Aspect can be active at a time.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 3,
+    "spell": 52415,
+    "name": "Carve",
+    "description": "A sweeping attack that strikes up to $i1 enemies in a $a1 yard cone in front of you, dealing $s1% weapon damage.\\nThis ability shares a cooldown with Multi-Shot.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 3,
+    "spell": 52416,
+    "name": "Carve",
+    "description": "A sweeping attack that strikes up to $i1 enemies in a $a1 yard cone in front of you, dealing $s1% weapon damage.\\nThis ability shares a cooldown with Multi-Shot.",
+    "strategy_reference": true
+  },
+  {
+    "cls": 11,
+    "spell": 45736,
+    "name": "Savage Bite",
+    "description": "Savagely bites the target, dealing 80% normal damage plus an additional 30 damage. This ability generates a high amount of threat.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 11,
+    "spell": 47379,
+    "name": "Reshift",
+    "description": "Cancels and reapplies the current shapeshift form.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 11,
+    "spell": 51401,
+    "name": "Barkskin (Feral)",
+    "description": "The Druid's skin becomes as tough as bark, reducing Physical damage taken by $s1% for the next $n attacks. Movement speed is reduced by $s2% for the duration. Lasts $d.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 11,
+    "spell": 51451,
+    "name": "Barkskin (Feral)",
+    "description": "The Druid's skin becomes as tough as bark, reducing Physical damage taken by $s1% for the next $n attacks. Movement speed is reduced by $s2% for the duration. Lasts $d.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 11,
+    "spell": 51452,
+    "name": "Barkskin (Feral)",
+    "description": "The Druid's skin becomes as tough as bark, reducing Physical damage taken by $s1% for the next $n attacks. Movement speed is reduced by $s2% for the duration. Lasts $d.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 5,
+    "spell": 52951,
+    "name": "Light of An'she",
+    "description": "Blasts the target with intense light, reducing their hit chance by $s1% and burning them for $o2 Holy damage over $d.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 5,
+    "spell": 52953,
+    "name": "Light of An'she",
+    "description": "Blasts the target with intense light, reducing their hit chance by $s1% and burning them for $o2 Holy damage over $d.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 5,
+    "spell": 52955,
+    "name": "Light of An'she",
+    "description": "Blasts the target with intense light, reducing their hit chance by $s1% and burning them for $o2 Holy damage over $d.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 5,
+    "spell": 52957,
+    "name": "Light of An'she",
+    "description": "Blasts the target with intense light, reducing their hit chance by $s1% and burning them for $o2 Holy damage over $d.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 5,
+    "spell": 52959,
+    "name": "Light of An'she",
+    "description": "Blasts the target with intense light, reducing their hit chance by $s1% and burning them for $o2 Holy damage over $d.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 8,
+    "spell": 52615,
+    "name": "Teleport: Alah'Thalas",
+    "description": "Teleports the caster to Alah'Thalas.",
+    "strategy_reference": false
+  },
+  {
+    "cls": 8,
+    "spell": 52618,
+    "name": "Portal: Alah'Thalas",
+    "description": "Creates a portal, teleporting group members that use it to Alah'Thalas.",
+    "strategy_reference": false
+  }
+]

@@ -4,3 +4,8 @@
 [submodule "modules/TortoiseBots"]
 	path = modules/TortoiseBots
 	url = https://github.com/T-imothy/TortoiseBots.git
+
+[submodule "modules/ManTechPlayerbots"]
+	path = modules/ManTechPlayerbots
+	url = https://github.com/T-imothy/playerbots.git
+	branch = turtle-native-port

@@ -41,7 +41,7 @@ struct Destination{uint32 GetPurpose()const{return 3;}};
 struct TravelTarget
 {
     WorldPosition* goal=nullptr;Destination* destination=nullptr;
-    WorldPosition* GetPosition(){return goal;}Destination* GetDestination(){return destination;}
+    WorldPosition* getPosition(){return goal;}Destination* GetDestination(){return destination;}
     int32 GetStatus(){return 0;}int32 GetEntry(){return 0;}uint32 GetRetryCount(bool){return 0;}int32 GetTimeLeft(){return 0;}
 };
 struct Step{WorldPosition point;uint32 type=0,entry=0;};

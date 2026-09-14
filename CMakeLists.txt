@@ -21,6 +21,15 @@ cmake_minimum_required(VERSION 3.1...3.29)
 
 project(TurtleWoW)
 include(FetchContent)
+option(MANTECH_DEV_DIAGNOSTICS "Build bounded development timing and memory observer" OFF)
+option(MANTECH_PROFILE_ALLOCATIONS "Build optional bounded C++ allocation-stack sampler" OFF)
+if((MANTECH_DEV_DIAGNOSTICS OR MANTECH_PROFILE_ALLOCATIONS) AND NOT WIN32)
+  message(FATAL_ERROR "The development observer and allocation sampler currently require Windows")
+endif()
+if(MANTECH_DEV_DIAGNOSTICS)
+  # Native subdirectories replace COMPILE_DEFINITIONS from this shared list.
+  list(APPEND DEFINITIONS MANTECH_DEV_DIAGNOSTICS)
+endif()
 
 # Allow -DACE_ROOT, -DTBB_ROOT, etc.
 if(${CMAKE_VERSION} VERSION_GREATER "3.11")
@@ -83,7 +92,9 @@ option(BUILD_PLAYERBOTS "Build the cmangos/playerbots subsystem" OFF)
 # modules/mod-playerbots. A from-scratch Linux build with the documented cmake
 # line (no -DMODULES) died exactly there (2026-09-05). The subsystem IS a
 # module, so switch the module build on for it.
-if(BUILD_PLAYERBOTS AND MODULES STREQUAL "disabled")
+if(BUILD_PLAYERBOTS AND MODULES STREQUAL "disabled" AND
+   NOT MODULE_MANTECHPLAYERBOTS STREQUAL "static" AND
+   NOT MODULE_MANTECHPLAYERBOTS STREQUAL "dynamic")
   # Enable ONLY the requested subsystem, not every optional module. Changing
   # MODULES globally also activates DungeonClear and adds a mandatory config
   # file to existing deployments that previously ran just mod-playerbots.
@@ -208,8 +219,12 @@ if(WIN32)
   endif()
   
   # Added by Giperion, in WIN32 output all compiled files in one directory
-  set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-  set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )
+  if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+  endif()
+  if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+  endif()
   # Allow creating folders in solution
   set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 endif()

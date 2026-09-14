@@ -1,3 +1,7 @@
+-- This merged migration may follow an existing ManTech 44070 cooldown row.
+-- Preserve DBC-derived proc flags (0) and the 180-second cooldown. Explicit
+-- upserts also make retries safe after partial application to MyISAM tables;
+-- each assignment is limited to the spell data declared by this migration.
 -- ==============================================
 -- FILE: arms_of_thaurissan_unrelenting_strikes.sql
 -- GENERATED: 20260903063722
@@ -18,7 +22,8 @@ INSERT INTO `spell_affect`
 )
 VALUES
 (51818, 0, 17179870208),
-(51819, 0, 17179870208);
+(51819, 0, 17179870208)
+ON DUPLICATE KEY UPDATE `SpellFamilyMask`=VALUES(`SpellFamilyMask`);
 
 -- ==============================================
 -- FILE: bonescythe_reduced_threat.sql
@@ -31,7 +36,8 @@ INSERT INTO `spell_affect`
     `SpellFamilyMask`
 )
 VALUES
-(28811, 0, 549764202496);
+(28811, 0, 549764202496)
+ON DUPLICATE KEY UPDATE `SpellFamilyMask`=VALUES(`SpellFamilyMask`);
 
 -- ==============================================
 -- FILE: brotherhood_reduced_ability_costs.sql
@@ -44,7 +50,8 @@ INSERT INTO `spell_affect`
     `SpellFamilyMask`
 )
 VALUES
-(41361, 0, 34359754816);
+(41361, 0, 34359754816)
+ON DUPLICATE KEY UPDATE `SpellFamilyMask`=VALUES(`SpellFamilyMask`);
 
 -- ==============================================
 -- FILE: brotherhood_warrior_5p.sql
@@ -65,7 +72,8 @@ INSERT INTO `spell_proc_event`
     `Cooldown`
 )
 VALUES
-(41363, 0, 4, 8192, 16, 1048576, 16, 524288, 0, 0, 0);
+(41363, 0, 4, 8192, 16, 1048576, 16, 524288, 0, 0, 0)
+ON DUPLICATE KEY UPDATE `SchoolMask`=VALUES(`SchoolMask`), `SpellFamilyName`=VALUES(`SpellFamilyName`), `SpellFamilyMask0`=VALUES(`SpellFamilyMask0`), `SpellFamilyMask1`=VALUES(`SpellFamilyMask1`), `SpellFamilyMask2`=VALUES(`SpellFamilyMask2`), `procFlags`=VALUES(`procFlags`), `procEx`=VALUES(`procEx`), `ppmRate`=VALUES(`ppmRate`), `CustomChance`=VALUES(`CustomChance`), `Cooldown`=VALUES(`Cooldown`);
 
 -- ==============================================
 -- FILE: cenarion_blessing.sql
@@ -106,7 +114,8 @@ INSERT INTO `spell_proc_event`
     `Cooldown`
 )
 VALUES
-(44070, 0, 0, 0, 0, 0, 664232, 0, 0, 0, 180);
+(44070, 0, 0, 0, 0, 0, 0, 0, 0, 0, 180)
+ON DUPLICATE KEY UPDATE `SchoolMask`=VALUES(`SchoolMask`), `SpellFamilyName`=VALUES(`SpellFamilyName`), `SpellFamilyMask0`=VALUES(`SpellFamilyMask0`), `SpellFamilyMask1`=VALUES(`SpellFamilyMask1`), `SpellFamilyMask2`=VALUES(`SpellFamilyMask2`), `procFlags`=VALUES(`procFlags`), `procEx`=VALUES(`procEx`), `ppmRate`=VALUES(`ppmRate`), `CustomChance`=VALUES(`CustomChance`), `Cooldown`=VALUES(`Cooldown`);
 
 -- ==============================================
 -- FILE: enigma_nether_overcharge.sql
@@ -137,7 +146,8 @@ INSERT INTO `spell_affect`
     `SpellFamilyMask`
 )
 VALUES
-(23566, 0, 8589938688);
+(23566, 0, 8589938688)
+ON DUPLICATE KEY UPDATE `SpellFamilyMask`=VALUES(`SpellFamilyMask`);
 
 -- ==============================================
 -- FILE: nemesis_corruption_siphon_life_duration.sql
@@ -150,7 +160,8 @@ INSERT INTO `spell_affect`
     `SpellFamilyMask`
 )
 VALUES
-(52601, 0, 4294967298);
+(52601, 0, 4294967298)
+ON DUPLICATE KEY UPDATE `SpellFamilyMask`=VALUES(`SpellFamilyMask`);
 
 -- ==============================================
 -- FILE: pursuit_multishot_carve_damage.sql
@@ -163,7 +174,8 @@ INSERT INTO `spell_affect`
     `SpellFamilyMask`
 )
 VALUES
-(28539, 0, 8589938688);
+(28539, 0, 8589938688)
+ON DUPLICATE KEY UPDATE `SpellFamilyMask`=VALUES(`SpellFamilyMask`);
 
 -- ==============================================
 -- FILE: ravenstalker_multishot_carve_cooldown.sql
@@ -176,7 +188,8 @@ INSERT INTO `spell_affect`
     `SpellFamilyMask`
 )
 VALUES
-(52602, 0, 8589938688);
+(52602, 0, 8589938688)
+ON DUPLICATE KEY UPDATE `SpellFamilyMask`=VALUES(`SpellFamilyMask`);
 
 -- ==============================================
 -- FILE: redemption_holy_power.sql
@@ -201,7 +214,8 @@ INSERT INTO `spell_proc_event`
     `Cooldown`
 )
 VALUES
-(51821, 0, 10, 3223347200, 0, 0, 0, 0, 0, 0, 0);
+(51821, 0, 10, 3223347200, 0, 0, 0, 0, 0, 0, 0)
+ON DUPLICATE KEY UPDATE `SchoolMask`=VALUES(`SchoolMask`), `SpellFamilyName`=VALUES(`SpellFamilyName`), `SpellFamilyMask0`=VALUES(`SpellFamilyMask0`), `SpellFamilyMask1`=VALUES(`SpellFamilyMask1`), `SpellFamilyMask2`=VALUES(`SpellFamilyMask2`), `procFlags`=VALUES(`procFlags`), `procEx`=VALUES(`procEx`), `ppmRate`=VALUES(`ppmRate`), `CustomChance`=VALUES(`CustomChance`), `Cooldown`=VALUES(`Cooldown`);
 
 -- ==============================================
 -- FILE: scarlet_crusade_purging_flames.sql
@@ -243,7 +257,8 @@ INSERT INTO `spell_affect`
     `SpellFamilyMask`
 )
 VALUES
-(46761, 0, 6599486734339);
+(46761, 0, 6599486734339)
+ON DUPLICATE KEY UPDATE `SpellFamilyMask`=VALUES(`SpellFamilyMask`);
 
 -- ==============================================
 -- FILE: stormreaver_impending_doom.sql
@@ -269,7 +284,8 @@ INSERT INTO `spell_proc_event`
 )
 VALUES
 (44080, 32, 0, 0, 0, 0, 655360, 0, 0, 0, 0),
-(44081, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0);
+(44081, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0)
+ON DUPLICATE KEY UPDATE `SchoolMask`=VALUES(`SchoolMask`), `SpellFamilyName`=VALUES(`SpellFamilyName`), `SpellFamilyMask0`=VALUES(`SpellFamilyMask0`), `SpellFamilyMask1`=VALUES(`SpellFamilyMask1`), `SpellFamilyMask2`=VALUES(`SpellFamilyMask2`), `procFlags`=VALUES(`procFlags`), `procEx`=VALUES(`procEx`), `ppmRate`=VALUES(`ppmRate`), `CustomChance`=VALUES(`CustomChance`), `Cooldown`=VALUES(`Cooldown`);
 
 -- ==============================================
 -- FILE: unseen_path_steady_raptor_mongoose_crit.sql
@@ -282,7 +298,8 @@ INSERT INTO `spell_affect`
     `SpellFamilyMask`
 )
 VALUES
-(52684, 0, 68719476738);
+(52684, 0, 68719476738)
+ON DUPLICATE KEY UPDATE `SpellFamilyMask`=VALUES(`SpellFamilyMask`);
 
 -- ==============================================
 -- FILE: warrior_intercept_intervene_bonuses.sql
@@ -296,5 +313,6 @@ INSERT INTO `spell_affect`
 )
 VALUES
 (22738, 0, 9663676416),
-(26111, 0, 9663676416);
+(26111, 0, 9663676416)
+ON DUPLICATE KEY UPDATE `SpellFamilyMask`=VALUES(`SpellFamilyMask`);
 

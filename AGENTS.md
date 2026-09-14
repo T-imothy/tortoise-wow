@@ -21,3 +21,10 @@ Before investigating or editing a subsystem, consult `docs/CORE_SYSTEMS_GUIDE.md
 - Regenerate source indexes with `tools/audit-core-contracts.ps1` after relevant changes. DB refresh is explicit and read-only; never infer production write/deploy authority from an audit.
 - Distinguish C++ script selection, EventAI events, native spell lists, dynamic summons and area-trigger routes. Missing filenames, empty event lists, rank flags and blank instance bindings are not sufficient to declare content broken.
 - Update the guide and focused regression coverage when changing a native contract. Track diagnostic additions/removal in `doc/TURTLE_DIAGNOSTICS.md`.
+
+## Local development location (user-directed relocation, 2026-09-12)
+
+Use this checkout as the active source. Read LOCAL_DEVELOPMENT.md for build/test
+commands and the user-selected output directory/shared MySQL instance. Earlier
+Codex sandbox checkouts and isolated databases are obsolete. Runtime configuration
+contains local database credentials and must stay outside the Git repositories.

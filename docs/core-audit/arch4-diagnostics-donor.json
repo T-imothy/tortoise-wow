@@ -1,0 +1,25 @@
+{
+  "reference": "ManTech Classic development diagnostic source snapshot, September14 2026; adapted to Turtle native owners",
+  "files": [
+    {
+      "path": "src/shared/Util/DevDiagnostics.h",
+      "donor_sha256": "ff4f8cde76bc2dfcc8c6109811e1b618214995c4b1cb372d7e0f5601c5709d5d"
+    },
+    {
+      "path": "src/shared/Util/DevDiagnosticsService.h",
+      "donor_sha256": "9637cb7a4ad2b2e2e8300090ac25e74f53c74d965d9a8a736e3f8e6f50347a48"
+    },
+    {
+      "path": "src/shared/Util/HeapDiagnostics.h",
+      "donor_sha256": "866facb5fa9942f69fb62d3f3461fc34d8eeeb486954eb25f85bbe7e120ac6f1"
+    },
+    {
+      "path": "src/shared/Memory/AllocationProfile.h",
+      "donor_sha256": "3a32113d87a39e32b15efead4ec5fc5fd2da51bd79a7589ceba9d594fb6d039f"
+    },
+    {
+      "path": "src/mangosd/AllocationProfile.cpp",
+      "donor_sha256": "73091d56d3f16e4d503f2e42c6e015dd690def0006417da5ff2f2cb6f892aa24"
+    }
+  ]
+}

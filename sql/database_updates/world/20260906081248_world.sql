@@ -1,7 +1,12 @@
+-- Reconcile the maintained Northwind data with the earlier ManTech quest fixes.
+-- Shared condition IDs describe the same active quests. Keyed rows update only
+-- declared columns; script chains are replaced by ID because those tables have
+-- no unique key. Both forms support retry after a partial MyISAM migration.
 -- ==============================================
 -- FILE: a_dark_knight_rises.sql
 -- GENERATED: 20260906081248
 -- ==============================================
+DELETE FROM `event_scripts` WHERE `id` IN (2020170);
 INSERT INTO `event_scripts`
 (
     `id`,
@@ -72,7 +77,8 @@ INSERT INTO `conditions`
     `flags`
 )
 VALUES
-(41648, 9, 41648, 1, 0, 0, 0);
+(41648, 9, 41648, 1, 0, 0, 0)
+ON DUPLICATE KEY UPDATE `type`=VALUES(`type`), `value1`=VALUES(`value1`), `value2`=VALUES(`value2`), `value3`=VALUES(`value3`), `value4`=VALUES(`value4`), `flags`=VALUES(`flags`);
 
 INSERT INTO `broadcast_text`
 (
@@ -91,7 +97,8 @@ INSERT INTO `broadcast_text`
 )
 VALUES
 (6248904, 'Greetings Judith. I am sorry to bother you again, but do you have something personal from one of your children? It may help me locate them', 'Greetings Judith. I am sorry to bother you again, but do you have something personal from one of your children? It may help me locate them', 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(6248905, 'What? Something Personal? Excuse me, this comes as a bit of a surprise. What on Azeroth would you use it for...? I am sorry, I should not interfere with your work. If you need it, I have this comb of my dear Sara. I brushed her hair just before I left for... Please, bring back my sweet darlings, the thought of Sara and Timothy all frightened breaks my heart!', 'What? Something Personal? Excuse me, this comes as a bit of a surprise. What on Azeroth would you use it for...? I am sorry, I should not interfere with your work. If you need it, I have this comb of my dear Sara. I brushed her hair just before I left for... Please, bring back my sweet darlings, the thought of Sara and Timothy all frightened breaks my heart!', 0, 0, 0, 0, 0, 0, 0, 0, 0);
+(6248905, 'What? Something Personal? Excuse me, this comes as a bit of a surprise. What on Azeroth would you use it for...? I am sorry, I should not interfere with your work. If you need it, I have this comb of my dear Sara. I brushed her hair just before I left for... Please, bring back my sweet darlings, the thought of Sara and Timothy all frightened breaks my heart!', 'What? Something Personal? Excuse me, this comes as a bit of a surprise. What on Azeroth would you use it for...? I am sorry, I should not interfere with your work. If you need it, I have this comb of my dear Sara. I brushed her hair just before I left for... Please, bring back my sweet darlings, the thought of Sara and Timothy all frightened breaks my heart!', 0, 0, 0, 0, 0, 0, 0, 0, 0)
+ON DUPLICATE KEY UPDATE `male_text`=VALUES(`male_text`), `female_text`=VALUES(`female_text`), `chat_type`=VALUES(`chat_type`), `sound_id`=VALUES(`sound_id`), `language_id`=VALUES(`language_id`), `emote_id1`=VALUES(`emote_id1`), `emote_id2`=VALUES(`emote_id2`), `emote_id3`=VALUES(`emote_id3`), `emote_delay1`=VALUES(`emote_delay1`), `emote_delay2`=VALUES(`emote_delay2`), `emote_delay3`=VALUES(`emote_delay3`);
 
 INSERT INTO `npc_text`
 (
@@ -114,7 +121,8 @@ INSERT INTO `npc_text`
     `Probability7`
 )
 VALUES
-(6248905, 6248905, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+(6248905, 6248905, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+ON DUPLICATE KEY UPDATE `BroadcastTextID0`=VALUES(`BroadcastTextID0`), `Probability0`=VALUES(`Probability0`), `BroadcastTextID1`=VALUES(`BroadcastTextID1`), `Probability1`=VALUES(`Probability1`), `BroadcastTextID2`=VALUES(`BroadcastTextID2`), `Probability2`=VALUES(`Probability2`), `BroadcastTextID3`=VALUES(`BroadcastTextID3`), `Probability3`=VALUES(`Probability3`), `BroadcastTextID4`=VALUES(`BroadcastTextID4`), `Probability4`=VALUES(`Probability4`), `BroadcastTextID5`=VALUES(`BroadcastTextID5`), `Probability5`=VALUES(`Probability5`), `BroadcastTextID6`=VALUES(`BroadcastTextID6`), `Probability6`=VALUES(`Probability6`), `BroadcastTextID7`=VALUES(`BroadcastTextID7`), `Probability7`=VALUES(`Probability7`);
 
 INSERT INTO `gossip_menu`
 (
@@ -124,7 +132,8 @@ INSERT INTO `gossip_menu`
     `condition_id`
 )
 VALUES
-(6248905, 6248905, 0, 0);
+(6248905, 6248905, 0, 0)
+ON DUPLICATE KEY UPDATE `script_id`=VALUES(`script_id`), `condition_id`=VALUES(`condition_id`);
 
 INSERT INTO `gossip_menu_option`
 (
@@ -145,8 +154,10 @@ INSERT INTO `gossip_menu_option`
     `condition_id`
 )
 VALUES
-(62489, 1, 0, 'Greetings Judith. I am sorry to bother you again, but do you have something personal from one of your children? It may help me locate them', 6248904, 1, 1, 6248905, 0, 6248904, 0, 0, '', 0, 41648);
+(62489, 1, 0, 'Greetings Judith. I am sorry to bother you again, but do you have something personal from one of your children? It may help me locate them', 6248904, 1, 1, 6248905, 0, 6248904, 0, 0, '', 0, 41648)
+ON DUPLICATE KEY UPDATE `option_icon`=VALUES(`option_icon`), `option_text`=VALUES(`option_text`), `option_broadcast_text`=VALUES(`option_broadcast_text`), `option_id`=VALUES(`option_id`), `npc_option_npcflag`=VALUES(`npc_option_npcflag`), `action_menu_id`=VALUES(`action_menu_id`), `action_poi_id`=VALUES(`action_poi_id`), `action_script_id`=VALUES(`action_script_id`), `box_coded`=VALUES(`box_coded`), `box_money`=VALUES(`box_money`), `box_text`=VALUES(`box_text`), `box_broadcast_text`=VALUES(`box_broadcast_text`), `condition_id`=VALUES(`condition_id`);
 
+DELETE FROM `gossip_scripts` WHERE `id` IN (6248904);
 INSERT INTO `gossip_scripts`
 (
     `id`,
@@ -179,66 +190,7 @@ VALUES
 -- FILE: empty_houses.sql
 -- GENERATED: 20260906081248
 -- ==============================================
-INSERT INTO `conditions`
-(
-    `condition_entry`,
-    `type`,
-    `value1`,
-    `value2`,
-    `value3`,
-    `value4`,
-    `flags`
-)
-VALUES
-(41643, 9, 41643, 1, 0, 0, 0);
-
-UPDATE `gossip_menu_option`
-SET `action_script_id` = 6248901,
-    `condition_id` = 41643
-WHERE `menu_id` = 62489
-  AND `id` = 0;
-
-UPDATE `gossip_menu_option`
-SET `action_script_id` = 6215301,
-    `condition_id` = 41643
-WHERE `menu_id` = 62153
-  AND `id` = 0;
-
-UPDATE `gossip_menu_option`
-SET `action_script_id` = 6215401,
-    `condition_id` = 41643
-WHERE `menu_id` = 62154
-  AND `id` = 0;
-
-INSERT INTO `gossip_scripts`
-(
-    `id`,
-    `delay`,
-    `priority`,
-    `command`,
-    `datalong`,
-    `datalong2`,
-    `datalong3`,
-    `datalong4`,
-    `target_param1`,
-    `target_param2`,
-    `target_type`,
-    `data_flags`,
-    `dataint`,
-    `dataint2`,
-    `dataint3`,
-    `dataint4`,
-    `x`,
-    `y`,
-    `z`,
-    `o`,
-    `condition_id`,
-    `comments`
-)
-VALUES
-(6248901, 0, 0, 8, 60068, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41643, 'Empty Houses - Judith Flenning - Quest Credit'),
-(6215301, 0, 0, 8, 60067, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41643, 'Empty Houses - Bailiff Lancaster - Quest Credit'),
-(6215401, 0, 0, 8, 60066, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41643, 'Empty Houses - Ignatz - Quest Credit');
+-- ManTech merge: Keep the active-quest interrogation credit and Judith cry emote from 20260817211652. Script 6215301 belongs to the Messenger report, not interrogation.
 
 -- ==============================================
 -- FILE: goody_bag.sql
@@ -255,7 +207,8 @@ INSERT INTO `conditions`
     `flags`
 )
 VALUES
-(41668, 9, 41668, 1, 0, 0, 0);
+(41668, 9, 41668, 1, 0, 0, 0)
+ON DUPLICATE KEY UPDATE `type`=VALUES(`type`), `value1`=VALUES(`value1`), `value2`=VALUES(`value2`), `value3`=VALUES(`value3`), `value4`=VALUES(`value4`), `flags`=VALUES(`flags`);
 
 UPDATE `gossip_menu_option`
 SET `action_menu_id` = 0,
@@ -263,6 +216,7 @@ SET `action_menu_id` = 0,
     `condition_id` = 41668
 WHERE `menu_id` = 62146;
 
+DELETE FROM `gossip_scripts` WHERE `id` IN (62146);
 INSERT INTO `gossip_scripts`
 (
     `id`,
@@ -309,7 +263,8 @@ INSERT INTO `conditions`
     `flags`
 )
 VALUES
-(41667, 9, 41667, 1, 0, 0, 0);
+(41667, 9, 41667, 1, 0, 0, 0)
+ON DUPLICATE KEY UPDATE `type`=VALUES(`type`), `value1`=VALUES(`value1`), `value2`=VALUES(`value2`), `value3`=VALUES(`value3`), `value4`=VALUES(`value4`), `flags`=VALUES(`flags`);
 
 INSERT INTO `broadcast_text`
 (
@@ -328,7 +283,8 @@ INSERT INTO `broadcast_text`
 )
 VALUES
 (8045202, 'I am here to collect the enchanted horseshoes', 'I am here to collect the enchanted horseshoes', 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(8045203, 'Indeed. I have already received word and payment, they are yours to carry back to where they now belong.', 'Indeed. I have already received word and payment, they are yours to carry back to where they now belong.', 0, 0, 0, 0, 0, 0, 0, 0, 0);
+(8045203, 'Indeed. I have already received word and payment, they are yours to carry back to where they now belong.', 'Indeed. I have already received word and payment, they are yours to carry back to where they now belong.', 0, 0, 0, 0, 0, 0, 0, 0, 0)
+ON DUPLICATE KEY UPDATE `male_text`=VALUES(`male_text`), `female_text`=VALUES(`female_text`), `chat_type`=VALUES(`chat_type`), `sound_id`=VALUES(`sound_id`), `language_id`=VALUES(`language_id`), `emote_id1`=VALUES(`emote_id1`), `emote_id2`=VALUES(`emote_id2`), `emote_id3`=VALUES(`emote_id3`), `emote_delay1`=VALUES(`emote_delay1`), `emote_delay2`=VALUES(`emote_delay2`), `emote_delay3`=VALUES(`emote_delay3`);
 
 INSERT INTO `npc_text`
 (
@@ -351,7 +307,8 @@ INSERT INTO `npc_text`
     `Probability7`
 )
 VALUES
-(8045202, 8045203, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+(8045202, 8045203, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+ON DUPLICATE KEY UPDATE `BroadcastTextID0`=VALUES(`BroadcastTextID0`), `Probability0`=VALUES(`Probability0`), `BroadcastTextID1`=VALUES(`BroadcastTextID1`), `Probability1`=VALUES(`Probability1`), `BroadcastTextID2`=VALUES(`BroadcastTextID2`), `Probability2`=VALUES(`Probability2`), `BroadcastTextID3`=VALUES(`BroadcastTextID3`), `Probability3`=VALUES(`Probability3`), `BroadcastTextID4`=VALUES(`BroadcastTextID4`), `Probability4`=VALUES(`Probability4`), `BroadcastTextID5`=VALUES(`BroadcastTextID5`), `Probability5`=VALUES(`Probability5`), `BroadcastTextID6`=VALUES(`BroadcastTextID6`), `Probability6`=VALUES(`Probability6`), `BroadcastTextID7`=VALUES(`BroadcastTextID7`), `Probability7`=VALUES(`Probability7`);
 
 INSERT INTO `gossip_menu`
 (
@@ -361,7 +318,8 @@ INSERT INTO `gossip_menu`
     `condition_id`
 )
 VALUES
-(8045202, 8045202, 0, 0);
+(8045202, 8045202, 0, 0)
+ON DUPLICATE KEY UPDATE `script_id`=VALUES(`script_id`), `condition_id`=VALUES(`condition_id`);
 
 INSERT INTO `gossip_menu_option`
 (
@@ -382,8 +340,10 @@ INSERT INTO `gossip_menu_option`
     `condition_id`
 )
 VALUES
-(59138, 0, 0, 'I am here to collect the enchanted horseshoes', 8045202, 1, 1, 8045202, 0, 8045202, 0, 0, NULL, 0, 41667);
+(59138, 0, 0, 'I am here to collect the enchanted horseshoes', 8045202, 1, 1, 8045202, 0, 8045202, 0, 0, NULL, 0, 41667)
+ON DUPLICATE KEY UPDATE `option_icon`=VALUES(`option_icon`), `option_text`=VALUES(`option_text`), `option_broadcast_text`=VALUES(`option_broadcast_text`), `option_id`=VALUES(`option_id`), `npc_option_npcflag`=VALUES(`npc_option_npcflag`), `action_menu_id`=VALUES(`action_menu_id`), `action_poi_id`=VALUES(`action_poi_id`), `action_script_id`=VALUES(`action_script_id`), `box_coded`=VALUES(`box_coded`), `box_money`=VALUES(`box_money`), `box_text`=VALUES(`box_text`), `box_broadcast_text`=VALUES(`box_broadcast_text`), `condition_id`=VALUES(`condition_id`);
 
+DELETE FROM `gossip_scripts` WHERE `id` IN (8045202);
 INSERT INTO `gossip_scripts`
 (
     `id`,
@@ -427,7 +387,8 @@ INSERT INTO `conditions`
     `flags`
 )
 VALUES
-(41642, 9, 41642, 1, 0, 0, 0);
+(41642, 9, 41642, 1, 0, 0, 0)
+ON DUPLICATE KEY UPDATE `type`=VALUES(`type`), `value1`=VALUES(`value1`), `value2`=VALUES(`value2`), `value3`=VALUES(`value3`), `value4`=VALUES(`value4`), `flags`=VALUES(`flags`);
 
 UPDATE `gossip_menu_option`
 SET `action_menu_id` = -1,
@@ -436,6 +397,7 @@ SET `action_menu_id` = -1,
 WHERE `menu_id` = 62492
   AND `id` = 0;
 
+DELETE FROM `gossip_scripts` WHERE `id` IN (62492);
 INSERT INTO `gossip_scripts`
 (
     `id`,
@@ -479,7 +441,8 @@ INSERT INTO `conditions`
     `flags`
 )
 VALUES
-(41637, 9, 41637, 1, 0, 0, 0);
+(41637, 9, 41637, 1, 0, 0, 0)
+ON DUPLICATE KEY UPDATE `type`=VALUES(`type`), `value1`=VALUES(`value1`), `value2`=VALUES(`value2`), `value3`=VALUES(`value3`), `value4`=VALUES(`value4`), `flags`=VALUES(`flags`);
 
 DELETE FROM `gossip_menu`
 WHERE `entry` IN (
@@ -546,7 +509,8 @@ VALUES
 (6230305, 'Prestor family.', 'Prestor family.', 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (6230306, 'Thank you! Sister Argent is a very nice woman, so I want to do my best to make her smile!', 'Thank you! Sister Argent is a very nice woman, so I want to do my best to make her smile!', 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (6244701, 'I am the altar boy! Brother Graham said that is a huge responsibility.', 'I am the altar boy! Brother Graham said that is a huge responsibility.', 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(6230099, 'Hm, I''m not sure that''s what it was...', 'Hm, I''m not sure that''s what it was...', 0, 0, 0, 0, 0, 0, 0, 0, 0);
+(6230099, 'Hm, I''m not sure that''s what it was...', 'Hm, I''m not sure that''s what it was...', 0, 0, 0, 0, 0, 0, 0, 0, 0)
+ON DUPLICATE KEY UPDATE `male_text`=VALUES(`male_text`), `female_text`=VALUES(`female_text`), `chat_type`=VALUES(`chat_type`), `sound_id`=VALUES(`sound_id`), `language_id`=VALUES(`language_id`), `emote_id1`=VALUES(`emote_id1`), `emote_id2`=VALUES(`emote_id2`), `emote_id3`=VALUES(`emote_id3`), `emote_delay1`=VALUES(`emote_delay1`), `emote_delay2`=VALUES(`emote_delay2`), `emote_delay3`=VALUES(`emote_delay3`);
 
 INSERT INTO `gossip_menu`
 (
@@ -570,7 +534,8 @@ VALUES
 (6230301, 6230302, 0, 41637),
 (6230303, 6230306, 0, 0),
 (62447, 6244701, 0, 0),
-(6230099, 6230099, 0, 0);
+(6230099, 6230099, 0, 0)
+ON DUPLICATE KEY UPDATE `script_id`=VALUES(`script_id`), `condition_id`=VALUES(`condition_id`);
 
 INSERT INTO `npc_text`
 (
@@ -607,7 +572,8 @@ VALUES
 (6230302, 6230302, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0),
 (6230306, 6230306, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0),
 (6244701, 6244701, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0),
-(6230099, 6230099, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0);
+(6230099, 6230099, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0)
+ON DUPLICATE KEY UPDATE `BroadcastTextID0`=VALUES(`BroadcastTextID0`), `Probability0`=VALUES(`Probability0`), `BroadcastTextID1`=VALUES(`BroadcastTextID1`), `Probability1`=VALUES(`Probability1`), `BroadcastTextID2`=VALUES(`BroadcastTextID2`), `Probability2`=VALUES(`Probability2`), `BroadcastTextID3`=VALUES(`BroadcastTextID3`), `Probability3`=VALUES(`Probability3`), `BroadcastTextID4`=VALUES(`BroadcastTextID4`), `Probability4`=VALUES(`Probability4`), `BroadcastTextID5`=VALUES(`BroadcastTextID5`), `Probability5`=VALUES(`Probability5`), `BroadcastTextID6`=VALUES(`BroadcastTextID6`), `Probability6`=VALUES(`Probability6`), `BroadcastTextID7`=VALUES(`BroadcastTextID7`), `Probability7`=VALUES(`Probability7`);
 
 INSERT INTO `gossip_menu_option`
 (
@@ -638,9 +604,11 @@ VALUES
 (6230201, 1, 7, 'Barathen Wrynn.', 6230204, 1, 1, 6230203, 0, 6230204, 0, 0, '', 0, 41637),
 (6230201, 2, 7, 'Llane Wrynn.', 6230205, 1, 1, 6230099, 0, 0, 0, 0, '', 0, 41637),
 (6230301, 0, 7, 'Arnor family.', 6230303, 1, 1, 6230099, 0, 0, 0, 0, '', 0, 41637),
-(6230301, 1, 7, 'Grahan family.', 6230304, 1, 1, 6230303, 0, 6230304, 0, 0, '', 0, 41637),
-(6230301, 2, 7, 'Prestor family.', 6230305, 1, 1, 6230099, 0, 0, 0, 0, '', 0, 41637);
+(6230301, 1, 7, 'Grahan family.', 6230304, 1, 1, 6230099, 0, 0, 0, 0, '', 0, 41637),
+(6230301, 2, 7, 'Prestor family.', 6230305, 1, 1, 6230303, 0, 6230304, 0, 0, '', 0, 41637)
+ON DUPLICATE KEY UPDATE `option_icon`=VALUES(`option_icon`), `option_text`=VALUES(`option_text`), `option_broadcast_text`=VALUES(`option_broadcast_text`), `option_id`=VALUES(`option_id`), `npc_option_npcflag`=VALUES(`npc_option_npcflag`), `action_menu_id`=VALUES(`action_menu_id`), `action_poi_id`=VALUES(`action_poi_id`), `action_script_id`=VALUES(`action_script_id`), `box_coded`=VALUES(`box_coded`), `box_money`=VALUES(`box_money`), `box_text`=VALUES(`box_text`), `box_broadcast_text`=VALUES(`box_broadcast_text`), `condition_id`=VALUES(`condition_id`);
 
+DELETE FROM `gossip_scripts` WHERE `id` IN (6230005, 6230103, 6230204, 6230304);
 INSERT INTO `gossip_scripts`
 (
     `id`,
@@ -696,6 +664,11 @@ WHERE `entry` = 62447;
 -- FILE: shadows_vision.sql
 -- GENERATED: 20260906081248
 -- ==============================================
+-- Preserve the existing comb option before adding the separate inspection.
+INSERT INTO `gossip_menu_option` (`menu_id`, `id`, `option_icon`, `option_text`, `option_broadcast_text`, `option_id`, `npc_option_npcflag`, `action_menu_id`, `action_poi_id`, `action_script_id`, `box_coded`, `box_money`, `box_text`, `box_broadcast_text`, `condition_id`)
+VALUES (62490, 1, 0, 'Search the body for anything useful.', 0, 1, 1, -1, 0, 62490, 0, 0, '', 0, 41648)
+ON DUPLICATE KEY UPDATE `option_icon`=VALUES(`option_icon`), `option_text`=VALUES(`option_text`), `option_broadcast_text`=VALUES(`option_broadcast_text`), `option_id`=VALUES(`option_id`), `npc_option_npcflag`=VALUES(`npc_option_npcflag`), `action_menu_id`=VALUES(`action_menu_id`), `action_poi_id`=VALUES(`action_poi_id`), `action_script_id`=VALUES(`action_script_id`), `box_coded`=VALUES(`box_coded`), `box_money`=VALUES(`box_money`), `box_text`=VALUES(`box_text`), `box_broadcast_text`=VALUES(`box_broadcast_text`), `condition_id`=VALUES(`condition_id`);
+
 INSERT INTO `conditions`
 (
     `condition_entry`,
@@ -707,7 +680,8 @@ INSERT INTO `conditions`
     `flags`
 )
 VALUES
-(41684, 9, 41684, 1, 0, 0, 0);
+(41684, 9, 41684, 1, 0, 0, 0)
+ON DUPLICATE KEY UPDATE `type`=VALUES(`type`), `value1`=VALUES(`value1`), `value2`=VALUES(`value2`), `value3`=VALUES(`value3`), `value4`=VALUES(`value4`), `flags`=VALUES(`flags`);
 
 INSERT INTO `broadcast_text`
 (
@@ -726,7 +700,8 @@ INSERT INTO `broadcast_text`
 )
 VALUES
 (6249002, '<Inspect the body.>', '<Inspect the body.>', 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(6249003, '<You turn her body to the side, making her face the cavern ceiling. An expression of dread and terror is carved into her young features. Grey and withered eyes complete the traumatic image.>', '<You turn her body to the side, making her face the cavern ceiling. An expression of dread and terror is carved into her young features. Grey and withered eyes complete the traumatic image.>', 0, 0, 0, 0, 0, 0, 0, 0, 0);
+(6249003, '<You turn her body to the side, making her face the cavern ceiling. An expression of dread and terror is carved into her young features. Grey and withered eyes complete the traumatic image.>', '<You turn her body to the side, making her face the cavern ceiling. An expression of dread and terror is carved into her young features. Grey and withered eyes complete the traumatic image.>', 0, 0, 0, 0, 0, 0, 0, 0, 0)
+ON DUPLICATE KEY UPDATE `male_text`=VALUES(`male_text`), `female_text`=VALUES(`female_text`), `chat_type`=VALUES(`chat_type`), `sound_id`=VALUES(`sound_id`), `language_id`=VALUES(`language_id`), `emote_id1`=VALUES(`emote_id1`), `emote_id2`=VALUES(`emote_id2`), `emote_id3`=VALUES(`emote_id3`), `emote_delay1`=VALUES(`emote_delay1`), `emote_delay2`=VALUES(`emote_delay2`), `emote_delay3`=VALUES(`emote_delay3`);
 
 INSERT INTO `npc_text`
 (
@@ -749,7 +724,8 @@ INSERT INTO `npc_text`
     `Probability7`
 )
 VALUES
-(6249003, 6249003, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+(6249003, 6249003, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+ON DUPLICATE KEY UPDATE `BroadcastTextID0`=VALUES(`BroadcastTextID0`), `Probability0`=VALUES(`Probability0`), `BroadcastTextID1`=VALUES(`BroadcastTextID1`), `Probability1`=VALUES(`Probability1`), `BroadcastTextID2`=VALUES(`BroadcastTextID2`), `Probability2`=VALUES(`Probability2`), `BroadcastTextID3`=VALUES(`BroadcastTextID3`), `Probability3`=VALUES(`Probability3`), `BroadcastTextID4`=VALUES(`BroadcastTextID4`), `Probability4`=VALUES(`Probability4`), `BroadcastTextID5`=VALUES(`BroadcastTextID5`), `Probability5`=VALUES(`Probability5`), `BroadcastTextID6`=VALUES(`BroadcastTextID6`), `Probability6`=VALUES(`Probability6`), `BroadcastTextID7`=VALUES(`BroadcastTextID7`), `Probability7`=VALUES(`Probability7`);
 
 INSERT INTO `gossip_menu`
 (
@@ -759,7 +735,8 @@ INSERT INTO `gossip_menu`
     `condition_id`
 )
 VALUES
-(6249002, 6249003, 0, 0);
+(6249002, 6249003, 0, 0)
+ON DUPLICATE KEY UPDATE `script_id`=VALUES(`script_id`), `condition_id`=VALUES(`condition_id`);
 
 INSERT INTO `gossip_menu_option`
 (
@@ -780,8 +757,10 @@ INSERT INTO `gossip_menu_option`
     `condition_id`
 )
 VALUES
-(62490, 0, 0, '<Inspect the body.>', 6249002, 1, 1, 6249002, 0, 6249002, 0, 0, '', 0, 41684);
+(62490, 0, 0, '<Inspect the body.>', 6249002, 1, 1, 6249002, 0, 6249002, 0, 0, '', 0, 41684)
+ON DUPLICATE KEY UPDATE `option_icon`=VALUES(`option_icon`), `option_text`=VALUES(`option_text`), `option_broadcast_text`=VALUES(`option_broadcast_text`), `option_id`=VALUES(`option_id`), `npc_option_npcflag`=VALUES(`npc_option_npcflag`), `action_menu_id`=VALUES(`action_menu_id`), `action_poi_id`=VALUES(`action_poi_id`), `action_script_id`=VALUES(`action_script_id`), `box_coded`=VALUES(`box_coded`), `box_money`=VALUES(`box_money`), `box_text`=VALUES(`box_text`), `box_broadcast_text`=VALUES(`box_broadcast_text`), `condition_id`=VALUES(`condition_id`);
 
+DELETE FROM `gossip_scripts` WHERE `id` IN (6249002);
 INSERT INTO `gossip_scripts`
 (
     `id`,
@@ -814,219 +793,13 @@ VALUES
 -- FILE: the_messenger_of_northwind.sql
 -- GENERATED: 20260906081248
 -- ==============================================
-INSERT INTO `conditions`
-(
-    `condition_entry`,
-    `type`,
-    `value1`,
-    `value2`,
-    `value3`,
-    `value4`,
-    `flags`
-)
-VALUES
-(41768, 9, 41768, 1, 0, 0, 0);
-
-UPDATE `gossip_menu_option`
-SET `action_script_id` = 62164,
-    `condition_id` = 41768
-WHERE `menu_id` = 62164
-  AND `id` = 0;
-
-INSERT INTO `gossip_scripts`
-(
-    `id`,
-    `delay`,
-    `priority`,
-    `command`,
-    `datalong`,
-    `datalong2`,
-    `datalong3`,
-    `datalong4`,
-    `target_param1`,
-    `target_param2`,
-    `target_type`,
-    `data_flags`,
-    `dataint`,
-    `dataint2`,
-    `dataint3`,
-    `dataint4`,
-    `x`,
-    `y`,
-    `z`,
-    `o`,
-    `condition_id`,
-    `comments`
-)
-VALUES
-(62164, 0, 0, 17, 41865, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41768, 'The Messenger Of Northwind - Sir Amberwood - Give Sir Amberwood''s Report');
-
-UPDATE `gossip_menu_option`
-SET `action_menu_id` = 6215302,
-    `condition_id` = 41768
-WHERE `menu_id` = 62153
-  AND `id` = 1;
-
-INSERT INTO `broadcast_text`
-(
-    `entry`,
-    `male_text`,
-    `female_text`,
-    `chat_type`,
-    `sound_id`,
-    `language_id`,
-    `emote_id1`,
-    `emote_id2`,
-    `emote_id3`,
-    `emote_delay1`,
-    `emote_delay2`,
-    `emote_delay3`
-)
-VALUES
-(6215305, 'As much as it pains me to disappoint our oh so esteemed Lord, I do not have it on me. Anymore atleast. You see, I was at the Plump Pumpkin conversing with Colonel Driscol of Stormwind about the invasion from the Blackrock Orcs. I gained valuable new insight from his investigation, with which I finalized my report. On my way back to Ambershire however, those fiendish Blackrocks ambushed me and killed my bodyguard. The report is now in their hands; it could be on any one of them, I''m afraid. If you wish to bring Lady Prestor that scroll, you have to tear it from their dead hands first.', 'As much as it pains me to disappoint our oh so esteemed Lord, I do not have it on me. Anymore atleast. You see, I was at the Plump Pumpkin conversing with Colonel Driscol of Stormwind about the invasion from the Blackrock Orcs. I gained valuable new insight from his investigation, with which I finalized my report. On my way back to Ambershire however, those fiendish Blackrocks ambushed me and killed my bodyguard. The report is now in their hands; it could be on any one of them, I''m afraid. If you wish to bring Lady Prestor that scroll, you have to tear it from their dead hands first.', 0, 0, 0, 0, 0, 0, 0, 0, 0);
-
-INSERT INTO `npc_text`
-(
-    `ID`,
-    `BroadcastTextID0`,
-    `Probability0`,
-    `BroadcastTextID1`,
-    `Probability1`,
-    `BroadcastTextID2`,
-    `Probability2`,
-    `BroadcastTextID3`,
-    `Probability3`,
-    `BroadcastTextID4`,
-    `Probability4`,
-    `BroadcastTextID5`,
-    `Probability5`,
-    `BroadcastTextID6`,
-    `Probability6`,
-    `BroadcastTextID7`,
-    `Probability7`
-)
-VALUES
-(6215305, 6215305, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-
-INSERT INTO `gossip_menu`
-(
-    `entry`,
-    `text_id`,
-    `script_id`,
-    `condition_id`
-)
-VALUES
-(6215302, 6215305, 0, 0);
+-- ManTech merge: Keep the native report-item scripts and close-window behavior from 20260817211652; preserve both report sources.
 
 -- ==============================================
 -- FILE: who_will_think_of_the_children.sql
 -- GENERATED: 20260906081248
 -- ==============================================
-INSERT INTO `conditions`
-(
-    `condition_entry`,
-    `type`,
-    `value1`,
-    `value2`,
-    `value3`,
-    `value4`,
-    `flags`
-)
-VALUES
-(41636, 9, 41636, 1, 0, 0, 0);
-
-INSERT INTO `broadcast_text`
-(
-    `entry`,
-    `male_text`,
-    `female_text`,
-    `chat_type`,
-    `sound_id`,
-    `language_id`,
-    `emote_id1`,
-    `emote_id2`,
-    `emote_id3`,
-    `emote_delay1`,
-    `emote_delay2`,
-    `emote_delay3`
-)
-VALUES
-(6229805, 'Take it and get out of Northwind! <Pay 20 Silver.>', 'Take it and get out of Northwind! <Pay 20 Silver.>', 0, 0, 0, 0, 0, 0, 0, 0, 0);
-
-INSERT INTO `gossip_menu`
-(
-    `entry`,
-    `text_id`,
-    `script_id`,
-    `condition_id`
-)
-VALUES
-(6229802, 6229802, 0, 0);
-
-UPDATE `gossip_menu_option`
-SET `action_menu_id` = 6229802,
-    `condition_id` = 41636
-WHERE `menu_id` = 62298
-  AND `id` = 0;
-
-UPDATE `gossip_menu_option`
-SET `menu_id` = 6229802,
-    `action_script_id` = 6229803,
-    `condition_id` = 41636
-WHERE `menu_id` = 62298
-  AND `id` = 1;
-
-INSERT INTO `gossip_menu_option`
-(
-    `menu_id`,
-    `id`,
-    `option_icon`,
-    `option_text`,
-    `option_broadcast_text`,
-    `option_id`,
-    `npc_option_npcflag`,
-    `action_menu_id`,
-    `action_poi_id`,
-    `action_script_id`,
-    `box_coded`,
-    `box_money`,
-    `box_text`,
-    `box_broadcast_text`,
-    `condition_id`
-)
-VALUES
-(6229802, 0, 0, 'Take it and get out of Northwind! <Pay 20 Silver.>', 6229805, 1, 1, 0, 0, 6229802, 0, 2000, '', 0, 41636);
-
-INSERT INTO `gossip_scripts`
-(
-    `id`,
-    `delay`,
-    `priority`,
-    `command`,
-    `datalong`,
-    `datalong2`,
-    `datalong3`,
-    `datalong4`,
-    `target_param1`,
-    `target_param2`,
-    `target_type`,
-    `data_flags`,
-    `dataint`,
-    `dataint2`,
-    `dataint3`,
-    `dataint4`,
-    `x`,
-    `y`,
-    `z`,
-    `o`,
-    `condition_id`,
-    `comments`
-)
-VALUES
-(6229802, 0, 0, 93, 2000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41636, 'Who Will Think Of The Children - Cutpurse Warren - Take 20 Silver'),
-(6229802, 0, 1, 17, 41606, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41636, 'Who Will Think Of The Children - Cutpurse Warren - Give Crate of Donated Books'),
-(6229803, 0, 0, 22, 14, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41636, 'Who Will Think Of The Children - Cutpurse Warren - Set temporary hostile faction'),
-(6229803, 0, 1, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41636, 'Who Will Think Of The Children - Cutpurse Warren - Attack player');
+-- ManTech merge: Keep the item-absence/active-quest condition and atomic paid CREATE_ITEM command from 20260817211652, including the threat route.
 
 -- ==============================================
 -- FILE: horde_gossip.sql
@@ -1050,7 +823,8 @@ INSERT INTO `broadcast_text`
 )
 VALUES
 (6251701, 'Nobody ever visits the Master and your presence here is already both disturbing and annoying. Please, I beg of you, whatever you need, make it quick.', 'Nobody ever visits the Master and your presence here is already both disturbing and annoying. Please, I beg of you, whatever you need, make it quick.', 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(6227301, 'Hm? You are not Wiggles - damn ghoul ran off when I needed him most. Wiggles, come back, boy!', 'Hm? You are not Wiggles - damn ghoul ran off when I needed him most. Wiggles, come back, boy!', 0, 0, 0, 0, 0, 0, 0, 0, 0);
+(6227301, 'Hm? You are not Wiggles - damn ghoul ran off when I needed him most. Wiggles, come back, boy!', 'Hm? You are not Wiggles - damn ghoul ran off when I needed him most. Wiggles, come back, boy!', 0, 0, 0, 0, 0, 0, 0, 0, 0)
+ON DUPLICATE KEY UPDATE `male_text`=VALUES(`male_text`), `female_text`=VALUES(`female_text`), `chat_type`=VALUES(`chat_type`), `sound_id`=VALUES(`sound_id`), `language_id`=VALUES(`language_id`), `emote_id1`=VALUES(`emote_id1`), `emote_id2`=VALUES(`emote_id2`), `emote_id3`=VALUES(`emote_id3`), `emote_delay1`=VALUES(`emote_delay1`), `emote_delay2`=VALUES(`emote_delay2`), `emote_delay3`=VALUES(`emote_delay3`);
 
 INSERT INTO `gossip_menu`
 (
@@ -1061,7 +835,8 @@ INSERT INTO `gossip_menu`
 )
 VALUES
 (62273, 6227301, 0, 0),
-(62517, 6251701, 0, 0);
+(62517, 6251701, 0, 0)
+ON DUPLICATE KEY UPDATE `script_id`=VALUES(`script_id`), `condition_id`=VALUES(`condition_id`);
 
 INSERT INTO `npc_text`
 (
@@ -1085,7 +860,8 @@ INSERT INTO `npc_text`
 )
 VALUES
 (6227301, 6227301, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0),
-(6251701, 6251701, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0);
+(6251701, 6251701, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0)
+ON DUPLICATE KEY UPDATE `BroadcastTextID0`=VALUES(`BroadcastTextID0`), `Probability0`=VALUES(`Probability0`), `BroadcastTextID1`=VALUES(`BroadcastTextID1`), `Probability1`=VALUES(`Probability1`), `BroadcastTextID2`=VALUES(`BroadcastTextID2`), `Probability2`=VALUES(`Probability2`), `BroadcastTextID3`=VALUES(`BroadcastTextID3`), `Probability3`=VALUES(`Probability3`), `BroadcastTextID4`=VALUES(`BroadcastTextID4`), `Probability4`=VALUES(`Probability4`), `BroadcastTextID5`=VALUES(`BroadcastTextID5`), `Probability5`=VALUES(`Probability5`), `BroadcastTextID6`=VALUES(`BroadcastTextID6`), `Probability6`=VALUES(`Probability6`), `BroadcastTextID7`=VALUES(`BroadcastTextID7`), `Probability7`=VALUES(`Probability7`);
 
 UPDATE `creature_template`
 SET `gossip_menu_id` = `entry`
