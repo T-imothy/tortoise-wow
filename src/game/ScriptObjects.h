@@ -156,6 +156,7 @@ enum PlayerHook
     PLAYERHOOK_ON_AI_UPDATE,
     PLAYERHOOK_IS_AI_UPDATE_DUE,
     PLAYERHOOK_ON_CHAT_SAY,
+    PLAYERHOOK_ON_CHAT_YELL,
     PLAYERHOOK_ON_CHAT_CHANNEL,
     PLAYERHOOK_ON_CHAT_WHISPER,
     PLAYERHOOK_ON_CHAT_GUILD,
@@ -263,6 +264,7 @@ class PlayerScript : public ScriptObject
         virtual bool CanUseGroupChat(Player* /*player*/, uint32 /*type*/, uint32 /*lang*/,
                                      std::string& /*msg*/) { return true; }
         virtual void OnChatSay(Player* /*from*/, float /*range*/, char const* /*msg*/) {}
+        virtual void OnChatYell(Player* /*from*/, float /*range*/, char const* /*msg*/) {}
         virtual void OnChatChannel(Player* /*from*/, char const* /*channel*/, char const* /*msg*/) {}
         virtual void OnChatWhisper(Player* /*from*/, char const* /*msg*/) {}
         virtual void OnChatGuild(Player* /*from*/, char const* /*msg*/) {}
