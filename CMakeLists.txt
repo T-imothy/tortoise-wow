@@ -543,20 +543,43 @@ if(WIN32)
   # is a real dependency and not incidental: confirmed with dumpbin /dependents, mangosd.exe
   # imports from both libcrypto-1_1-x64.dll AND libcrypto-3-x64.dll at once, not either/or.
   #
-  # Deployed the same way ACE.dll and the Boost DLLs already are for this build - read from
-  # ACE_ROOT, since that is this project's own established way of pointing a Windows build at
-  # its vcpkg toolchain - but with file(GLOB), not a hard requirement: ACE_ROOT is not
-  # guaranteed to be a vcpkg tree with OpenSSL 3 sitting in it for every possible Windows build
-  # of this project, only for the one the pipeline produces, and a build that does not find
-  # these should not fail here over a DLL a different OpenSSL setup may not need at all.
+  # Read from ACE_ROOT, since that is this project's own established way of pointing a
+  # Windows build at its vcpkg toolchain - but with file(GLOB), not a hard requirement:
+  # ACE_ROOT is not guaranteed to be a vcpkg tree with OpenSSL 3 sitting in it for every
+  # possible Windows build of this project, only for the one the pipeline produces, and a
+  # build that does not find these should not fail here over a DLL a different OpenSSL setup
+  # may not need at all.
   if(ACE_ROOT)
-    # ACE_ROOT commonly arrives with Windows backslashes (-DACE_ROOT=C:\path	ocpkg, which
+    # ACE_ROOT commonly arrives with Windows backslashes (-DACE_ROOT=C:\path\to\vcpkg, which
     # is exactly how this project's own pipeline passes it). file(GLOB) matches fine against
     # that, but embeds whatever it matched verbatim into the generated cmake_install.cmake -
     # and an unescaped backslash there is a syntax error the moment it precedes a letter CMake
-    # does not recognise as an escape (, \l, ...). Normalizing first is what the rest of
+    # does not recognise as an escape (\b, \t, \n, ...). Normalizing first is what the rest of
     # this file already relies on CMake doing for CMAKE_SOURCE_DIR-based paths automatically.
     file(TO_CMAKE_PATH "${ACE_ROOT}" ACE_ROOT_NORMALIZED)
+
+    # ACE.dll itself - not just the OpenSSL 3 pair below. mangosd.exe and realmd.exe both
+    # import it unconditionally (confirmed with dumpbin /dependents, and by actually running
+    # an installed build with it missing: STATUS_DLL_NOT_FOUND at startup, immediately), and
+    # nothing else in this file installs it - ACE is never bundled under dep/windows the way
+    # OpenSSL/MySQL are, so a build that only goes through this install() step ends up with a
+    # server directory that cannot start at all. vcpkg's own applocal-deps step (active when
+    # "vcpkg integrate install" has been run) copies it into the raw build output next to the
+    # freshly linked .exe, which masks this in that one specific setup - but that copy never
+    # reaches CMAKE_INSTALL_PREFIX, so it does not help here.
+    #
+    # file(GLOB), not a hard requirement, for the same reason as the OpenSSL 3 pair below: ACE
+    # can also be linked statically, in which case there is no ACE.dll under ACE_ROOT/bin at
+    # all, and that is a legitimate build this should not fail over.
+    file(GLOB ACE_RELEASE_DLL "${ACE_ROOT_NORMALIZED}/bin/ACE.dll")
+    file(GLOB ACE_DEBUG_DLL   "${ACE_ROOT_NORMALIZED}/debug/bin/ACE.dll")
+    if(ACE_RELEASE_DLL)
+      install(FILES ${ACE_RELEASE_DLL} DESTINATION ${LIBS_DIR} CONFIGURATIONS Release)
+    endif()
+    if(ACE_DEBUG_DLL)
+      install(FILES ${ACE_DEBUG_DLL} DESTINATION ${LIBS_DIR} CONFIGURATIONS Debug)
+    endif()
+
     file(GLOB OPENSSL3_RELEASE_DLLS "${ACE_ROOT_NORMALIZED}/bin/libcrypto-3${OPENSSL_DLL_SUFFIX}.dll" "${ACE_ROOT_NORMALIZED}/bin/libssl-3${OPENSSL_DLL_SUFFIX}.dll")
     file(GLOB OPENSSL3_DEBUG_DLLS   "${ACE_ROOT_NORMALIZED}/debug/bin/libcrypto-3${OPENSSL_DLL_SUFFIX}.dll" "${ACE_ROOT_NORMALIZED}/debug/bin/libssl-3${OPENSSL_DLL_SUFFIX}.dll")
     if(OPENSSL3_RELEASE_DLLS)
