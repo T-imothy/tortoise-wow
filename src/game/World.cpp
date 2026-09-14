@@ -1,3 +1,4 @@
+#include "Util/DevDiagnostics.h"
 /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  * Copyright (C) 2009-2011 MaNGOSZero <https://github.com/mangos/zero>
@@ -231,6 +232,12 @@ void World::Shutdown()
 	sGuildMgr.SaveGuildBanks();
     sWorld.KickAll();                                       // save and kick all players
     sWorld.UpdateSessions(1);                               // real players unload required UpdateSessions call
+    {
+        // Headless players also need native logout while maps, scripts and
+        // databases are alive. InternalShutdown runs after DB shutdown.
+        std::lock_guard<std::recursive_mutex> sessionLock(m_sessionUpdateMutex);
+        m_headlessSessionMgr->Shutdown();
+    }
     if (m_charDbWorkerThread && m_charDbWorkerThread->joinable())
         m_charDbWorkerThread->join();
 }
@@ -330,6 +337,15 @@ HeadlessSessionStartResult World::StartHeadlessSession(uint32 accountId, ObjectG
 {
     return m_headlessSessionMgr->Start(accountId, characterGuid, locale, tag);
 }
+
+HeadlessSessionStartResult World::StartPreparedHeadlessSession(LoginQueryHolder* holder,
+    LocaleConstant locale, std::string const& tag)
+{
+    return m_headlessSessionMgr->StartPrepared(holder, locale, tag);
+}
+
+void World::BeginHeadlessStopDeferral() { m_headlessSessionMgr->BeginStopDeferral(); }
+void World::EndHeadlessStopDeferral() { m_headlessSessionMgr->EndStopDeferral(); }
 
 bool World::StopHeadlessSession(ObjectGuid characterGuid, bool save)
 {
@@ -2759,6 +2775,7 @@ void World::UpdateWorldBuffTimer(uint32 diff, WorldBuffTimerState& state, uint32
 /// Update the World !
 void World::Update(uint32 diff)
 {
+    MANTECH_DIAG_SCOPE(World, 1, nullptr);
     static TurtleDiagnostics::Summary worldDiagnostics;
     static uint64 diagnosticTick = 0;
     TurtleDiagnostics::Frame diagnosticFrame(worldDiagnostics, UINT32_MAX, 0, ++diagnosticTick);
@@ -4077,6 +4094,8 @@ void World::InitResultQueue()
 
 void World::UpdateResultQueue()
 {
+    MANTECH_DIAG_SCOPE(DbCallbacks, 1, nullptr);
+
     static unsigned first = 0; // owner-thread only; rotate to avoid DB starvation
     uint32 const begin = WorldTimer::getMSTime();
     uint32 const budget = getConfig(CONFIG_UINT32_DB_CALLBACK_BUDGET_MS);

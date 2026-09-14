@@ -1012,11 +1012,10 @@ ChatCommand * ChatHandler::getCommandTable()
         // Bot module commands. .rndbot is SEC_PLAYER so a single human can
         // manage their own random-bot pool without keeping a GM alt logged in;
         // a server operator who wants tighter control can raise it.
-        { "rndbot",         SEC_PLAYER,          true,  &ChatHandler::HandleRandomPlayerbotCommand,     "", nullptr },
         // Match the CMaNGOS AHBot command family: these operations can reload
         // server configuration or rebuild the whole market, so they remain
         // administrator-only.
-        { "perfmon",        SEC_MODERATOR,       true,  &ChatHandler::HandlePerfMonCommand,             "", nullptr },
+        // Optional module command scripts register their own diagnostics.
         { nullptr,          0,                   false, nullptr,                                        "", nullptr }
     };
 

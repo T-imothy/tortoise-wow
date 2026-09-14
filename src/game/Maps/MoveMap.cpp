@@ -130,6 +130,18 @@ uint32 MMapManager::packTileID(int32 x, int32 y)
     return uint32(x << 16 | y);
 }
 
+bool MMapManager::IsMapTileLoaded(uint32 mapId, int32 x, int32 y) const
+{
+    if (x < 0 || x >= 64 || y < 0 || y >= 64)
+        return false;
+    std::shared_lock<std::shared_mutex> mapGuard(loadedMMaps_lock);
+    auto const entry = loadedMMaps.find(mapId);
+    if (entry == loadedMMaps.end())
+        return false;
+    std::lock_guard<std::mutex> tileGuard(entry->second->tilesLoading_lock);
+    return entry->second->mmapLoadedTiles.count(packTileID(x, y)) != 0;
+}
+
 bool MMapManager::loadMap(uint32 mapId, int32 x, int32 y)
 {
     // make sure the mmap is loaded and ready to load tiles
@@ -209,6 +221,7 @@ bool MMapManager::loadMap(uint32 mapId, int32 x, int32 y)
     dtStatus dResult = mmap->navMesh->addTile(data, fileHeader.size, DT_TILE_FREE_DATA, 0, &tileRef);
     if (dtStatusSucceed(dResult))
     {
+        ManTech::MemoryLedger::Add(ManTech::MemoryKind::NavTiles, fileHeader.size);
         mmap->mmapLoadedTiles.insert(std::pair<uint32, dtTileRef>(packedGridPos, tileRef));
         ++loadedTiles;
         return true;
@@ -254,6 +267,8 @@ bool MMapManager::unloadMap(uint32 mapId, int32 x, int32 y)
 
     dtTileRef tileRef = mmap->mmapLoadedTiles[packedGridPos];
 
+    auto const* removedTile = mmap->navMesh->getTileByRef(tileRef);
+    size_t const removedBytes = removedTile ? removedTile->dataSize : 0;
     // unload, and mark as non loaded
     dtStatus dtResult = mmap->navMesh->removeTile(tileRef, nullptr, nullptr);
     if (dtStatusFailed(dtResult))
@@ -266,6 +281,7 @@ bool MMapManager::unloadMap(uint32 mapId, int32 x, int32 y)
     }
     else
     {
+        ManTech::MemoryLedger::Remove(ManTech::MemoryKind::NavTiles, removedBytes);
         mmap->mmapLoadedTiles.erase(packedGridPos);
         --loadedTiles;
         return true;
@@ -297,11 +313,16 @@ bool MMapManager::unloadMap(uint32 mapId)
     {
         uint32 x = (i->first >> 16);
         uint32 y = (i->first & 0x0000FFFF);
+        auto const* removedTile = mmap->navMesh->getTileByRef(i->second);
+        size_t const removedBytes = removedTile ? removedTile->dataSize : 0;
         dtStatus dtResult = mmap->navMesh->removeTile(i->second, nullptr, nullptr);
         if (dtStatusFailed(dtResult))
             sLog.outError("MMAP:unloadMap: Could not unload %03u%02i%02i.mmtile from navmesh", mapId, x, y);
         else
+        {
+            ManTech::MemoryLedger::Remove(ManTech::MemoryKind::NavTiles, removedBytes);
             --loadedTiles;
+        }
     }
 
     mmap->mmapLoadedTiles.clear();
@@ -333,6 +354,7 @@ bool MMapManager::unloadMapInstance(uint32 mapId, std::thread::id instanceId)
 
     dtNavMeshQuery* query = mmap->navMeshQueries[instanceId];
 
+    ManTech::MemoryLedger::Remove(ManTech::MemoryKind::NavQueries, query->getOwnedMemoryBytes());
     dtFreeNavMeshQuery(query);
     mmap->navMeshQueries.erase(instanceId);
     DETAIL_LOG("MMAP:unloadMapInstance: Unloaded mapId %03u instanceId %u", mapId, instanceId);
@@ -386,6 +408,7 @@ dtNavMeshQuery const* MMapManager::GetNavMeshQuery(uint32 mapId)
 
         DETAIL_LOG("MMAP:GetNavMeshQuery: created dtNavMeshQuery for mapId %03u thread %u nodes %d", mapId, tid, queryNodes);
         mmap->navMeshQueries.insert(std::pair<std::thread::id, dtNavMeshQuery*>(tid, navMeshQuery));
+        ManTech::MemoryLedger::Add(ManTech::MemoryKind::NavQueries, navMeshQuery->getOwnedMemoryBytes());
     }
     else
         navMeshQuery = it->second;
@@ -486,6 +509,7 @@ dtNavMeshQuery const* MMapManager::GetModelNavMeshQuery(uint32 displayId)
 
             DETAIL_LOG("MMAP:GetNavMeshQuery: created dtNavMeshQuery for displayid %03u tid %u", displayId, tid);
             mmap->navMeshQueries.insert(std::pair<std::thread::id, dtNavMeshQuery*>(tid, query));
+            ManTech::MemoryLedger::Add(ManTech::MemoryKind::NavQueries, query->getOwnedMemoryBytes());
         }
     }
 

@@ -27,6 +27,7 @@
 #include "Object.h"
 #include "SharedDefines.h"
 #include <memory>
+#include "Memory/MemoryLedger.h"
 #include <bitset>
 #include <list>
 #include <atomic>
@@ -86,6 +87,12 @@ class GridMap
         uint8* m_liquidFlags = nullptr;
         float* m_liquid_map = nullptr;
 
+        size_t m_payloadBytes = 0;
+        size_t m_payloadArrays = 0;
+        void AccountPayload(size_t bytes) {
+            m_payloadBytes += bytes; ++m_payloadArrays;
+            ManTech::MemoryLedger::Add(ManTech::MemoryKind::Terrain, bytes);
+        }
         bool loadAreaData(FILE* in, uint32 offset, uint32 size);
         bool loadHeightData(FILE* in, uint32 offset, uint32 size);
         bool loadGridMapLiquidData(FILE* in, uint32 offset, uint32 size);
@@ -103,6 +110,7 @@ class GridMap
         GridMap();
         ~GridMap();
 
+        size_t GetPayloadBytes() const { return m_payloadBytes; }
         bool loadData(char const* filaname);
         void unloadData();
 
@@ -203,6 +211,7 @@ class TerrainInfo : public Referencable<AtomicLong>
 
         // global garbage collection timer
         ShortIntervalTimer i_timer;
+        uint32 m_pressureCheckElapsed = 0;
 
         using LOCK_TYPE = std::mutex;
         using LOCK_GUARD = std::unique_lock<LOCK_TYPE>;

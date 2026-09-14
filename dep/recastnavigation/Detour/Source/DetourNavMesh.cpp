@@ -1615,3 +1615,10 @@ dtStatus dtNavMesh::getPolyArea(dtPolyRef ref, unsigned char* resultArea) const
 	return DT_SUCCESS;
 }
 
+
+// ManTech diagnostics: inspect immutable allocation capacities on their owner.
+size_t dtNavMesh::getOwnedMemoryBytes() const
+{
+    return sizeof(*this) + (m_tiles ? sizeof(dtMeshTile) * size_t(m_maxTiles) : 0)
+        + (m_posLookup ? sizeof(dtMeshTile*) * size_t(m_tileLutSize) : 0);
+}

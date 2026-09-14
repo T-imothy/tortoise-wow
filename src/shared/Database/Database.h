@@ -1,3 +1,4 @@
+#include "Util/DevDiagnostics.h"
 /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  * Copyright (C) 2009-2011 MaNGOSZero <https://github.com/mangos/zero>
@@ -69,6 +70,10 @@ class SqlConnection
         virtual bool CommitTransaction() { return true; }
         // can't rollback without transaction support
         virtual bool RollbackTransaction() { return true; }
+        // Replay is opt-in, and only for a verified transactional schema.
+        virtual bool CanReplayTransaction() const { return false; }
+        bool LastStatementWasDeadlock() const { return m_statementDeadlock; }
+        void SetStatementDeadlock(bool deadlock) { m_statementDeadlock = deadlock; }
 
         //methods to work with prepared statements
         bool ExecuteStmt(int nIndex, const SqlStmtParameters& id);
@@ -77,13 +82,16 @@ class SqlConnection
         class Lock
         {
             public:
-                Lock(SqlConnection * conn) : m_pConn(conn) {}
+                Lock(SqlConnection * conn) : m_pConn(conn) {
+                    MANTECH_DIAG_SCOPE(DbLock, 32, "connection_lock");
+                    m_lock.lock();
+                }
 
                 SqlConnection* operator->() const { return m_pConn; }
 
             private:
                 SqlConnection * const m_pConn;
-                std::unique_lock<std::recursive_mutex> m_lock{m_pConn->m_mutex};
+                std::unique_lock<std::recursive_mutex> m_lock{m_pConn->m_mutex, std::defer_lock};
         };
 
         //get DB object
@@ -112,6 +120,7 @@ class SqlConnection
     private:
         using LOCK_TYPE = std::recursive_mutex;
         LOCK_TYPE m_mutex;
+        bool m_statementDeadlock = false;
 
         typedef std::vector<SqlPreparedStatement * > StmtHolder;
         StmtHolder m_holder;
@@ -231,7 +240,7 @@ class Database
         // Writes SQL commands to a LOG file (see mangosd.conf "LogSQL")
         bool PExecuteLog(const char *format,...) ATTR_PRINTF(2,3);
 
-        bool BeginTransaction(uint32 serialId = 0);
+        bool BeginTransaction(uint32 serialId = 0, bool retryDeadlock = false);
         bool InTransaction();
         uint32 GetTransactionSerialId();
         bool CommitTransaction(std::function<void(bool)>* callback = nullptr);
@@ -308,7 +317,7 @@ class Database
                 ~TransHelper();
 
                 //initializes new SqlTransaction object
-                SqlTransaction * init(uint32 serialId);
+                SqlTransaction * init(uint32 serialId, bool retryDeadlock = false);
                 //gets pointer on current transaction object. Returns nullptr if transaction was not initiated
                 SqlTransaction * get() const { return m_pTrans; }
                 //detaches SqlTransaction object allocated by init() function

@@ -1,3 +1,4 @@
+#include "Util/DevDiagnostics.h"
 #include "PlayerBroadcaster.h"
 #include "MovementBroadcaster.h"
 #include "World.h"
@@ -72,6 +73,7 @@ void PlayerBroadcaster::SendPacket(const WorldPacket& packet)
 
 void PlayerBroadcaster::ProcessQueue(uint32& num_packets)
 {
+    MANTECH_DIAG_SCOPE(MovementFlush, 32, "movement_broadcast_flush");
     std::scoped_lock lock{ m_queue_lock, m_listeners_lock };
     lastUpdatePackets = 0;
     if (m_queue.empty())

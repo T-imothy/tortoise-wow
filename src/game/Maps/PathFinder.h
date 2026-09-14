@@ -20,6 +20,7 @@
 #define MANGOS_PATH_FINDER_H
 
 #include "Path.h"
+#include "Memory/MemoryLedger.h"
 #include "MoveMapSharedDefines.h"
 #include "../recastnavigation/Detour/Include/DetourNavMesh.h"
 #include "../recastnavigation/Detour/Include/DetourNavMeshQuery.h"
@@ -73,6 +74,8 @@ class PathInfo
         // bot calls PathFinder(player, true) for transport pathing.
         PathInfo(Unit const* owner, bool /*offsets*/) : PathInfo(owner) {}
         ~PathInfo();
+        PathInfo(PathInfo const&) = delete;
+        PathInfo& operator=(PathInfo const&) = delete;
         // Retain scratch capacity, not previous routes/navmesh references.
         void ResetForNewRequest();
 
@@ -82,19 +85,14 @@ class PathInfo
 
         void setUseStrightPath(bool useStraightPath) { m_useStraightPath = useStraightPath; };
         void setPathLengthLimit(float distance);
-        // bot calls these to tweak path cost.
-        // Penqle has no area-cost support; stubs are no-ops.
-        void setArea(uint32 /*area*/) {}
-        void setAreaCost(uint32 /*area*/, float /*cost*/) {}
-        float getArea(float /*x*/, float /*y*/, float /*z*/) const { return 0.0f; }
-        // 4-arg form: getArea(mapId, x, y, z).
-        float getArea(uint32 /*mapId*/, float /*x*/, float /*y*/, float /*z*/) const { return 0.0f; }
-        // ComputePathToRandomPoint: cmangos has it; Penqle doesn't. Stub returns false.
-        bool ComputePathToRandomPoint(Vector3 const& /*center*/, float /*radius*/) { return false; }
-        // getFlags: cmangos returns nav-flags at point. Stub returns 0.
-        unsigned short getFlags(uint32 /*mapId*/, float /*x*/, float /*y*/, float /*z*/) const { return 0; }
-        // 6-arg form: setArea(mapId, x, y, z, areaId, radius).
-        void setArea(uint32 /*mapId*/, float /*x*/, float /*y*/, float /*z*/, uint32 /*areaId*/, float /*radius*/) {}
+        // Native navmesh inspection and costs for callers which opt into them.
+        void setArea(uint32 area);
+        void setAreaCost(uint32 area, float cost);
+        uint32 getArea(float x, float y, float z) const;
+        uint32 getArea(uint32 mapId, float x, float y, float z) const;
+        unsigned short getFlags(uint32 mapId, float x, float y, float z) const;
+        void setArea(uint32 mapId, float x, float y, float z, uint32 area, float radius);
+        bool ComputePathToRandomPoint(Vector3 const& center, float radius);
 
         inline void getStartPosition(float &x, float &y, float &z) { x = m_startPosition.x; y = m_startPosition.y; z = m_startPosition.z; }
         inline void getEndPosition(float &x, float &y, float &z) { x = m_endPosition.x; y = m_endPosition.y; z = m_endPosition.z; }
@@ -120,6 +118,12 @@ class PathInfo
         void FillTargetAllowedFlags(Unit* target);
     private:
 
+        uint64 m_accountedPathBytes = 0;
+        void RefreshMemoryCharge();
+        struct MemoryRefresh {
+            PathInfo& owner;
+            ~MemoryRefresh() { owner.RefreshMemoryCharge(); }
+        };
         dtPolyRef       m_pathPolyRefs[MAX_PATH_LENGTH];   // array of detour polygon references
         uint32          m_polyLength;                      // number of polygons in the path
 

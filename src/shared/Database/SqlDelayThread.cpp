@@ -1,3 +1,4 @@
+#include "Util/DevDiagnostics.h"
 /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  * Copyright (C) 2009-2011 MaNGOSZero <https://github.com/mangos/zero>
@@ -95,6 +96,8 @@ void SqlDelayThread::Stop()
 
 size_t SqlDelayThread::ProcessRequests()
 {
+    MANTECH_DIAG_SCOPE(DbExecute, 1, nullptr);
+
     SqlOperation* s = nullptr;
     size_t processed = 0;
 

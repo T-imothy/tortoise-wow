@@ -155,6 +155,8 @@ set (game_SRCS
     Maps/GridSearchers.cpp
     Maps/GridStates.cpp
     Maps/InstanceData.cpp
+    Maps/AreaTriggerAccess.cpp
+    Maps/AreaTriggerAccess.h
     Maps/Map.cpp
     Maps/MapManager.cpp
     Maps/MapPersistentStateMgr.cpp

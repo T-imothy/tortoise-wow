@@ -1,3 +1,4 @@
+#include "Util/DevDiagnostics.h"
 /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  * Copyright (C) 2009-2011 MaNGOSZero <https://github.com/mangos/zero>
@@ -335,6 +336,7 @@ void MapManager::CreateNewInstancesForPlayersSync()
 
 void MapManager::Update(uint32 diff)
 {
+    MANTECH_DIAG_SCOPE(Maps, 1, nullptr);
     i_timer.Update(diff);
     if (!i_timer.Passed())
         return;
@@ -386,7 +388,10 @@ void MapManager::Update(uint32 diff)
         {
             auto done = m_threads->processWorkload(work);
             if (done.valid())
+            {
+                MANTECH_DIAG_SCOPE(MapBarrier, 1, "map_batch_join");
                 done.get();
+            }
         }
         else
             for (auto const& task : work)

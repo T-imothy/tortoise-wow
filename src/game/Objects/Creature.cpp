@@ -1,3 +1,4 @@
+#include "Util/DevDiagnostics.h"
 /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  * Copyright (C) 2009-2011 MaNGOSZero <https://github.com/mangos/zero>
@@ -715,6 +716,7 @@ uint32 Creature::ChooseDisplayId(CreatureInfo const* cinfo, CreatureData const* 
 
 void Creature::Update(uint32 update_diff, uint32 diff)
 {
+    MANTECH_DIAG_SCOPE(Creature, 32, nullptr);
     TurtleDiagnostics::CreatureProbe diagnosticCreature(this, GetGUIDLow(), GetEntry(),
         uint32(m_deathState), IsInCombat(), update_diff);
     update_diff *= sWorld.GetTimeRate();
@@ -931,7 +933,7 @@ void Creature::Update(uint32 update_diff, uint32 diff)
                         UpdateLeashExtensionTime();
 
                     // Leash prevents mobs from chasing any further than specified range
-                    if (m_leashDistance && !IsWithinDist3d(m_combatStartX, m_combatStartY, m_combatStartZ, m_leashDistance))
+                    if (!m_leashingDisabled && m_leashDistance && !IsWithinDist3d(m_combatStartX, m_combatStartY, m_combatStartZ, m_leashDistance))
                         leash = true;
                     // Raid bosses do a periodic combat pulse
                     else if (HasCreatureState(CSTATE_COMBAT_WITH_ZONE))
@@ -2580,6 +2582,7 @@ void Creature::SaveRespawnTime()
 
 bool Creature::IsOutOfThreatArea(Unit* pVictim) const
 {
+    if (m_leashingDisabled) return false;
     if (HasExtraFlag(CREATURE_FLAG_EXTRA_NO_LEASH_EVADE))
         return false;
 

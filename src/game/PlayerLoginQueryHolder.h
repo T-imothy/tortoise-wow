@@ -49,9 +49,10 @@ public:
     uint32 GetLoginRequestTime() const { return m_loginRequestTime; }
 
 private:
+    friend class HeadlessSessionMgr;
     uint32 const m_accountId;
     ObjectGuid const m_guid;
     SessionTransport const m_transport;
-    uint64 const m_requestToken;
+    uint64 m_requestToken;
     uint32 m_loginRequestTime = 0;
 };

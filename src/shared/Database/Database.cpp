@@ -122,6 +122,7 @@ bool SqlConnection::Initialize(const char *infoString)
 
 bool SqlConnection::ExecuteStmt(int nIndex, const SqlStmtParameters& id )
 {
+    SetStatementDeadlock(false);
     if(nIndex == -1)
         return false;
 
@@ -226,7 +227,10 @@ bool Database::InitDelayThread(const char* Name, std::string const& infoString)
 
     SqlConnection* threadConnection = CreateConnection();
     if(!threadConnection->Initialize(infoString.c_str()))
+    {
+        delete threadConnection;
         return false;
+    }
 
     std::shared_ptr<SqlDelayThread> tbody = std::make_shared<SqlDelayThread>(Name, this, threadConnection);
     m_threadsBodies.emplace_back(tbody);
@@ -239,14 +243,13 @@ bool Database::InitDelayThread(const char* Name, std::string const& infoString)
 
 void Database::HaltDelayThread()
 {
-    if (m_delayThreads.empty() || m_threadsBodies.empty())
-        return;
+    // Initialization can fail after only part of the configured pool starts.
+    // Stop/join the objects we own, not the requested worker count.
+    for (auto const& worker : m_threadsBodies)
+        worker->Stop();
 
-    for (uint32 i = 0; i < m_numAsyncWorkers; ++i)
-        m_threadsBodies[i]->Stop();
-
-    for (uint32 i = 0; i < m_numAsyncWorkers; ++i)
-        m_delayThreads[i].join();
+    for (auto& thread : m_delayThreads)
+        if (thread.joinable()) thread.join();
 
     // A final callback may have queued work to a worker that already exited.
     // Keep all worker/connection objects alive until that tail also drains.
@@ -517,7 +520,7 @@ bool Database::DirectPExecute(const char * format,...)
     return DirectExecute(szQuery);
 }
 
-bool Database::BeginTransaction(uint32 serialId)
+bool Database::BeginTransaction(uint32 serialId, bool retryDeadlock)
 {
     if (!m_pAsyncConn)
     {
@@ -532,7 +535,7 @@ bool Database::BeginTransaction(uint32 serialId)
     }
 
     //initiate transaction on current thread
-    m_TransStorage->init(serialId);
+    m_TransStorage->init(serialId, retryDeadlock);
     return true;
 }
 
@@ -748,10 +751,10 @@ Database::TransHelper::~TransHelper()
     reset();
 }
 
-SqlTransaction * Database::TransHelper::init(uint32 serialId)
+SqlTransaction * Database::TransHelper::init(uint32 serialId, bool retryDeadlock)
 {
     MANGOS_ASSERT(!m_pTrans);   //if we will get a nested transaction request - we MUST fix code!!!
-    m_pTrans = new SqlTransaction(serialId);
+    m_pTrans = new SqlTransaction(serialId, retryDeadlock);
 
     return m_pTrans;
 }

@@ -1067,6 +1067,8 @@ class Creature : public Unit
             m_callForHelpDist = dist;
         }
 
+        void SetLeashingDisabled(bool disabled) { m_leashingDisabled = disabled; }
+
         void SetLeashDistance(float dist)
         {
             m_leashDistance = dist;
@@ -1195,6 +1197,7 @@ class Creature : public Unit
         float m_callForHelpDist;
         bool m_callsForHelp;
         float m_leashDistance;
+        bool m_leashingDisabled = false;
         float m_detectionDistance;
 
         uint32_t m_goldMinOverride = 0;

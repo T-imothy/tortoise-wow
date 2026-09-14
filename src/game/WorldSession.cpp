@@ -1,3 +1,4 @@
+#include "Util/DevDiagnostics.h"
 /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  * Copyright (C) 2009-2011 MaNGOSZero <https://github.com/mangos/zero>
@@ -96,6 +97,13 @@ WorldSession::WorldSession(uint32 id, WorldSocket *sock, AccountTypes sec, time_
 {
     // A remote socket must never be routed through the trusted Headless path.
     MANGOS_ASSERT(!sock || transport == SessionTransport::Network);
+
+    // Headless sessions process only the world queue. Initialize every packet
+    // class before Map reads recent spell activity; allocator bytes must never
+    // promote an idle bot into the foreground scheduling lane.
+    for (bool& received : _receivedPacketType)
+        received = false;
+
 
     if (sock)
     {
@@ -197,6 +205,7 @@ char const* WorldSession::GetPlayerName() const
 /// Send a packet to the client
 void WorldSession::SendPacket(WorldPacket const* packet)
 {
+    MANTECH_DIAG_SCOPE(Packet, 32, "session_send_packet");
     bool handledByScript = ScriptRegistry<ServerScript>::ForEachEnabledHookWithReturn(SERVERHOOK_CAN_PACKET_SEND, [&](ServerScript* script)
     {
         return !script->CanPacketSend(this, *packet);
@@ -385,6 +394,7 @@ bool WorldSession::ForcePlayerLogoutDelay()
 /// Update the WorldSession (triggered by World update)
 bool WorldSession::Update(PacketFilter& updater)
 {
+    MANTECH_DIAG_SCOPE(Session, 32, nullptr);
     uint32 sessionUpdateTime = WorldTimer::getMSTime();
     for (uint32 & i : _floodPacketsCount)
         i = 0;
@@ -395,6 +405,11 @@ bool WorldSession::Update(PacketFilter& updater)
     // No idle kick and no socket-loss disconnect; lifetime is registry-owned.
     if (IsHeadless())
     {
+        // A real logout request still expires on the native world owner.
+        // Returning false lets HeadlessSessionMgr destroy/save the session;
+        // map packet passes cannot trigger teardown.
+        if (updater.ProcessLogout() && !m_playerLoading && ShouldLogOut(time(nullptr)))
+            return false;
         if (!_player && !m_playerLoading && m_headlessLoginRequested)
             return false;
         m_lastUpdateTime = WorldTimer::getMSTime();

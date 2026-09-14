@@ -803,6 +803,11 @@ class GroupScript : public ScriptObject
     public:
         virtual void OnCreate(Group* /*group*/, ObjectGuid /*leaderGuid*/, uint8 /*groupType*/) {}
         virtual void OnInviteMember(Group* /*group*/, ObjectGuid /*guid*/) {}
+        // Native invite transaction on the world owner. Unlike AddInvite's
+        // membership notification, these preserve the actual inviter (including
+        // raid assistants); group may be null during the eligibility check.
+        virtual bool CanInvitePlayer(Group* /*group*/, Player* /*inviter*/, Player* /*target*/) { return true; }
+        virtual void OnPlayerInvited(Group* /*group*/, Player* /*inviter*/, Player* /*target*/) {}
         virtual bool CanMemberAccept(Group* /*group*/, Player* /*player*/) { return true; }
         virtual void OnAddMember(Group* /*group*/, ObjectGuid /*guid*/) {}
         virtual void OnRemoveMember(Group* /*group*/, ObjectGuid /*guid*/, uint8 /*method*/) {}

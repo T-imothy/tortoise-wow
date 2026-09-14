@@ -30,6 +30,7 @@
 #include <memory>
 #include <optional>
 #include <functional>
+#include "Memory/MemoryLedger.h"
 
 /// ---- BASE ---
 
@@ -41,13 +42,17 @@ class SqlStmtParameters;
 class SqlOperation
 {
     public:
-        SqlOperation(uint32 id) : serialId(id) {}
-        SqlOperation() : serialId(0) {}
+        SqlOperation(uint32 id) : serialId(id) { ManTech::MemoryLedger::Add(ManTech::MemoryKind::DatabaseWork, sizeof(SqlOperation)); }
+        SqlOperation() : SqlOperation(0) {}
         uint32 GetSerialId() const { return serialId; }
         virtual void OnRemove() { delete this; }
         virtual bool Execute(SqlConnection *conn) = 0;
         virtual bool IsReadOnly() const { return false; }
-        virtual ~SqlOperation() {}
+        virtual ~SqlOperation() { ManTech::MemoryLedger::Remove(ManTech::MemoryKind::DatabaseWork, sizeof(SqlOperation) + m_payloadBytes); }
+        void AccountQueryPayload(size_t bytes) { m_payloadBytes += bytes; ManTech::MemoryLedger::Add(ManTech::MemoryKind::DatabaseWork, bytes, 0); }
+    private:
+        size_t m_payloadBytes = 0;
+    public:
 
         const auto& GetCallback() const { return callback; }
 
@@ -68,7 +73,7 @@ class SqlPlainRequest : public SqlOperation
     private:
         const char *m_sql;
     public:
-        SqlPlainRequest(const char *sql) : m_sql(mangos_strdup(sql)){}
+        SqlPlainRequest(const char *sql) : m_sql(mangos_strdup(sql)) { AccountQueryPayload(strlen(m_sql) + 1); }
         ~SqlPlainRequest() { char* tofree = const_cast<char*>(m_sql); delete [] tofree; }
         bool Execute(SqlConnection *conn);
 };
@@ -78,7 +83,7 @@ class SqlMultilineRequest : public SqlOperation
 private:
     std::string m_sql;
 public:
-    SqlMultilineRequest(const char* sql) : m_sql(sql) {}
+    SqlMultilineRequest(const char* sql) : m_sql(sql) { AccountQueryPayload(m_sql.capacity() + 1); }
 
     bool Execute(SqlConnection* conn);
 };
@@ -87,9 +92,10 @@ class SqlTransaction : public SqlOperation
 {
     private:
         std::vector<SqlOperation * > m_queue;
+        bool m_retryDeadlock;
 
     public:
-        SqlTransaction(uint32 serialId) : SqlOperation(serialId) {}
+        SqlTransaction(uint32 serialId, bool retryDeadlock = false) : SqlOperation(serialId), m_retryDeadlock(retryDeadlock) {}
         ~SqlTransaction();
 
         void DelayExecute(SqlOperation * sql)   {   m_queue.push_back(sql); }
@@ -151,7 +157,7 @@ class SqlQuery : public SqlOperation
         SqlResultQueue * m_queue;
     public:
         SqlQuery(const char *sql, MaNGOS::IQueryCallback * callback, SqlResultQueue * queue, bool highPriority = false)
-            : m_sql(mangos_strdup(sql)), m_callback(callback), m_queue(queue), m_highPriority(highPriority) {}
+            : m_sql(mangos_strdup(sql)), m_callback(callback), m_queue(queue), m_highPriority(highPriority) { AccountQueryPayload(strlen(m_sql) + 1); }
         ~SqlQuery() { char* tofree = const_cast<char*>(m_sql); delete [] tofree; }
         bool Execute(SqlConnection *conn);
         bool IsReadOnly() const override { return true; }
@@ -174,6 +180,11 @@ class SqlQueryHolder
         bool SetPQuery(size_t index, const char *format, ...) ATTR_PRINTF(3,4);
         void SetSize(size_t size);
         size_t GetSize() const { return m_queries.size(); }
+        size_t GetQueryPayloadBytes() const {
+            size_t bytes = m_queries.capacity() * sizeof(SqlResultPair);
+            for (auto const& q : m_queries) if (q.first) bytes += strlen(q.first) + 1;
+            return bytes;
+        }
         QueryResult* GetResult(size_t index);
         void SetResult(size_t index, QueryResult *result);
         bool Execute(MaNGOS::IQueryCallback * callback, Database *db, SqlResultQueue *queue, bool highPriority = false);
@@ -190,7 +201,7 @@ class SqlQueryHolderEx : public SqlOperation
         bool m_highPriority;
     public:
         SqlQueryHolderEx(SqlQueryHolder *holder, MaNGOS::IQueryCallback * callback, SqlResultQueue * queue, uint32 id, bool highPriority = false)
-            : SqlOperation(id), m_holder(holder), m_callback(callback), m_queue(queue), m_highPriority(highPriority) {}
+            : SqlOperation(id), m_holder(holder), m_callback(callback), m_queue(queue), m_highPriority(highPriority) { AccountQueryPayload(holder->GetQueryPayloadBytes()); }
         bool Execute(SqlConnection *conn);
         bool IsReadOnly() const override { return true; }
 };

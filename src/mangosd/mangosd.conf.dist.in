@@ -372,6 +372,11 @@ MapUpdate.Empty.UpdateTime = 60000
 # 0 runs the same phases synchronously; changes require a restart.
 MapUpdate.WorkerThreads = 4
 MapUpdate.IdleBotMaxUpdatesPerTick = 128
+# Opt-in CMaNGOS full/minimal AI cadence. Independent full turns continue in
+# empty maps; combat and player interactions retain foreground dispatch.
+# Restart required. ManTech's minimal rescheduling preserves longer action waits.
+MapUpdate.BackgroundAI.CmangosScheduling = 0
+MapUpdate.IdleBotJitterMs = 4000
 MapUpdate.IdleBotMaxTimerAdvanceMs = 250
 AdaptiveLoad.BotBudgetMs = 20
 AdaptiveLoad.BackgroundBotMinUpdates = 16

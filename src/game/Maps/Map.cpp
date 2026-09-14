@@ -1,3 +1,4 @@
+#include "Util/DevDiagnostics.h"
 /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  * Copyright (C) 2009-2011 MaNGOSZero <https://github.com/mangos/zero>
@@ -20,6 +21,7 @@
  */
 
 #include "Map.h"
+#include "Movement/spline/MoveSpline.h"
 #include "AreaLookupIndex.h"
 
 namespace
@@ -50,6 +52,7 @@ AreaEntry const* AreaEntry::GetByAreaFlagAndMap(uint32 flag, uint32 mapId)
 }
 
 #include "MapWork.h"
+#include "BackgroundAIScheduling.h"
 #include "AggressorAI.h"
 #include "ReactorAI.h"
 #include "NullCreatureAI.h"
@@ -756,6 +759,17 @@ inline void Map::MarkCellsAroundObject(WorldObject const* object)
 
 namespace
 {
+bool CmangosBackgroundAIEnabled()
+{
+    // Opt-in generic dispatch policy; does not change another module's defaults.
+    static bool const enabled = [] {
+        bool const value = sConfig.GetBoolDefault("MapUpdate.BackgroundAI.CmangosScheduling", false);
+        sLog.outString("BACKGROUND_AI_SCHEDULING enabled=%u staggered_full=1 minimal_background=1", uint32(value));
+        return value;
+    }();
+    return enabled;
+}
+
 bool CmangosBackgroundWorldEnabled()
 {
     // Restart-only switch; no configuration locks in the per-object hot path.
@@ -801,6 +815,8 @@ BackgroundWorld::CreatureState DescribeBackgroundCreature(Creature* creature, bo
 
 void Map::UpdateDiscoveredCells(uint32 now, uint32 diff)
 {
+    MANTECH_DIAG_SCOPE(Objects, 1, nullptr);
+
     TurtleDiagnostics::Scope selection(TurtleDiagnostics::Selection);
     resetMarkedCells();
     m_discoveryCells.clear();
@@ -920,6 +936,7 @@ void Map::UpdateDiscoveredCells(uint32 now, uint32 diff)
     std::vector<std::vector<ObjectGuid>> found(chunks);
     auto collect = [this, &found, chunkSize](size_t chunk)
     {
+        MANTECH_DIAG_SCOPE(GridWorker, 1, "cell_discovery_chunk");
         CellObjectCollector collector{found[chunk]};
         TypeContainerVisitor<CellObjectCollector, GridTypeMapContainer> grid(collector);
         TypeContainerVisitor<CellObjectCollector, WorldTypeMapContainer> world(collector);
@@ -941,7 +958,8 @@ void Map::UpdateDiscoveredCells(uint32 now, uint32 diff)
         MapTaskJoin group; // declared AFTER captured vectors; drains on every exit
         group.tasks.reserve(chunks);
         for (size_t n = 0; n < chunks; ++n)
-            group.tasks.push_back(pool.Submit([collect, n] { collect(n); }));
+            group.tasks.push_back(pool.Submit([collect, n] { collect(n); }, "cell_discovery"));
+        MANTECH_DIAG_SCOPE(TaskWait, 1, "cell_discovery_join");
         TurtleDiagnostics::Scope wait(TurtleDiagnostics::DiscoveryWait);
         auto const deadline = std::chrono::steady_clock::now() +
             std::chrono::milliseconds(sWorld.getConfig(CONFIG_UINT32_MAP_CELL_MAX_WAIT));
@@ -1208,7 +1226,9 @@ bool Map::IsResponsivePlayer(Player const* player) const
 bool Map::IsAutonomousActivePlayer(Player const* player) const
 {
     return player && IsMachineDrivenPlayer(player) &&
-        (player->IsInCombat() || player->InBattleGround() || player->InBattleGroundQueue() ||
+        (player->IsInCombat() || player->IsNonMeleeSpellCasted(true) ||
+        (player->movespline && !player->movespline->Finalized()) ||
+        player->InBattleGround() || player->InBattleGroundQueue() ||
         player->IsTaxiFlying() || player->IsBeingTeleported() || player->GetTransport() ||
         (player->GetSession() && player->GetSession()->HasRecentPacket(PACKET_PROCESS_SPELLS)));
 }
@@ -1273,6 +1293,8 @@ void Map::UpdateSessionsMovementAndSpellsIfNeeded()
 
 void Map::UpdatePlayers(bool responsiveOnly)
 {
+    MANTECH_DIAG_SCOPE(PlayerCore, 1, nullptr);
+
     TurtleDiagnostics::Scope diagnosticPlayers(TurtleDiagnostics::PlayerCore);
     uint32 now = WorldTimer::getMSTime();
     uint32 diff = WorldTimer::getMSTimeDiff(_lastPlayersUpdate, now);
@@ -1395,12 +1417,16 @@ void Map::UpdatePlayers(bool responsiveOnly)
 
 void Map::UpdatePlayerAI(bool responsiveOnly)
 {
+    MANTECH_DIAG_SCOPE(BotBatch, 1, nullptr);
+
     TurtleDiagnostics::Scope diagnosticAI(TurtleDiagnostics::BotAI);
     uint32 const now = WorldTimer::getMSTime();
     if (m_lastAIUpdate && WorldTimer::getMSTimeDiff(m_lastAIUpdate, now) <
         sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_UPDATE_PLAYERS_DIFF))
         return;
     m_lastAIUpdate = now;
+    bool const cmangosScheduling = CmangosBackgroundAIEnabled();
+    uint32 const fullCadence = BackgroundAI::FullCadence(sWorld.GetAverageDiff(), HasRealPlayers());
 
     struct Request
     {
@@ -1426,10 +1452,18 @@ void Map::UpdatePlayerAI(bool responsiveOnly)
             continue;
         // Snapshot without consuming: a due request can miss this tick's budget.
         // Its unchanged clock must carry that elapsed time into the next pass.
-        uint32 const elapsed = std::min<uint32>(immediate ? 500 : sWorld.getConfig(CONFIG_UINT32_MAP_IDLE_AI_ADVANCE), player->GetAIElapsed(now));
+        // Decision/reaction waits are elapsed-time timers, not simulation steps.
+        // Capping this delta while consuming the entire clock stretches every
+        // wait after deferral. Execute one bounded AI update with the full delta;
+        // player movement retains its separate simulation catch-up bound.
+        uint32 const elapsed = player->GetAIElapsed(now);
         Request request{player->GetObjectGuid(), {GetId(), GetInstanceId(), player->GetMapWorkGeneration()},
             elapsed};
-        if (immediate)
+        // Match CMaNGOS: ordinary autonomous bots still receive full decisions
+        // on GUID-staggered turns, independently of any human's proximity.
+        bool const fullTurn = cmangosScheduling &&
+            IsStaggeredMapWorkDue(_playerUpdateSequence, player->GetGUIDLow(), fullCadence);
+        if (immediate || fullTurn)
         {
             player->ClearBackgroundAIDueAge();
             foreground.push_back(request);
@@ -1446,7 +1480,7 @@ void Map::UpdatePlayerAI(bool responsiveOnly)
             player->ConsumeAIElapsed(now);
         }
     }
-    auto execute = [this, now](Request const& request)
+    auto execute = [this, now](Request const& request, bool minimal)
     {
         Player* player = GetPlayer(request.guid);
         if (!player || player->FindMap() != this || player->IsBeingTeleported() ||
@@ -1460,11 +1494,15 @@ void Map::UpdatePlayerAI(bool responsiveOnly)
         // Only admitted, still-valid work consumes the snapshot's clock.
         player->ConsumeAIElapsed(now);
         player->ClearBackgroundAIDueAge();
-        Script_UpdateAI(player, request.elapsed, false);
+        // Earlier actions may have put this queued bot into combat. Promote
+        // before dispatch; never send newly responsive gameplay to minimal AI.
+        minimal = minimal && !IsResponsivePlayer(player) && !IsAutonomousActivePlayer(player);
+        MANTECH_DIAG_SCOPE(BotAI, 1, minimal ? "background_minimal_ai" : "foreground_full_ai");
+        Script_UpdateAI(player, request.elapsed, minimal);
         ++m_aiUpdates;
     };
     for (Request const& request : foreground)
-        execute(request);
+        execute(request, false);
 
     // Round-robin by GUID, not a vector offset that changes when bots log in or
     // out. The configured population is never used as a queue size or index.
@@ -1476,6 +1514,7 @@ void Map::UpdatePlayerAI(bool responsiveOnly)
         auto const diagnosticContext = TurtleDiagnostics::context;
         auto runIdleBatch = [&, diagnosticOwner, diagnosticContext]
         {
+        MANTECH_DIAG_CONTEXT(GetId(), GetInstanceId());
         TurtleDiagnostics::OwnerHandoff attribution(diagnosticOwner, diagnosticContext);
         ExecutionWatch::ResetOnExit watchScope;
         auto next = std::upper_bound(background.begin(), background.end(), m_idleAICursorGuid,
@@ -1496,7 +1535,7 @@ void Map::UpdatePlayerAI(bool responsiveOnly)
         {
             Request& request = background[(start + n) % background.size()];
             if (request.dueAge < maxDeferral) continue;
-            execute(request);
+            execute(request, cmangosScheduling);
             request.serviced = true;
             ++processed;
         }
@@ -1507,7 +1546,7 @@ void Map::UpdatePlayerAI(bool responsiveOnly)
                 break;
             Request& request = background[(start + scanned) % background.size()];
             if (request.serviced) continue;
-            execute(request);
+            execute(request, cmangosScheduling);
             ++processed;
             m_idleAICursorGuid = request.guid.GetCounter();
         }
@@ -1530,16 +1569,21 @@ void Map::UpdatePlayerAI(bool responsiveOnly)
         // Match the later ManTech correction: AI may mutate shared threat and
         // units, so transfer the whole map batch and wait, never fan out bots.
         // This is a separate pool, not a task queued behind its waiting owner.
-        auto done = sMapMgr.IdleBotAI().Submit(runIdleBatch);
+        auto done = sMapMgr.IdleBotAI().Submit(runIdleBatch, "idle_bot_map_batch");
+        MANTECH_DIAG_SCOPE(TaskWait, 1, "idle_bot_map_join");
         done.get();
     }
 }
 
 void Map::DoUpdate(uint32 maxDiff)
 {
+    MANTECH_DIAG_CONTEXT(GetId(), GetInstanceId());
+
     TurtleDiagnostics::Frame diagnosticFrame(m_archDiagnostics, GetId(), GetInstanceId(), ++m_archTick);
     TurtleDiagnostics::Scope diagnosticTotal(TurtleDiagnostics::MapTotal);
     if (m_archQueuedAt) TurtleDiagnostics::Record(TurtleDiagnostics::MapQueue, TurtleDiagnostics::Micros() - m_archQueuedAt);
+    // Both recorders use steady-clock microseconds; native queue recording is config-gated.
+    ManTech::Diag::Queue(m_archQueuedAt, GetId(), GetInstanceId());
     ExecutionWatch::ResetOnExit watchScope;
     ExecutionWatch::Set(ExecutionWatch::MapStart, GetId(), GetInstanceId());
     uint32 const now = WorldTimer::getMSTime();
@@ -1562,6 +1606,7 @@ void Map::DoUpdate(uint32 maxDiff)
 
 void Map::Update(uint32 t_diff)
 {
+    MANTECH_DIAG_SCOPE(Map, 1, nullptr);
     XScopeStatTimer ScopeStatTimer{ UpdateTimer };
     RefreshRealPlayerActivity();
     ScriptRegistry<AllMapScript>::ForEach([&](AllMapScript* script)
@@ -1737,6 +1782,8 @@ void Map::CompleteUpdate()
 
 void Map::UpdateScriptedEvents()
 {
+    MANTECH_DIAG_SCOPE(Scripts, 1, nullptr);
+
     for (auto itr = m_mScriptedEvents.begin(); itr != m_mScriptedEvents.end();)
     {
         if (itr->second.UpdateEvent())
@@ -3555,6 +3602,8 @@ void Map::RemoveUnitFromMovementUpdate(Unit *unit)
 
 void Map::SendObjectUpdates()
 {
+    MANTECH_DIAG_SCOPE(Send, 1, nullptr);
+
     if (i_objectsToClientUpdate.empty()) return;
     _processingSendObjUpdates = true;
     struct ResetFlag { bool& flag; ~ResetFlag() { flag = false; } } reset{_processingSendObjUpdates};
@@ -3568,6 +3617,7 @@ void Map::SendObjectUpdates()
     for (size_t n = 0; n < chunks; ++n) updates.emplace_back(new UpdateDataMapType);
     auto build = [&objects, &updates, chunkSize](size_t chunk)
     {
+        MANTECH_DIAG_SCOPE(ObjectBuild, 1, "object_update_chunk");
         size_t const end = std::min(objects.size(), (chunk + 1) * chunkSize);
         for (size_t i = chunk * chunkSize; i < end; ++i)
             objects[i]->BuildUpdateData(*updates[chunk]);
@@ -3582,7 +3632,7 @@ void Map::SendObjectUpdates()
         MapTaskJoin group;
         group.tasks.reserve(chunks);
         for (size_t n = 0; n < chunks; ++n)
-            group.tasks.push_back(pool.Submit([build, n] { build(n); }));
+            group.tasks.push_back(pool.Submit([build, n] { build(n); }, "object_update_build"));
         group.Get();
     }
     else
@@ -3599,6 +3649,7 @@ void Map::SendObjectUpdates()
 
 void Map::UpdateVisibilityForRelocations()
 {
+    MANTECH_DIAG_SCOPE(Visibility, 1, "relocation_visibility");
     // VERY HEAVY LOAD in case of a lot of players at the same place
     uint32 now = WorldTimer::getMSTime();
     uint32 objectsCount = i_unitsRelocated.size();

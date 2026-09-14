@@ -1,3 +1,4 @@
+#include "Util/DevDiagnostics.h"
 /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  * Copyright (C) 2009-2011 MaNGOSZero <https://github.com/mangos/zero>
@@ -1645,6 +1646,7 @@ AutoAttackCheckResult Player::CanAutoAttackTarget(Unit const* pVictim) const
 
 void Player::Update(uint32 update_diff, uint32 p_time)
 {
+    MANTECH_DIAG_SCOPE(Player, 32, nullptr);
     if (!IsInWorld())
         return;
 
@@ -6604,9 +6606,13 @@ void Player::RepopAtGraveyard()
         if (AreaTriggerTeleport const* entrance = sObjectMgr.GetMapEntranceTrigger(GetMapId()))
         {
             ResurrectPlayer(1.0f);
-            SpawnCorpseBones();
-            TeleportTo(entrance->destination, TeleOptions);
-            return;
+            if (IsAlive())
+            {
+                SpawnCorpseBones();
+                TeleportTo(entrance->destination, TeleOptions);
+                return;
+            }
+            // Refused resurrection retains the native ghost/graveyard route.
         }
     }
     if (BattleGround *bg = GetBattleGround())
@@ -18440,7 +18446,9 @@ bool Player::SaveToDB(bool online, bool force, bool direct)
         return false;
     }
 
-    if (!CharacterDatabase.BeginTransaction(GetGUIDLow()))
+    // Native save statements are replayable as a complete transaction when the
+    // character schema is fully transactional (verified by the DB connection).
+    if (!CharacterDatabase.BeginTransaction(GetGUIDLow(), true))
         return false;
 
     m_honorMgr.Update();
@@ -18601,15 +18609,12 @@ bool Player::SaveToDB(bool online, bool force, bool direct)
     uberInsert.addUInt8(HasXPGainEnabled());
     uberInsert.addUInt32(m_extraBonusTalentCount);
     
-    if (direct)
+    // Direct saves execute the complete queued transaction synchronously below.
+    // Executing this one row early escapes rollback/replay of its child records.
+    if (!uberInsert.Execute())
     {
-        if (!uberInsert.DirectExecute())
-            return false;
-    }
-    else
-    {
-        if (!uberInsert.Execute())
-            return false;
+        CharacterDatabase.RollbackTransaction();
+        return false;
     }
 
     _SaveBGData();

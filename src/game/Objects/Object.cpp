@@ -20,6 +20,7 @@
  */
 
 #include "Object.h"
+#include "Memory/MemoryLedger.h"
 #include "DetailedWorkDiagnostics.h"
 #include <shared_mutex>
 #include "SharedDefines.h"
@@ -223,6 +224,7 @@ Object::~Object()
     if (m_uint32Values)
     {
         //DEBUG_LOG("Object desctr 1 check (%p)",(void*)this);
+        ManTech::MemoryLedger::Remove(ManTech::MemoryKind::UpdateFields, 2 * m_valuesCount * sizeof(uint32));
         delete [] m_uint32Values;
         delete [] m_uint32Values_mirror;
         //DEBUG_LOG("Object desctr 2 check (%p)",(void*)this);
@@ -236,6 +238,7 @@ void Object::_InitValues()
 
     m_uint32Values_mirror = new uint32[ m_valuesCount ];
     memset(m_uint32Values_mirror, 0, m_valuesCount * sizeof(uint32));
+    ManTech::MemoryLedger::Add(ManTech::MemoryKind::UpdateFields, 2 * m_valuesCount * sizeof(uint32));
 
     m_objectUpdated = false;
 }

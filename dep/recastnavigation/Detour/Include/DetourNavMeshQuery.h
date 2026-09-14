@@ -167,6 +167,8 @@ class dtNavMeshQuery
 public:
 	dtNavMeshQuery();
 	~dtNavMeshQuery();
+	/// Includes private node pools/open list; excludes the shared mesh.
+	size_t getOwnedMemoryBytes() const;
 	
 	/// Initializes the query object.
 	///  @param[in]		nav			Pointer to the dtNavMesh object to use for all queries.

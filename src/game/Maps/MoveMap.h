@@ -30,6 +30,7 @@
 #include <thread>
 #include <shared_mutex>
 #include <atomic>
+#include "Memory/MemoryLedger.h"
 
 //  memory management
 inline void* dtCustomAlloc(size_t size, dtAllocHint /*hint*/)
@@ -51,14 +52,36 @@ namespace MMAP
     // dummy struct to hold map's mmap data
     struct MMapData
     {
-        MMapData(dtNavMesh* mesh) : navMesh(mesh) {}
+        MMapData(dtNavMesh* mesh) : navMesh(mesh)
+        {
+            ManTech::MemoryLedger::Add(ManTech::MemoryKind::NavShared, sizeof(*this) + mesh->getOwnedMemoryBytes());
+            // Model meshes already own their single tile when installed.
+            for (int i = 0; i < mesh->getMaxTiles(); ++i)
+            {
+                auto tile = static_cast<dtNavMesh const*>(mesh)->getTile(i);
+                if (tile && tile->header && tile->data)
+                    ManTech::MemoryLedger::Add(ManTech::MemoryKind::NavTiles, tile->dataSize);
+            }
+        }
         ~MMapData()
         {
             for (const auto& itr : navMeshQueries)
+            {
+                ManTech::MemoryLedger::Remove(ManTech::MemoryKind::NavQueries, itr.second->getOwnedMemoryBytes());
                 dtFreeNavMeshQuery(itr.second);
+            }
 
             if (navMesh)
+            {
+                for (int i = 0; i < navMesh->getMaxTiles(); ++i)
+                {
+                    auto tile = static_cast<dtNavMesh const*>(navMesh)->getTile(i);
+                    if (tile && tile->header && tile->data)
+                        ManTech::MemoryLedger::Remove(ManTech::MemoryKind::NavTiles, tile->dataSize);
+                }
+                ManTech::MemoryLedger::Remove(ManTech::MemoryKind::NavShared, sizeof(*this) + navMesh->getOwnedMemoryBytes());
                 dtFreeNavMesh(navMesh);
+            }
         }
 
         dtNavMesh* navMesh;
@@ -81,6 +104,7 @@ namespace MMAP
             ~MMapManager();
 
             bool loadMap(uint32 mapId, int32 x, int32 y);
+            bool IsMapTileLoaded(uint32 mapId, int32 x, int32 y) const;
             // bot's 4-arg forms.
             bool loadMap(uint32 mapId, int32 x, int32 y, uint32 /*instanceId*/) { return loadMap(mapId, x, y); }
             bool loadMap(std::string const& /*dataPath*/, uint32 mapId, int32 x, int32 y) { return loadMap(mapId, x, y); }
