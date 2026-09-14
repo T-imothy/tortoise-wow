@@ -655,13 +655,14 @@ void TradeData::SetAccepted(bool state, bool crosssend /*= false*/)
 
 //== Player ====================================================
 
-// Server-side / scriptable trade initiation. Mirrors the setup of
-// WorldSession::HandleInitiateTradeOpcode (same guards), but performs no item,
-// gold or accept action -- the actual exchange stays fully gated by the normal
-// HandleAcceptTradeOpcode path. Purely additive; no existing code path changes.
+// Server-side trade initiation. Preserve the native initiation restrictions;
+// items, money and acceptance remain in HandleAcceptTradeOpcode. Call only
+// while both players are owned by the caller's execution domain.
 bool Player::BeginTradeWith(Player* other)
 {
-    if (!other || other == this)
+    if (!other || other == this || !GetSession() || !other->GetSession())
+        return false;
+    if (GetSession()->IsFingerprintBanned())
         return false;
     if (m_trade || other->m_trade)
         return false;
@@ -670,15 +671,23 @@ bool Player::BeginTradeWith(Player* other)
     if (HasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_PENDING_STUNNED) ||
         other->HasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_PENDING_STUNNED))
         return false;
-    if ((GetSession() && GetSession()->isLogingOut()) ||
-        (other->GetSession() && other->GetSession()->isLogingOut()))
+    if (GetSession()->isLogingOut() || other->GetSession()->isLogingOut())
         return false;
-    if (IsTaxiFlying() || other->IsTaxiFlying() || !FindMap() || GetMap() != other->GetMap())
+    if (IsTaxiFlying() || other->IsTaxiFlying() || !FindMap() || !other->FindMap() ||
+        GetMap() != other->GetMap())
         return false;
     if (GetDistance3dToCenter(other) > TRADE_DISTANCE)
         return false;
     if (!sWorld.getConfig(CONFIG_BOOL_ALLOW_TWO_SIDE_INTERACTION_TRADE) && GetTeam() != other->GetTeam())
         return false;
+    if (HandleHardcoreInteraction(other, true) != HardcoreInteractionResult::Allowed)
+        return false;
+
+#ifdef ENABLE_ELUNA
+    if (Eluna* e = GetEluna())
+        if (!e->OnTradeInit(this, other))
+            return false;
+#endif
 
     m_trade = new TradeData(this, other);
     other->m_trade = new TradeData(other, this);
@@ -688,8 +697,7 @@ bool Player::BeginTradeWith(Player* other)
     WorldPacket data(SMSG_TRADE_STATUS, 12);
     data << uint32(TRADE_STATUS_BEGIN_TRADE);
     data << ObjectGuid(GetObjectGuid());
-    if (other->GetSession())
-        other->GetSession()->SendPacket(&data);
+    other->GetSession()->SendPacket(&data);
     return true;
 }
 

@@ -86,6 +86,11 @@ bool WorldSession::ProcessChatMessageAfterSecurityCheck(std::string& msg, uint32
     if (!CheckChatMessageValidity(msg, lang, msgType))
         return false;
 
+    // Addon payloads reach OnAddonMessage only after destination authorization
+    // in HandleMessagechatOpcode; never interpret them as textual commands.
+    if (lang == LANG_ADDON)
+        return true;
+
     ScriptRegistry<PlayerScript>::ForEachEnabledHook(PLAYERHOOK_ON_BEFORE_SEND_CHAT_MESSAGE, [&](PlayerScript* script)
     {
         script->OnBeforeSendChatMessage(GetPlayer(), msgType, lang, msg);

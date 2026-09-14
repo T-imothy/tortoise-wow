@@ -72,6 +72,19 @@
     ]
   },
   {
+    "name": "spell_hateforge_dispel_counterpart",
+    "file": "src/scripts/dungeons/hateforge_quarry/hateforge_quarry_trash.cpp",
+    "line": 269,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers"
+    ]
+  },
+  {
     "name": "spell_haunting_phantoms",
     "file": "src/scripts/dungeons/stratholme/stratholme.cpp",
     "line": 903,
@@ -131,6 +144,24 @@
     ]
   },
   {
+    "name": "go_fixed_trap",
+    "file": "src/scripts/dungeons/dire_maul/instance_dire_maul.cpp",
+    "line": 2488,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
     "name": "boss_headless_horseman",
     "file": "src/scripts/dungeons/scarlet_monastery/boss_headless_horseman.cpp",
     "line": 90,
@@ -151,6 +182,79 @@
       "ai_update",
       "spells",
       "death_reset"
+    ]
+  },
+  {
+    "name": "npc_sandstalker",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/npc_sandstalker.cpp",
+    "line": 73,
+    "cmake_listed": true,
+    "file_loader_call_found": false,
+    "dependency_signals": [
+      "ai_update",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "ossirian_crystal",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_ossirian.cpp",
+    "line": 371,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_mother_smolderweb",
+    "file": "src/scripts/dungeons/blackrock_spire/boss_mother_smolderweb.cpp",
+    "line": 100,
+    "cmake_listed": true,
+    "file_loader_call_found": false,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers"
+    ]
+  },
+  {
+    "name": "spell_ubrs_freeze_rookery_egg",
+    "file": "src/scripts/dungeons/blackrock_spire/instance_blackrock_spire.cpp",
+    "line": 1031,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "movement",
+      "summons",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "go_urok_challenge",
+    "file": "src/scripts/dungeons/blackrock_spire/boss_urok.cpp",
+    "line": 370,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "timers",
+      "threat"
     ]
   },
   {
@@ -190,35 +294,6 @@
     ]
   },
   {
-    "name": "npc_sandstalker",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/npc_sandstalker.cpp",
-    "line": 73,
-    "cmake_listed": true,
-    "file_loader_call_found": false,
-    "dependency_signals": [
-      "ai_update",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "ossirian_crystal",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_ossirian.cpp",
-    "line": 371,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
     "name": "go_book_celebras",
     "file": "src/scripts/dungeons/maraudon/boss_celebras_the_cursed.cpp",
     "line": 341,
@@ -231,81 +306,6 @@
       "instance_state",
       "doors",
       "threat"
-    ]
-  },
-  {
-    "name": "go_fixed_trap",
-    "file": "src/scripts/dungeons/dire_maul/instance_dire_maul.cpp",
-    "line": 2488,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "spell_ubrs_freeze_rookery_egg",
-    "file": "src/scripts/dungeons/blackrock_spire/instance_blackrock_spire.cpp",
-    "line": 1031,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "movement",
-      "summons",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "go_urok_challenge",
-    "file": "src/scripts/dungeons/blackrock_spire/boss_urok.cpp",
-    "line": 370,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_mother_smolderweb",
-    "file": "src/scripts/dungeons/blackrock_spire/boss_mother_smolderweb.cpp",
-    "line": 100,
-    "cmake_listed": true,
-    "file_loader_call_found": false,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers"
-    ]
-  },
-  {
-    "name": "spell_hateforge_dispel_counterpart",
-    "file": "src/scripts/dungeons/hateforge_quarry/hateforge_quarry_trash.cpp",
-    "line": 269,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers"
     ]
   }
 ]

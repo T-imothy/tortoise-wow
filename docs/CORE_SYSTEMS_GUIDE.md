@@ -1348,3 +1348,28 @@ travel movement now defer while the selected loot target remains lootable;
 incidental RPG healing also defers, while party/selected-target healing retains
 its existing safety and urgency rules. Native ownership, NULL-safe event loading
 and Turtle adapters are unchanged. See TURTLE_UPSTREAM_SYNC_2026-09-14.md.
+
+
+### Penqle upstream chat and trade compatibility (September 14, build89)
+
+Upstream main through d886113c is merged. Delivery-gated module chat hooks,
+OnChatYell and BeginTradeWith are present; the active ManTech module retains
+its existing chat-command/outgoing-packet integration and scheduling.
+
+BeginTradeWith preserves native fingerprint, hardcore and optional Eluna
+trade-init restrictions. Both sessions/maps must exist before allocating trade
+state; GetMap asserts on an absent map. Callers must own both players' execution
+domain. Items/gold/acceptance remain in the existing native acceptance path.
+This additive API is not yet used by the active ManTech module.
+
+Addon preprocessing validates payloads but does not run text command parsing
+or ordinary pre-send chat hooks. Destination-authorized OnAddonMessage remains
+in the handling switch. This completes upstream's channel-only protection for
+party/guild/raid/battleground addon paths. Normal text chat retains its hooks.
+
+Focused source-extracted regressions: run_trade_helper_test.py (24 cases each
+with and without ENABLE_ELUNA) and run_addon_parse_test.py (56 cases), both in
+tests/architecture and accepting --root SOURCE --output TEST_DIRECTORY. These
+exercise actual method bodies with controlled dependencies, not full-world
+Eluna execution or trade settlement. Existing chat admission/link regressions
+also pass. See TURTLE_PENQLE_SYNC_2026-09-14.md for the deployment/live result.

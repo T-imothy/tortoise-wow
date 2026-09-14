@@ -11603,6 +11603,126 @@
     ]
   },
   {
+    "name": "instance_karazhan_crypt",
+    "file": "src/scripts/dungeons/karazhan_crypt/instance_karazhan_crypt.cpp",
+    "line": 383,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers"
+    ]
+  },
+  {
+    "name": "skeletal_remains",
+    "file": "src/scripts/dungeons/karazhan_crypt/instance_karazhan_crypt.cpp",
+    "line": 388,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers"
+    ]
+  },
+  {
+    "name": "skeletal_remains_trigger",
+    "file": "src/scripts/dungeons/karazhan_crypt/instance_karazhan_crypt.cpp",
+    "line": 393,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers"
+    ]
+  },
+  {
+    "name": "trigger_summon_alarus",
+    "file": "src/scripts/dungeons/karazhan_crypt/instance_karazhan_crypt.cpp",
+    "line": 398,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers"
+    ]
+  },
+  {
+    "name": "necrotic_rune",
+    "file": "src/scripts/dungeons/karazhan_crypt/instance_karazhan_crypt.cpp",
+    "line": 403,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers"
+    ]
+  },
+  {
+    "name": "tomb_bat",
+    "file": "src/scripts/dungeons/karazhan_crypt/instance_karazhan_crypt.cpp",
+    "line": 408,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers"
+    ]
+  },
+  {
+    "name": "tomb_bat_event_trigger",
+    "file": "src/scripts/dungeons/karazhan_crypt/instance_karazhan_crypt.cpp",
+    "line": 413,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers"
+    ]
+  },
+  {
+    "name": "karazhan_crypt_gate",
+    "file": "src/scripts/dungeons/karazhan_crypt/instance_karazhan_crypt.cpp",
+    "line": 418,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers"
+    ]
+  },
+  {
     "name": "mob_anubisath_sentinel",
     "file": "src/scripts/dungeons/temple_of_ahnqiraj/mob_anubisath_sentinel.cpp",
     "line": 351,
@@ -12205,6 +12325,222 @@
     ]
   },
   {
+    "name": "mob_hateforge_cleric",
+    "file": "src/scripts/dungeons/hateforge_quarry/hateforge_quarry_trash.cpp",
+    "line": 254,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers"
+    ]
+  },
+  {
+    "name": "mob_hateforge_taskmaster",
+    "file": "src/scripts/dungeons/hateforge_quarry/hateforge_quarry_trash.cpp",
+    "line": 259,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers"
+    ]
+  },
+  {
+    "name": "mob_twilight_fireblade",
+    "file": "src/scripts/dungeons/hateforge_quarry/hateforge_quarry_trash.cpp",
+    "line": 264,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers"
+    ]
+  },
+  {
+    "name": "spell_hateforge_dispel_counterpart",
+    "file": "src/scripts/dungeons/hateforge_quarry/hateforge_quarry_trash.cpp",
+    "line": 269,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers"
+    ]
+  },
+  {
+    "name": "boss_hatereaver_annhilator",
+    "file": "src/scripts/dungeons/hateforge_quarry/boss_hatereaver_annhilator.cpp",
+    "line": 109,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers"
+    ]
+  },
+  {
+    "name": "boss_hargesh_doomcaller",
+    "file": "src/scripts/dungeons/hateforge_quarry/boss_hargesh_doomcaller.cpp",
+    "line": 353,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_faceless_terror",
+    "file": "src/scripts/dungeons/hateforge_quarry/boss_hargesh_doomcaller.cpp",
+    "line": 358,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_engineer_figgles",
+    "file": "src/scripts/dungeons/hateforge_quarry/boss_engineer_figgles.cpp",
+    "line": 73,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers"
+    ]
+  },
+  {
+    "name": "boss_bargul_blackhammer",
+    "file": "src/scripts/dungeons/hateforge_quarry/boss_bargul_blackhammer.cpp",
+    "line": 136,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers"
+    ]
+  },
+  {
+    "name": "instance_gnomeregan",
+    "file": "src/scripts/dungeons/gnomeregan/instance_gnomeregan.cpp",
+    "line": 320,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "instance_state",
+      "doors",
+      "timers"
+    ]
+  },
+  {
+    "name": "matrix_punchograph",
+    "file": "src/scripts/dungeons/gnomeregan/gnomeregan.cpp",
+    "line": 923,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_blastmaster_emi_shortfuse",
+    "file": "src/scripts/dungeons/gnomeregan/gnomeregan.cpp",
+    "line": 929,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_kernobee",
+    "file": "src/scripts/dungeons/gnomeregan/gnomeregan.cpp",
+    "line": 936,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_thermaplugg",
+    "file": "src/scripts/dungeons/gnomeregan/boss_thermaplugg.cpp",
+    "line": 282,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers"
+    ]
+  },
+  {
+    "name": "go_gnomeface_button",
+    "file": "src/scripts/dungeons/gnomeregan/boss_thermaplugg.cpp",
+    "line": 288,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers"
+    ]
+  },
+  {
     "name": "go_gauntlet_gate",
     "file": "src/scripts/dungeons/stratholme/stratholme.cpp",
     "line": 857,
@@ -12602,6 +12938,94 @@
     ]
   },
   {
+    "name": "instance_gilneas_city",
+    "file": "src/scripts/dungeons/gilneas_city/instance_gilneas_city.cpp",
+    "line": 349,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "genn_greymane",
+    "file": "src/scripts/dungeons/gilneas_city/instance_gilneas_city.cpp",
+    "line": 354,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "greymane_knight",
+    "file": "src/scripts/dungeons/gilneas_city/instance_gilneas_city.cpp",
+    "line": 359,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "greymane_noble",
+    "file": "src/scripts/dungeons/gilneas_city/instance_gilneas_city.cpp",
+    "line": 364,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_lord_mortimer",
+    "file": "src/scripts/dungeons/gilneas_city/boss_lord_mortimer.cpp",
+    "line": 93,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_celia",
+    "file": "src/scripts/dungeons/gilneas_city/boss_celia.cpp",
+    "line": 96,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
     "name": "instance_stormwrought_ruins",
     "file": "src/scripts/dungeons/stormwrought_ruins/instance_stormwrought_ruins.cpp",
     "line": 129,
@@ -12794,6 +13218,34 @@
     ]
   },
   {
+    "name": "boss_hailar_the_frigid",
+    "file": "src/scripts/dungeons/frostmane_hollow/boss_hailar_the_frigid.cpp",
+    "line": 147,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_frostmane_ritualist",
+    "file": "src/scripts/dungeons/frostmane_hollow/boss_hailar_the_frigid.cpp",
+    "line": 152,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
     "name": "instance_stormwind_vault",
     "file": "src/scripts/dungeons/stormwind_vaults/instance_stormwind_vaults.cpp",
     "line": 214,
@@ -12913,6 +13365,143 @@
     ]
   },
   {
+    "name": "instance_emerald_sanctum",
+    "file": "src/scripts/dungeons/emerald_sanctum/instance_emerald_sanctum.cpp",
+    "line": 527,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "sanctum_dreamer",
+    "file": "src/scripts/dungeons/emerald_sanctum/instance_emerald_sanctum.cpp",
+    "line": 532,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "sanctum_dragonkin",
+    "file": "src/scripts/dungeons/emerald_sanctum/instance_emerald_sanctum.cpp",
+    "line": 537,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "sanctum_wyrm",
+    "file": "src/scripts/dungeons/emerald_sanctum/instance_emerald_sanctum.cpp",
+    "line": 542,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "sanctum_supressor",
+    "file": "src/scripts/dungeons/emerald_sanctum/instance_emerald_sanctum.cpp",
+    "line": 547,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "sanctum_wyrmkin",
+    "file": "src/scripts/dungeons/emerald_sanctum/instance_emerald_sanctum.cpp",
+    "line": 552,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "sanctum_scalebane",
+    "file": "src/scripts/dungeons/emerald_sanctum/instance_emerald_sanctum.cpp",
+    "line": 557,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "erennius",
+    "file": "src/scripts/dungeons/emerald_sanctum/instance_emerald_sanctum.cpp",
+    "line": 562,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_solnius",
+    "file": "src/scripts/dungeons/emerald_sanctum/boss_solnius.cpp",
+    "line": 587,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
     "name": "instance_shadowfang_keep",
     "file": "src/scripts/dungeons/shadowfang_keep/instance_shadowfang_keep.cpp",
     "line": 421,
@@ -12921,6 +13510,85 @@
     "dependency_signals": [
       "instance_state",
       "doors"
+    ]
+  },
+  {
+    "name": "instance_dragonmaw_retreat",
+    "file": "src/scripts/dungeons/dragonmaw_retreat/instance_dragonmaw_retreat.cpp",
+    "line": 87,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "instance_state"
+    ]
+  },
+  {
+    "name": "boss_zuluhed_the_whacked",
+    "file": "src/scripts/dungeons/dragonmaw_retreat/boss_zuluhed_the_whacked.cpp",
+    "line": 100,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_searistrasz",
+    "file": "src/scripts/dungeons/dragonmaw_retreat/boss_searistrasz.cpp",
+    "line": 108,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_halgan_redbrand",
+    "file": "src/scripts/dungeons/dragonmaw_retreat/boss_halgan_redbrand.cpp",
+    "line": 97,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_gowlfang",
+    "file": "src/scripts/dungeons/dragonmaw_retreat/boss_gowlfang.cpp",
+    "line": 60,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset"
+    ]
+  },
+  {
+    "name": "boss_bogpaw_truthsay",
+    "file": "src/scripts/dungeons/dragonmaw_retreat/boss_bogpaw_truthsay.cpp",
+    "line": 105,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers",
+      "threat"
     ]
   },
   {
@@ -13203,2770 +13871,6 @@
       "summons",
       "death_reset",
       "instance_state",
-      "threat"
-    ]
-  },
-  {
-    "name": "instance_scarlet_monastery",
-    "file": "src/scripts/dungeons/scarlet_monastery/instance_scarlet_monastery.cpp",
-    "line": 486,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_scorn",
-    "file": "src/scripts/dungeons/scarlet_monastery/boss_scorn.cpp",
-    "line": 134,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "death_reset"
-    ]
-  },
-  {
-    "name": "boss_interrogator_vishas",
-    "file": "src/scripts/dungeons/scarlet_monastery/boss_interrogator_vishas.cpp",
-    "line": 118,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state"
-    ]
-  },
-  {
-    "name": "boss_houndmaster_loksey",
-    "file": "src/scripts/dungeons/scarlet_monastery/boss_houndmaster_loksey.cpp",
-    "line": 78,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset"
-    ]
-  },
-  {
-    "name": "boss_high_inquisitor_fairbanks",
-    "file": "src/scripts/dungeons/scarlet_monastery/boss_high_inquisitor_fairbanks.cpp",
-    "line": 148,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_herod",
-    "file": "src/scripts/dungeons/scarlet_monastery/boss_herod.cpp",
-    "line": 396,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "doors",
-      "timers"
-    ]
-  },
-  {
-    "name": "mob_scarlet_trainee",
-    "file": "src/scripts/dungeons/scarlet_monastery/boss_herod.cpp",
-    "line": 401,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "doors",
-      "timers"
-    ]
-  },
-  {
-    "name": "go_herod_lever",
-    "file": "src/scripts/dungeons/scarlet_monastery/boss_herod.cpp",
-    "line": 406,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "doors",
-      "timers"
-    ]
-  },
-  {
-    "name": "boss_headless_horseman",
-    "file": "src/scripts/dungeons/scarlet_monastery/boss_headless_horseman.cpp",
-    "line": 90,
-    "cmake_listed": true,
-    "file_loader_call_found": false,
-    "dependency_signals": [
-      "ai_update",
-      "death_reset"
-    ]
-  },
-  {
-    "name": "boss_bloodmage_thalnos",
-    "file": "src/scripts/dungeons/scarlet_monastery/boss_bloodmage_thalnos.cpp",
-    "line": 127,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset"
-    ]
-  },
-  {
-    "name": "boss_azshir_the_sleepless",
-    "file": "src/scripts/dungeons/scarlet_monastery/boss_azshir_the_sleepless.cpp",
-    "line": 96,
-    "cmake_listed": true,
-    "file_loader_call_found": false,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset"
-    ]
-  },
-  {
-    "name": "boss_arcanist_doan",
-    "file": "src/scripts/dungeons/scarlet_monastery/boss_arcanist_doan.cpp",
-    "line": 130,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "threat"
-    ]
-  },
-  {
-    "name": "instance_naxxramas",
-    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
-    "line": 2071,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "at_naxxramas",
-    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
-    "line": 2076,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "spirit_of_naxxramas_ai",
-    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
-    "line": 2081,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "naxxramas_gargoyle_ai",
-    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
-    "line": 2086,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "naxxramas_plague_slime_ai",
-    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
-    "line": 2091,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "toxic_tunnel_ai",
-    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
-    "line": 2097,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "dark_touched_warriorAI",
-    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
-    "line": 2102,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_craftsman_omarion",
-    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
-    "line": 2107,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "spell_gargoyle_stoneform",
-    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
-    "line": 2113,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "spell_unrelenting_rider_shadow_bolt_volley",
-    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
-    "line": 2118,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_thaddius",
-    "file": "src/scripts/dungeons/naxxramas/boss_thaddius.cpp",
-    "line": 1211,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_stalagg",
-    "file": "src/scripts/dungeons/naxxramas/boss_thaddius.cpp",
-    "line": 1216,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_feugen",
-    "file": "src/scripts/dungeons/naxxramas/boss_thaddius.cpp",
-    "line": 1221,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_tesla_coil",
-    "file": "src/scripts/dungeons/naxxramas/boss_thaddius.cpp",
-    "line": 1226,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_sapphiron",
-    "file": "src/scripts/dungeons/naxxramas/boss_sapphiron.cpp",
-    "line": 823,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_sapphiron_blizzard",
-    "file": "src/scripts/dungeons/naxxramas/boss_sapphiron.cpp",
-    "line": 828,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_razuvious",
-    "file": "src/scripts/dungeons/naxxramas/boss_razuvious.cpp",
-    "line": 390,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "deathknight_understudy_ai",
-    "file": "src/scripts/dungeons/naxxramas/boss_razuvious.cpp",
-    "line": 395,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_patchwerk",
-    "file": "src/scripts/dungeons/naxxramas/boss_patchwerk.cpp",
-    "line": 334,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_noth",
-    "file": "src/scripts/dungeons/naxxramas/boss_noth.cpp",
-    "line": 483,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_maexxna",
-    "file": "src/scripts/dungeons/naxxramas/boss_maexxna.cpp",
-    "line": 536,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_webwrap",
-    "file": "src/scripts/dungeons/naxxramas/boss_maexxna.cpp",
-    "line": 541,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_loatheb",
-    "file": "src/scripts/dungeons/naxxramas/boss_loatheb.cpp",
-    "line": 597,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_rotting_maggot",
-    "file": "src/scripts/dungeons/naxxramas/boss_loatheb.cpp",
-    "line": 602,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_diseased_maggot",
-    "file": "src/scripts/dungeons/naxxramas/boss_loatheb.cpp",
-    "line": 607,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_eye_stalk",
-    "file": "src/scripts/dungeons/naxxramas/boss_loatheb.cpp",
-    "line": 612,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_kelthuzad",
-    "file": "src/scripts/dungeons/naxxramas/boss_kelthuzad.cpp",
-    "line": 1321,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "unstoppable_abomination_ai",
-    "file": "src/scripts/dungeons/naxxramas/boss_kelthuzad.cpp",
-    "line": 1326,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "soldier_frozen_wastes_ai",
-    "file": "src/scripts/dungeons/naxxramas/boss_kelthuzad.cpp",
-    "line": 1331,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "soul_weaver_ai",
-    "file": "src/scripts/dungeons/naxxramas/boss_kelthuzad.cpp",
-    "line": 1336,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_guardian_icecrownAI",
-    "file": "src/scripts/dungeons/naxxramas/boss_kelthuzad.cpp",
-    "line": 1341,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_shadow_fissure",
-    "file": "src/scripts/dungeons/naxxramas/boss_kelthuzad.cpp",
-    "line": 1346,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_heigan",
-    "file": "src/scripts/dungeons/naxxramas/boss_heigan.cpp",
-    "line": 548,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_plague_cloud",
-    "file": "src/scripts/dungeons/naxxramas/boss_heigan.cpp",
-    "line": 553,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_grobbulus",
-    "file": "src/scripts/dungeons/naxxramas/boss_grobbulus.cpp",
-    "line": 305,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_gothik",
-    "file": "src/scripts/dungeons/naxxramas/boss_gothik.cpp",
-    "line": 755,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "spell_anchor",
-    "file": "src/scripts/dungeons/naxxramas/boss_gothik.cpp",
-    "line": 760,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_gluth",
-    "file": "src/scripts/dungeons/naxxramas/boss_gluth.cpp",
-    "line": 439,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_zombie_chow",
-    "file": "src/scripts/dungeons/naxxramas/boss_gluth.cpp",
-    "line": 444,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_lady_blaumeux",
-    "file": "src/scripts/dungeons/naxxramas/boss_four_horsemen.cpp",
-    "line": 908,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_highlord_mograine",
-    "file": "src/scripts/dungeons/naxxramas/boss_four_horsemen.cpp",
-    "line": 913,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_thane_korthazz",
-    "file": "src/scripts/dungeons/naxxramas/boss_four_horsemen.cpp",
-    "line": 918,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_sir_zeliek",
-    "file": "src/scripts/dungeons/naxxramas/boss_four_horsemen.cpp",
-    "line": 923,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_faerlina",
-    "file": "src/scripts/dungeons/naxxramas/boss_faerlina.cpp",
-    "line": 438,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_faerlina_rp",
-    "file": "src/scripts/dungeons/naxxramas/boss_faerlina.cpp",
-    "line": 443,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_anubrekhan",
-    "file": "src/scripts/dungeons/naxxramas/boss_anubrekhan.cpp",
-    "line": 498,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_cryptguards",
-    "file": "src/scripts/dungeons/naxxramas/boss_anubrekhan.cpp",
-    "line": 503,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "go_anub_door",
-    "file": "src/scripts/dungeons/naxxramas/boss_anubrekhan.cpp",
-    "line": 508,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_citadel_inquisitor",
-    "file": "src/scripts/dungeons/scarlet_citadel/trashmobs_scarlet_citadel.cpp",
-    "line": 674,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_citadel_valiant",
-    "file": "src/scripts/dungeons/scarlet_citadel/trashmobs_scarlet_citadel.cpp",
-    "line": 679,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_citadel_footman",
-    "file": "src/scripts/dungeons/scarlet_citadel/trashmobs_scarlet_citadel.cpp",
-    "line": 684,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_citadel_interrogator",
-    "file": "src/scripts/dungeons/scarlet_citadel/trashmobs_scarlet_citadel.cpp",
-    "line": 690,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_chaplain_and_sister",
-    "file": "src/scripts/dungeons/scarlet_citadel/trashmobs_scarlet_citadel.cpp",
-    "line": 695,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_citadel_anti_exploit",
-    "file": "src/scripts/dungeons/scarlet_citadel/trashmobs_scarlet_citadel.cpp",
-    "line": 704,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_eric_vesper",
-    "file": "src/scripts/dungeons/scarlet_citadel/trashbosses_scarlet_citadel.cpp",
-    "line": 501,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_darkcaller_rayn",
-    "file": "src/scripts/dungeons/scarlet_citadel/trashbosses_scarlet_citadel.cpp",
-    "line": 507,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "instance_scarlet_citadel",
-    "file": "src/scripts/dungeons/scarlet_citadel/instance_scarlet_citadel.cpp",
-    "line": 396,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "instance_state",
-      "doors"
-    ]
-  },
-  {
-    "name": "boss_mariella",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_mariella.cpp",
-    "line": 864,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_voidzone",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_mariella.cpp",
-    "line": 871,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_killzone",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_mariella.cpp",
-    "line": 876,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_felhound",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_mariella.cpp",
-    "line": 881,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_daelus",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_daelus.cpp",
-    "line": 628,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_fallen_spirit",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_daelus.cpp",
-    "line": 635,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_ardaeus",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
-    "line": 781,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers"
-    ]
-  },
-  {
-    "name": "npc_sun",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
-    "line": 788,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers"
-    ]
-  },
-  {
-    "name": "npc_invar_onearm",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
-    "line": 794,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers"
-    ]
-  },
-  {
-    "name": "npc_arellas_fireleaf",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
-    "line": 799,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers"
-    ]
-  },
-  {
-    "name": "npc_holia_sunshield",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
-    "line": 804,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers"
-    ]
-  },
-  {
-    "name": "npc_ferren_marcus",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
-    "line": 809,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers"
-    ]
-  },
-  {
-    "name": "npc_yana_bloodspear",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
-    "line": 814,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers"
-    ]
-  },
-  {
-    "name": "npc_orman_stromgarde",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
-    "line": 819,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers"
-    ]
-  },
-  {
-    "name": "npc_fellari_swiftarrow",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
-    "line": 824,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers"
-    ]
-  },
-  {
-    "name": "npc_dorgar_stoenbrow",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
-    "line": 829,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers"
-    ]
-  },
-  {
-    "name": "npc_valea_twinblades",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
-    "line": 834,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers"
-    ]
-  },
-  {
-    "name": "npc_harthal_truesight",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
-    "line": 839,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers"
-    ]
-  },
-  {
-    "name": "npc_admiral_barean_westwind",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
-    "line": 844,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers"
-    ]
-  },
-  {
-    "name": "boss_abbendis",
-    "file": "src/scripts/dungeons/scarlet_citadel/boss_abbendis.cpp",
-    "line": 77,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "death_reset",
-      "instance_state"
-    ]
-  },
-  {
-    "name": "mob_firewalker",
-    "file": "src/scripts/dungeons/molten_core/molten_core.cpp",
-    "line": 528,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_ancient_core_hound",
-    "file": "src/scripts/dungeons/molten_core/molten_core.cpp",
-    "line": 533,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_core_hound",
-    "file": "src/scripts/dungeons/molten_core/molten_core.cpp",
-    "line": 538,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_lava_surger",
-    "file": "src/scripts/dungeons/molten_core/molten_core.cpp",
-    "line": 543,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_firelord",
-    "file": "src/scripts/dungeons/molten_core/molten_core.cpp",
-    "line": 548,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "instance_molten_core",
-    "file": "src/scripts/dungeons/molten_core/instance_molten_core.cpp",
-    "line": 669,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "summons",
-      "instance_state"
-    ]
-  },
-  {
-    "name": "go_rune_MC",
-    "file": "src/scripts/dungeons/molten_core/instance_molten_core.cpp",
-    "line": 674,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "summons",
-      "instance_state"
-    ]
-  },
-  {
-    "name": "boss_twin_golem",
-    "file": "src/scripts/dungeons/molten_core/boss_twin_golems.cpp",
-    "line": 92,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "death_reset",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_sorcerer_thane_thaurissan",
-    "file": "src/scripts/dungeons/molten_core/boss_thane.cpp",
-    "line": 268,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_image_of_sorcerer_thane",
-    "file": "src/scripts/dungeons/molten_core/boss_thane.cpp",
-    "line": 273,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_sulfuron",
-    "file": "src/scripts/dungeons/molten_core/boss_sulfuron_harbinger.cpp",
-    "line": 154,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_shazzrah",
-    "file": "src/scripts/dungeons/molten_core/boss_shazzrah.cpp",
-    "line": 144,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_ragnaros",
-    "file": "src/scripts/dungeons/molten_core/boss_ragnaros.cpp",
-    "line": 655,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_majordomo",
-    "file": "src/scripts/dungeons/molten_core/boss_majordomo_executus.cpp",
-    "line": 481,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_magmadar",
-    "file": "src/scripts/dungeons/molten_core/boss_magmadar.cpp",
-    "line": 161,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_lucifron",
-    "file": "src/scripts/dungeons/molten_core/boss_lucifron.cpp",
-    "line": 116,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_incindis",
-    "file": "src/scripts/dungeons/molten_core/boss_incindis.cpp",
-    "line": 185,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_incendic_egg",
-    "file": "src/scripts/dungeons/molten_core/boss_incindis.cpp",
-    "line": 190,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_golemagg",
-    "file": "src/scripts/dungeons/molten_core/boss_golemagg.cpp",
-    "line": 256,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_core_rager",
-    "file": "src/scripts/dungeons/molten_core/boss_golemagg.cpp",
-    "line": 261,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_gehennas",
-    "file": "src/scripts/dungeons/molten_core/boss_gehennas.cpp",
-    "line": 127,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_garr",
-    "file": "src/scripts/dungeons/molten_core/boss_garr.cpp",
-    "line": 273,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers"
-    ]
-  },
-  {
-    "name": "mob_firesworn",
-    "file": "src/scripts/dungeons/molten_core/boss_garr.cpp",
-    "line": 278,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers"
-    ]
-  },
-  {
-    "name": "boss_baron_geddon",
-    "file": "src/scripts/dungeons/molten_core/boss_baron_geddon.cpp",
-    "line": 211,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_anubisath_guardian",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
-    "line": 1113,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_qiraji_swarmguard",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
-    "line": 1118,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_flesh_hunter",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
-    "line": 1123,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_tornado_ossirian",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
-    "line": 1128,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_qiraji_gladiator",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
-    "line": 1136,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_silicate_feeder",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
-    "line": 1141,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_hive_zara_soldier",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
-    "line": 1146,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_obsidian_destroyer",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
-    "line": 1151,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_hive_zara_stinger",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
-    "line": 1156,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_qiraji_warrior",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
-    "line": 1161,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_swarmguard_needler",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
-    "line": 1166,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_tuubid",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
-    "line": 1171,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_sandstalker",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/npc_sandstalker.cpp",
-    "line": 73,
-    "cmake_listed": true,
-    "file_loader_call_found": false,
-    "dependency_signals": [
-      "ai_update",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "instance_ruins_of_ahnqiraj",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/instance_ruins_of_ahnqiraj.cpp",
-    "line": 773,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "movement",
-      "death_reset",
-      "instance_state",
-      "timers"
-    ]
-  },
-  {
-    "name": "boss_ossirian",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_ossirian.cpp",
-    "line": 366,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "ossirian_crystal",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_ossirian.cpp",
-    "line": 371,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_moam",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_moam.cpp",
-    "line": 229,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_kurinnaxx",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_kurinnaxx.cpp",
-    "line": 174,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_buru",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_buru.cpp",
-    "line": 380,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_buru_egg",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_buru.cpp",
-    "line": 385,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_ayamiss",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_ayamiss.cpp",
-    "line": 440,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "mob_zara_larva",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_ayamiss.cpp",
-    "line": 445,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "instance_maraudon",
-    "file": "src/scripts/dungeons/maraudon/instance_maraudon.cpp",
-    "line": 215,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "instance_state",
-      "doors",
-      "timers"
-    ]
-  },
-  {
-    "name": "boss_princess_theradras",
-    "file": "src/scripts/dungeons/maraudon/boss_princess_theradras.cpp",
-    "line": 131,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_noxxion",
-    "file": "src/scripts/dungeons/maraudon/boss_noxxion.cpp",
-    "line": 137,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_landslide",
-    "file": "src/scripts/dungeons/maraudon/boss_landslide.cpp",
-    "line": 93,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset"
-    ]
-  },
-  {
-    "name": "celebras_the_cursed",
-    "file": "src/scripts/dungeons/maraudon/boss_celebras_the_cursed.cpp",
-    "line": 330,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "threat"
-    ]
-  },
-  {
-    "name": "celebras_spirit",
-    "file": "src/scripts/dungeons/maraudon/boss_celebras_the_cursed.cpp",
-    "line": 335,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "threat"
-    ]
-  },
-  {
-    "name": "go_book_celebras",
-    "file": "src/scripts/dungeons/maraudon/boss_celebras_the_cursed.cpp",
-    "line": 341,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "threat"
-    ]
-  },
-  {
-    "name": "generic_spell_ai",
-    "file": "src/game/AI/GenericSpellAI.cpp",
-    "line": 159,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "threat"
-    ]
-  },
-  {
-    "name": "razorfen_defender",
-    "file": "src/scripts/dungeons/razorfen_kraul/razorfen_kraul.cpp",
-    "line": 415,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_willix_the_importer",
-    "file": "src/scripts/dungeons/razorfen_kraul/razorfen_kraul.cpp",
-    "line": 421,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_snufflenose_gopher",
-    "file": "src/scripts/dungeons/razorfen_kraul/razorfen_kraul.cpp",
-    "line": 427,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "instance_razorfen_kraul",
-    "file": "src/scripts/dungeons/razorfen_kraul/instance_razorfen_kraul.cpp",
-    "line": 138,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "movement",
-      "instance_state",
-      "doors"
-    ]
-  },
-  {
-    "name": "instance_lower_karazhan_halls",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1193,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "shadowbane_glutton",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1198,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "phantom_cook",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1203,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "shadowbane_alpha",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1208,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "shadowbane_darkcaster",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1213,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "shadowbane_ragefang",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1218,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "haunted_blacksmith",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1223,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "phantom_guardsman",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1228,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "haunted_stable_tender",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1233,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "shattercage_spearman",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1238,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "shattercage_magiskull",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1243,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "skitterweb_crawler",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1248,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "skitterweb_darkfang",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1253,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "skitterweb_venomfang",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1258,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "skitterweb_leaper",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1263,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "phantom_servant",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1268,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "shadowbane_ambusher",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1273,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "grellkin_shadow_weaver",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1278,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "grellkin_primalist",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1283,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "grellkin_channeler",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1288,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "dark_rider_champion",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1293,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "dark_rider_apprentice",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
-    "line": 1298,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_moroes",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/boss_moroes.cpp",
-    "line": 571,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_grizikil",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/boss_grizikil.cpp",
-    "line": 112,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_clawlord_howlfang",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/boss_clawlord_howlfang.cpp",
-    "line": 110,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_brood_queen_araxxna",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/boss_brood_queen_araxxna.cpp",
-    "line": 179,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "skitterweb_egg",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/boss_brood_queen_araxxna.cpp",
-    "line": 184,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_blackwald_ii",
-    "file": "src/scripts/dungeons/lower_karazhan_halls/boss_blackwald_ii.cpp",
-    "line": 147,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
       "threat"
     ]
   },
@@ -16526,219 +14430,16 @@
     ]
   },
   {
-    "name": "instance_blackfathom_deeps",
-    "file": "src/scripts/dungeons/blackfathom_deeps/instance_blackfathom_deeps.cpp",
-    "line": 425,
+    "name": "instance_scarlet_monastery",
+    "file": "src/scripts/dungeons/scarlet_monastery/instance_scarlet_monastery.cpp",
+    "line": 486,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
       "spells",
-      "summons",
-      "instance_state",
-      "doors",
-      "timers"
-    ]
-  },
-  {
-    "name": "go_fire_of_akumai",
-    "file": "src/scripts/dungeons/blackfathom_deeps/instance_blackfathom_deeps.cpp",
-    "line": 430,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "spells",
-      "summons",
-      "instance_state",
-      "doors",
-      "timers"
-    ]
-  },
-  {
-    "name": "go_fathom_stone",
-    "file": "src/scripts/dungeons/blackfathom_deeps/instance_blackfathom_deeps.cpp",
-    "line": 435,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "spells",
-      "summons",
-      "instance_state",
-      "doors",
-      "timers"
-    ]
-  },
-  {
-    "name": "boss_velthelaxx_the_defiler",
-    "file": "src/scripts/dungeons/blackfathom_deeps/boss_velthelaxx_the_defiler.cpp",
-    "line": 203,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers"
-    ]
-  },
-  {
-    "name": "instance_karazhan_crypt",
-    "file": "src/scripts/dungeons/karazhan_crypt/instance_karazhan_crypt.cpp",
-    "line": 383,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers"
-    ]
-  },
-  {
-    "name": "skeletal_remains",
-    "file": "src/scripts/dungeons/karazhan_crypt/instance_karazhan_crypt.cpp",
-    "line": 388,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers"
-    ]
-  },
-  {
-    "name": "skeletal_remains_trigger",
-    "file": "src/scripts/dungeons/karazhan_crypt/instance_karazhan_crypt.cpp",
-    "line": 393,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers"
-    ]
-  },
-  {
-    "name": "trigger_summon_alarus",
-    "file": "src/scripts/dungeons/karazhan_crypt/instance_karazhan_crypt.cpp",
-    "line": 398,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers"
-    ]
-  },
-  {
-    "name": "necrotic_rune",
-    "file": "src/scripts/dungeons/karazhan_crypt/instance_karazhan_crypt.cpp",
-    "line": 403,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers"
-    ]
-  },
-  {
-    "name": "tomb_bat",
-    "file": "src/scripts/dungeons/karazhan_crypt/instance_karazhan_crypt.cpp",
-    "line": 408,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers"
-    ]
-  },
-  {
-    "name": "tomb_bat_event_trigger",
-    "file": "src/scripts/dungeons/karazhan_crypt/instance_karazhan_crypt.cpp",
-    "line": 413,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers"
-    ]
-  },
-  {
-    "name": "karazhan_crypt_gate",
-    "file": "src/scripts/dungeons/karazhan_crypt/instance_karazhan_crypt.cpp",
-    "line": 418,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers"
-    ]
-  },
-  {
-    "name": "npc_blackhand_summoner",
-    "file": "src/scripts/dungeons/blackrock_spire/ubrs_trash.cpp",
-    "line": 209,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_blackhand_veteran",
-    "file": "src/scripts/dungeons/blackrock_spire/ubrs_trash.cpp",
-    "line": 214,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "instance_blackrock_spire",
-    "file": "src/scripts/dungeons/blackrock_spire/instance_blackrock_spire.cpp",
-    "line": 1011,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
       "movement",
       "summons",
+      "death_reset",
       "instance_state",
       "doors",
       "timers",
@@ -16746,82 +14447,60 @@
     ]
   },
   {
-    "name": "at_blackrock_spire",
-    "file": "src/scripts/dungeons/blackrock_spire/instance_blackrock_spire.cpp",
-    "line": 1016,
+    "name": "boss_scorn",
+    "file": "src/scripts/dungeons/scarlet_monastery/boss_scorn.cpp",
+    "line": 134,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
+      "ai_update",
+      "spells",
       "movement",
-      "summons",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
+      "death_reset"
     ]
   },
   {
-    "name": "go_father_flame",
-    "file": "src/scripts/dungeons/blackrock_spire/instance_blackrock_spire.cpp",
-    "line": 1021,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "movement",
-      "summons",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "at_ubrs_the_beast",
-    "file": "src/scripts/dungeons/blackrock_spire/instance_blackrock_spire.cpp",
-    "line": 1026,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "movement",
-      "summons",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "spell_ubrs_freeze_rookery_egg",
-    "file": "src/scripts/dungeons/blackrock_spire/instance_blackrock_spire.cpp",
-    "line": 1031,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "movement",
-      "summons",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_warmaster_voone",
-    "file": "src/scripts/dungeons/blackrock_spire/boss_warmaster_voone.cpp",
-    "line": 154,
+    "name": "boss_interrogator_vishas",
+    "file": "src/scripts/dungeons/scarlet_monastery/boss_interrogator_vishas.cpp",
+    "line": 118,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
       "ai_update",
       "spells",
       "death_reset",
-      "timers"
+      "instance_state"
     ]
   },
   {
-    "name": "go_urok_challenge",
-    "file": "src/scripts/dungeons/blackrock_spire/boss_urok.cpp",
-    "line": 370,
+    "name": "boss_houndmaster_loksey",
+    "file": "src/scripts/dungeons/scarlet_monastery/boss_houndmaster_loksey.cpp",
+    "line": 78,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset"
+    ]
+  },
+  {
+    "name": "boss_high_inquisitor_fairbanks",
+    "file": "src/scripts/dungeons/scarlet_monastery/boss_high_inquisitor_fairbanks.cpp",
+    "line": 148,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_herod",
+    "file": "src/scripts/dungeons/scarlet_monastery/boss_herod.cpp",
+    "line": 396,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
@@ -16830,202 +14509,88 @@
       "movement",
       "summons",
       "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_urok_enforcer",
-    "file": "src/scripts/dungeons/blackrock_spire/boss_urok.cpp",
-    "line": 375,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_urok_ogre_magus",
-    "file": "src/scripts/dungeons/blackrock_spire/boss_urok.cpp",
-    "line": 380,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "event_banner_destroyed",
-    "file": "src/scripts/dungeons/blackrock_spire/boss_urok.cpp",
-    "line": 385,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_the_beast",
-    "file": "src/scripts/dungeons/blackrock_spire/boss_the_beast.cpp",
-    "line": 163,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_shadow_hunter_voshgajin",
-    "file": "src/scripts/dungeons/blackrock_spire/boss_shadow_hunter_voshgajin.cpp",
-    "line": 108,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "quartermaster_zigris",
-    "file": "src/scripts/dungeons/blackrock_spire/boss_quartermaster_zigris.cpp",
-    "line": 95,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
+      "doors",
       "timers"
     ]
   },
   {
-    "name": "boss_pyroguard_emberseer",
-    "file": "src/scripts/dungeons/blackrock_spire/boss_pyroguard_emberseer.cpp",
-    "line": 436,
+    "name": "mob_scarlet_trainee",
+    "file": "src/scripts/dungeons/scarlet_monastery/boss_herod.cpp",
+    "line": 401,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
       "ai_update",
       "spells",
       "movement",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_geolier_main_noire",
-    "file": "src/scripts/dungeons/blackrock_spire/boss_pyroguard_emberseer.cpp",
-    "line": 441,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "event_free_pyroguard_emberseer",
-    "file": "src/scripts/dungeons/blackrock_spire/boss_pyroguard_emberseer.cpp",
-    "line": 446,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_overlord_wyrmthalak",
-    "file": "src/scripts/dungeons/blackrock_spire/boss_overlord_wyrmthalak.cpp",
-    "line": 158,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
       "summons",
       "death_reset",
-      "timers",
-      "threat"
+      "doors",
+      "timers"
     ]
   },
   {
-    "name": "boss_mother_smolderweb",
-    "file": "src/scripts/dungeons/blackrock_spire/boss_mother_smolderweb.cpp",
-    "line": 100,
+    "name": "go_herod_lever",
+    "file": "src/scripts/dungeons/scarlet_monastery/boss_herod.cpp",
+    "line": 406,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "doors",
+      "timers"
+    ]
+  },
+  {
+    "name": "boss_headless_horseman",
+    "file": "src/scripts/dungeons/scarlet_monastery/boss_headless_horseman.cpp",
+    "line": 90,
+    "cmake_listed": true,
+    "file_loader_call_found": false,
+    "dependency_signals": [
+      "ai_update",
+      "death_reset"
+    ]
+  },
+  {
+    "name": "boss_bloodmage_thalnos",
+    "file": "src/scripts/dungeons/scarlet_monastery/boss_bloodmage_thalnos.cpp",
+    "line": 127,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset"
+    ]
+  },
+  {
+    "name": "boss_azshir_the_sleepless",
+    "file": "src/scripts/dungeons/scarlet_monastery/boss_azshir_the_sleepless.cpp",
+    "line": 96,
     "cmake_listed": true,
     "file_loader_call_found": false,
     "dependency_signals": [
       "ai_update",
       "spells",
-      "death_reset",
-      "timers"
-    ]
-  },
-  {
-    "name": "boss_highlord_omokk",
-    "file": "src/scripts/dungeons/blackrock_spire/boss_highlord_omokk.cpp",
-    "line": 142,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers"
-    ]
-  },
-  {
-    "name": "boss_halycon",
-    "file": "src/scripts/dungeons/blackrock_spire/boss_halycon.cpp",
-    "line": 95,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
       "death_reset"
+    ]
+  },
+  {
+    "name": "boss_arcanist_doan",
+    "file": "src/scripts/dungeons/scarlet_monastery/boss_arcanist_doan.cpp",
+    "line": 130,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "threat"
     ]
   },
   {
@@ -17542,98 +15107,6 @@
     ]
   },
   {
-    "name": "npc_henry_stern",
-    "file": "src/scripts/dungeons/razorfen_downs/razorfen_downs.cpp",
-    "line": 497,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_lady_faltheress",
-    "file": "src/scripts/dungeons/razorfen_downs/razorfen_downs.cpp",
-    "line": 508,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_belnistrasz",
-    "file": "src/scripts/dungeons/razorfen_downs/razorfen_downs.cpp",
-    "line": 513,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "go_gong",
-    "file": "src/scripts/dungeons/razorfen_downs/razorfen_downs.cpp",
-    "line": 519,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_tomb_creature",
-    "file": "src/scripts/dungeons/razorfen_downs/razorfen_downs.cpp",
-    "line": 529,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "instance_razorfen_downs",
-    "file": "src/scripts/dungeons/razorfen_downs/instance_razorfen_downs.cpp",
-    "line": 239,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "movement",
-      "summons",
-      "instance_state"
-    ]
-  },
-  {
     "name": "instance_deadmines",
     "file": "src/scripts/dungeons/deadmines/instance_deadmines.cpp",
     "line": 314,
@@ -17698,124 +15171,79 @@
     ]
   },
   {
-    "name": "mob_hateforge_cleric",
-    "file": "src/scripts/dungeons/hateforge_quarry/hateforge_quarry_trash.cpp",
-    "line": 254,
+    "name": "instance_crescent_grove",
+    "file": "src/scripts/dungeons/crescent_grove/instance_crescent_grove.cpp",
+    "line": 81,
     "cmake_listed": true,
     "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers"
-    ]
+    "dependency_signals": []
   },
   {
-    "name": "mob_hateforge_taskmaster",
-    "file": "src/scripts/dungeons/hateforge_quarry/hateforge_quarry_trash.cpp",
-    "line": 259,
+    "name": "instance_blackfathom_deeps",
+    "file": "src/scripts/dungeons/blackfathom_deeps/instance_blackfathom_deeps.cpp",
+    "line": 425,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers"
-    ]
-  },
-  {
-    "name": "mob_twilight_fireblade",
-    "file": "src/scripts/dungeons/hateforge_quarry/hateforge_quarry_trash.cpp",
-    "line": 264,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers"
-    ]
-  },
-  {
-    "name": "spell_hateforge_dispel_counterpart",
-    "file": "src/scripts/dungeons/hateforge_quarry/hateforge_quarry_trash.cpp",
-    "line": 269,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers"
-    ]
-  },
-  {
-    "name": "boss_hatereaver_annhilator",
-    "file": "src/scripts/dungeons/hateforge_quarry/boss_hatereaver_annhilator.cpp",
-    "line": 109,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers"
-    ]
-  },
-  {
-    "name": "boss_hargesh_doomcaller",
-    "file": "src/scripts/dungeons/hateforge_quarry/boss_hargesh_doomcaller.cpp",
-    "line": 353,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
       "spells",
       "summons",
-      "death_reset",
-      "timers",
-      "threat"
+      "instance_state",
+      "doors",
+      "timers"
     ]
   },
   {
-    "name": "npc_faceless_terror",
-    "file": "src/scripts/dungeons/hateforge_quarry/boss_hargesh_doomcaller.cpp",
-    "line": 358,
+    "name": "go_fire_of_akumai",
+    "file": "src/scripts/dungeons/blackfathom_deeps/instance_blackfathom_deeps.cpp",
+    "line": 430,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
-      "ai_update",
       "spells",
       "summons",
+      "instance_state",
+      "doors",
+      "timers"
+    ]
+  },
+  {
+    "name": "go_fathom_stone",
+    "file": "src/scripts/dungeons/blackfathom_deeps/instance_blackfathom_deeps.cpp",
+    "line": 435,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "spells",
+      "summons",
+      "instance_state",
+      "doors",
+      "timers"
+    ]
+  },
+  {
+    "name": "boss_velthelaxx_the_defiler",
+    "file": "src/scripts/dungeons/blackfathom_deeps/boss_velthelaxx_the_defiler.cpp",
+    "line": 203,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
       "death_reset",
-      "timers",
+      "timers"
+    ]
+  },
+  {
+    "name": "generic_spell_ai",
+    "file": "src/game/AI/GenericSpellAI.cpp",
+    "line": 159,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
       "threat"
-    ]
-  },
-  {
-    "name": "boss_engineer_figgles",
-    "file": "src/scripts/dungeons/hateforge_quarry/boss_engineer_figgles.cpp",
-    "line": 73,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers"
-    ]
-  },
-  {
-    "name": "boss_bargul_blackhammer",
-    "file": "src/scripts/dungeons/hateforge_quarry/boss_bargul_blackhammer.cpp",
-    "line": 136,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers"
     ]
   },
   {
@@ -18467,6 +15895,801 @@
     ]
   },
   {
+    "name": "boss_chromaggus",
+    "file": "src/scripts/dungeons/blackwing_lair/boss_chromaggus.cpp",
+    "line": 440,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_broodlord",
+    "file": "src/scripts/dungeons/blackwing_lair/boss_broodlord_lashlayer.cpp",
+    "line": 212,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_firemaw",
+    "file": "src/scripts/dungeons/blackwing_lair/boss_firemaw.cpp",
+    "line": 138,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_citadel_inquisitor",
+    "file": "src/scripts/dungeons/scarlet_citadel/trashmobs_scarlet_citadel.cpp",
+    "line": 674,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_citadel_valiant",
+    "file": "src/scripts/dungeons/scarlet_citadel/trashmobs_scarlet_citadel.cpp",
+    "line": 679,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_citadel_footman",
+    "file": "src/scripts/dungeons/scarlet_citadel/trashmobs_scarlet_citadel.cpp",
+    "line": 684,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_citadel_interrogator",
+    "file": "src/scripts/dungeons/scarlet_citadel/trashmobs_scarlet_citadel.cpp",
+    "line": 690,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_chaplain_and_sister",
+    "file": "src/scripts/dungeons/scarlet_citadel/trashmobs_scarlet_citadel.cpp",
+    "line": 695,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_citadel_anti_exploit",
+    "file": "src/scripts/dungeons/scarlet_citadel/trashmobs_scarlet_citadel.cpp",
+    "line": 704,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_ebonroc",
+    "file": "src/scripts/dungeons/blackwing_lair/boss_ebonroc.cpp",
+    "line": 136,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_eric_vesper",
+    "file": "src/scripts/dungeons/scarlet_citadel/trashbosses_scarlet_citadel.cpp",
+    "line": 501,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_darkcaller_rayn",
+    "file": "src/scripts/dungeons/scarlet_citadel/trashbosses_scarlet_citadel.cpp",
+    "line": 507,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "instance_scarlet_citadel",
+    "file": "src/scripts/dungeons/scarlet_citadel/instance_scarlet_citadel.cpp",
+    "line": 396,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "instance_state",
+      "doors"
+    ]
+  },
+  {
+    "name": "boss_mariella",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_mariella.cpp",
+    "line": 864,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_voidzone",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_mariella.cpp",
+    "line": 871,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_killzone",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_mariella.cpp",
+    "line": 876,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_felhound",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_mariella.cpp",
+    "line": 881,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_daelus",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_daelus.cpp",
+    "line": 628,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_fallen_spirit",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_daelus.cpp",
+    "line": 635,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_ardaeus",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
+    "line": 781,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers"
+    ]
+  },
+  {
+    "name": "npc_sun",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
+    "line": 788,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers"
+    ]
+  },
+  {
+    "name": "npc_invar_onearm",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
+    "line": 794,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers"
+    ]
+  },
+  {
+    "name": "npc_arellas_fireleaf",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
+    "line": 799,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers"
+    ]
+  },
+  {
+    "name": "npc_holia_sunshield",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
+    "line": 804,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers"
+    ]
+  },
+  {
+    "name": "npc_ferren_marcus",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
+    "line": 809,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers"
+    ]
+  },
+  {
+    "name": "npc_yana_bloodspear",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
+    "line": 814,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers"
+    ]
+  },
+  {
+    "name": "npc_orman_stromgarde",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
+    "line": 819,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers"
+    ]
+  },
+  {
+    "name": "npc_fellari_swiftarrow",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
+    "line": 824,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers"
+    ]
+  },
+  {
+    "name": "npc_dorgar_stoenbrow",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
+    "line": 829,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers"
+    ]
+  },
+  {
+    "name": "npc_valea_twinblades",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
+    "line": 834,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers"
+    ]
+  },
+  {
+    "name": "npc_harthal_truesight",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
+    "line": 839,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers"
+    ]
+  },
+  {
+    "name": "npc_admiral_barean_westwind",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_ardaeus.cpp",
+    "line": 844,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers"
+    ]
+  },
+  {
+    "name": "instance_blackwing_lair",
+    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
+    "line": 1429,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "go_orbe_domination",
+    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
+    "line": 1434,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "go_oeuf_raz",
+    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
+    "line": 1439,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "go_engin_suppression",
+    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
+    "line": 1444,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "at_orb_of_command",
+    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
+    "line": 1449,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "at_enter_vael_room",
+    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
+    "line": 1454,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_death_talon",
+    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
+    "line": 1459,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_corrupted_whelp",
+    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
+    "line": 1464,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_blackwing_technician",
+    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
+    "line": 1469,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_nefarian",
+    "file": "src/scripts/dungeons/blackwing_lair/boss_nefarian.cpp",
+    "line": 691,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_corrupted_totem",
+    "file": "src/scripts/dungeons/blackwing_lair/boss_nefarian.cpp",
+    "line": 696,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_abbendis",
+    "file": "src/scripts/dungeons/scarlet_citadel/boss_abbendis.cpp",
+    "line": 77,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "death_reset",
+      "instance_state"
+    ]
+  },
+  {
+    "name": "boss_victor_nefarius",
+    "file": "src/scripts/dungeons/blackwing_lair/boss_victor_nefarius.cpp",
+    "line": 683,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_flamegor",
+    "file": "src/scripts/dungeons/blackwing_lair/boss_flamegor.cpp",
+    "line": 140,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_vaelastrasz",
+    "file": "src/scripts/dungeons/blackwing_lair/boss_vaelastrasz.cpp",
+    "line": 741,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_death_talon_Captain",
+    "file": "src/scripts/dungeons/blackwing_lair/boss_vaelastrasz.cpp",
+    "line": 749,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_death_talon_Seether",
+    "file": "src/scripts/dungeons/blackwing_lair/boss_vaelastrasz.cpp",
+    "line": 754,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_razorgore",
+    "file": "src/scripts/dungeons/blackwing_lair/boss_razorgore.cpp",
+    "line": 710,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "trigger_orb_of_command",
+    "file": "src/scripts/dungeons/blackwing_lair/boss_razorgore.cpp",
+    "line": 715,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
     "name": "instance_black_morass",
     "file": "src/scripts/dungeons/black_morass/instance_black_morass.cpp",
     "line": 59,
@@ -18777,6 +17000,1658 @@
     ]
   },
   {
+    "name": "mob_anubisath_guardian",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
+    "line": 1113,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_qiraji_swarmguard",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
+    "line": 1118,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_flesh_hunter",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
+    "line": 1123,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_tornado_ossirian",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
+    "line": 1128,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_qiraji_gladiator",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
+    "line": 1136,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_silicate_feeder",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
+    "line": 1141,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_hive_zara_soldier",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
+    "line": 1146,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_obsidian_destroyer",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
+    "line": 1151,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_hive_zara_stinger",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
+    "line": 1156,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_qiraji_warrior",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
+    "line": 1161,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_swarmguard_needler",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
+    "line": 1166,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_tuubid",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp",
+    "line": 1171,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_sandstalker",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/npc_sandstalker.cpp",
+    "line": 73,
+    "cmake_listed": true,
+    "file_loader_call_found": false,
+    "dependency_signals": [
+      "ai_update",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "instance_ruins_of_ahnqiraj",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/instance_ruins_of_ahnqiraj.cpp",
+    "line": 773,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "movement",
+      "death_reset",
+      "instance_state",
+      "timers"
+    ]
+  },
+  {
+    "name": "boss_ossirian",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_ossirian.cpp",
+    "line": 366,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "ossirian_crystal",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_ossirian.cpp",
+    "line": 371,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_moam",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_moam.cpp",
+    "line": 229,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_kurinnaxx",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_kurinnaxx.cpp",
+    "line": 174,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_buru",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_buru.cpp",
+    "line": 380,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_buru_egg",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_buru.cpp",
+    "line": 385,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_ayamiss",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_ayamiss.cpp",
+    "line": 440,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_zara_larva",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_ayamiss.cpp",
+    "line": 445,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_halycon",
+    "file": "src/scripts/dungeons/blackrock_spire/boss_halycon.cpp",
+    "line": 95,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset"
+    ]
+  },
+  {
+    "name": "boss_highlord_omokk",
+    "file": "src/scripts/dungeons/blackrock_spire/boss_highlord_omokk.cpp",
+    "line": 142,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers"
+    ]
+  },
+  {
+    "name": "boss_mother_smolderweb",
+    "file": "src/scripts/dungeons/blackrock_spire/boss_mother_smolderweb.cpp",
+    "line": 100,
+    "cmake_listed": true,
+    "file_loader_call_found": false,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers"
+    ]
+  },
+  {
+    "name": "npc_blackhand_summoner",
+    "file": "src/scripts/dungeons/blackrock_spire/ubrs_trash.cpp",
+    "line": 209,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_blackhand_veteran",
+    "file": "src/scripts/dungeons/blackrock_spire/ubrs_trash.cpp",
+    "line": 214,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "instance_blackrock_spire",
+    "file": "src/scripts/dungeons/blackrock_spire/instance_blackrock_spire.cpp",
+    "line": 1011,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "movement",
+      "summons",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "at_blackrock_spire",
+    "file": "src/scripts/dungeons/blackrock_spire/instance_blackrock_spire.cpp",
+    "line": 1016,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "movement",
+      "summons",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "go_father_flame",
+    "file": "src/scripts/dungeons/blackrock_spire/instance_blackrock_spire.cpp",
+    "line": 1021,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "movement",
+      "summons",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "at_ubrs_the_beast",
+    "file": "src/scripts/dungeons/blackrock_spire/instance_blackrock_spire.cpp",
+    "line": 1026,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "movement",
+      "summons",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "spell_ubrs_freeze_rookery_egg",
+    "file": "src/scripts/dungeons/blackrock_spire/instance_blackrock_spire.cpp",
+    "line": 1031,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "movement",
+      "summons",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_warmaster_voone",
+    "file": "src/scripts/dungeons/blackrock_spire/boss_warmaster_voone.cpp",
+    "line": 154,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers"
+    ]
+  },
+  {
+    "name": "go_urok_challenge",
+    "file": "src/scripts/dungeons/blackrock_spire/boss_urok.cpp",
+    "line": 370,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_urok_enforcer",
+    "file": "src/scripts/dungeons/blackrock_spire/boss_urok.cpp",
+    "line": 375,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_urok_ogre_magus",
+    "file": "src/scripts/dungeons/blackrock_spire/boss_urok.cpp",
+    "line": 380,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "event_banner_destroyed",
+    "file": "src/scripts/dungeons/blackrock_spire/boss_urok.cpp",
+    "line": 385,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_the_beast",
+    "file": "src/scripts/dungeons/blackrock_spire/boss_the_beast.cpp",
+    "line": 163,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_shadow_hunter_voshgajin",
+    "file": "src/scripts/dungeons/blackrock_spire/boss_shadow_hunter_voshgajin.cpp",
+    "line": 108,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "quartermaster_zigris",
+    "file": "src/scripts/dungeons/blackrock_spire/boss_quartermaster_zigris.cpp",
+    "line": 95,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers"
+    ]
+  },
+  {
+    "name": "boss_pyroguard_emberseer",
+    "file": "src/scripts/dungeons/blackrock_spire/boss_pyroguard_emberseer.cpp",
+    "line": 436,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_geolier_main_noire",
+    "file": "src/scripts/dungeons/blackrock_spire/boss_pyroguard_emberseer.cpp",
+    "line": 441,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "event_free_pyroguard_emberseer",
+    "file": "src/scripts/dungeons/blackrock_spire/boss_pyroguard_emberseer.cpp",
+    "line": 446,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_overlord_wyrmthalak",
+    "file": "src/scripts/dungeons/blackrock_spire/boss_overlord_wyrmthalak.cpp",
+    "line": 158,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "razorfen_defender",
+    "file": "src/scripts/dungeons/razorfen_kraul/razorfen_kraul.cpp",
+    "line": 415,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_willix_the_importer",
+    "file": "src/scripts/dungeons/razorfen_kraul/razorfen_kraul.cpp",
+    "line": 421,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_snufflenose_gopher",
+    "file": "src/scripts/dungeons/razorfen_kraul/razorfen_kraul.cpp",
+    "line": 427,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "instance_razorfen_kraul",
+    "file": "src/scripts/dungeons/razorfen_kraul/instance_razorfen_kraul.cpp",
+    "line": 138,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "movement",
+      "instance_state",
+      "doors"
+    ]
+  },
+  {
+    "name": "boss_lady_blaumeux",
+    "file": "src/scripts/dungeons/naxxramas/boss_four_horsemen.cpp",
+    "line": 908,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_highlord_mograine",
+    "file": "src/scripts/dungeons/naxxramas/boss_four_horsemen.cpp",
+    "line": 913,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_thane_korthazz",
+    "file": "src/scripts/dungeons/naxxramas/boss_four_horsemen.cpp",
+    "line": 918,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_sir_zeliek",
+    "file": "src/scripts/dungeons/naxxramas/boss_four_horsemen.cpp",
+    "line": 923,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_faerlina",
+    "file": "src/scripts/dungeons/naxxramas/boss_faerlina.cpp",
+    "line": 438,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_faerlina_rp",
+    "file": "src/scripts/dungeons/naxxramas/boss_faerlina.cpp",
+    "line": 443,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_anubrekhan",
+    "file": "src/scripts/dungeons/naxxramas/boss_anubrekhan.cpp",
+    "line": 498,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_cryptguards",
+    "file": "src/scripts/dungeons/naxxramas/boss_anubrekhan.cpp",
+    "line": 503,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "go_anub_door",
+    "file": "src/scripts/dungeons/naxxramas/boss_anubrekhan.cpp",
+    "line": 508,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_grobbulus",
+    "file": "src/scripts/dungeons/naxxramas/boss_grobbulus.cpp",
+    "line": 305,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_gothik",
+    "file": "src/scripts/dungeons/naxxramas/boss_gothik.cpp",
+    "line": 755,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "spell_anchor",
+    "file": "src/scripts/dungeons/naxxramas/boss_gothik.cpp",
+    "line": 760,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_gluth",
+    "file": "src/scripts/dungeons/naxxramas/boss_gluth.cpp",
+    "line": 439,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_zombie_chow",
+    "file": "src/scripts/dungeons/naxxramas/boss_gluth.cpp",
+    "line": 444,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_kelthuzad",
+    "file": "src/scripts/dungeons/naxxramas/boss_kelthuzad.cpp",
+    "line": 1321,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "unstoppable_abomination_ai",
+    "file": "src/scripts/dungeons/naxxramas/boss_kelthuzad.cpp",
+    "line": 1326,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "soldier_frozen_wastes_ai",
+    "file": "src/scripts/dungeons/naxxramas/boss_kelthuzad.cpp",
+    "line": 1331,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "soul_weaver_ai",
+    "file": "src/scripts/dungeons/naxxramas/boss_kelthuzad.cpp",
+    "line": 1336,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_guardian_icecrownAI",
+    "file": "src/scripts/dungeons/naxxramas/boss_kelthuzad.cpp",
+    "line": 1341,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_shadow_fissure",
+    "file": "src/scripts/dungeons/naxxramas/boss_kelthuzad.cpp",
+    "line": 1346,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_heigan",
+    "file": "src/scripts/dungeons/naxxramas/boss_heigan.cpp",
+    "line": 548,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_plague_cloud",
+    "file": "src/scripts/dungeons/naxxramas/boss_heigan.cpp",
+    "line": 553,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_loatheb",
+    "file": "src/scripts/dungeons/naxxramas/boss_loatheb.cpp",
+    "line": 597,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_rotting_maggot",
+    "file": "src/scripts/dungeons/naxxramas/boss_loatheb.cpp",
+    "line": 602,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_diseased_maggot",
+    "file": "src/scripts/dungeons/naxxramas/boss_loatheb.cpp",
+    "line": 607,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_eye_stalk",
+    "file": "src/scripts/dungeons/naxxramas/boss_loatheb.cpp",
+    "line": 612,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_maexxna",
+    "file": "src/scripts/dungeons/naxxramas/boss_maexxna.cpp",
+    "line": 536,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_webwrap",
+    "file": "src/scripts/dungeons/naxxramas/boss_maexxna.cpp",
+    "line": 541,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_noth",
+    "file": "src/scripts/dungeons/naxxramas/boss_noth.cpp",
+    "line": 483,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_patchwerk",
+    "file": "src/scripts/dungeons/naxxramas/boss_patchwerk.cpp",
+    "line": 334,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_razuvious",
+    "file": "src/scripts/dungeons/naxxramas/boss_razuvious.cpp",
+    "line": 390,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "deathknight_understudy_ai",
+    "file": "src/scripts/dungeons/naxxramas/boss_razuvious.cpp",
+    "line": 395,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_sapphiron",
+    "file": "src/scripts/dungeons/naxxramas/boss_sapphiron.cpp",
+    "line": 823,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_sapphiron_blizzard",
+    "file": "src/scripts/dungeons/naxxramas/boss_sapphiron.cpp",
+    "line": 828,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_thaddius",
+    "file": "src/scripts/dungeons/naxxramas/boss_thaddius.cpp",
+    "line": 1211,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_stalagg",
+    "file": "src/scripts/dungeons/naxxramas/boss_thaddius.cpp",
+    "line": 1216,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_feugen",
+    "file": "src/scripts/dungeons/naxxramas/boss_thaddius.cpp",
+    "line": 1221,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_tesla_coil",
+    "file": "src/scripts/dungeons/naxxramas/boss_thaddius.cpp",
+    "line": 1226,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "instance_naxxramas",
+    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
+    "line": 2071,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "at_naxxramas",
+    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
+    "line": 2076,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "spirit_of_naxxramas_ai",
+    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
+    "line": 2081,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "naxxramas_gargoyle_ai",
+    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
+    "line": 2086,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "naxxramas_plague_slime_ai",
+    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
+    "line": 2091,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "toxic_tunnel_ai",
+    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
+    "line": 2097,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "dark_touched_warriorAI",
+    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
+    "line": 2102,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_craftsman_omarion",
+    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
+    "line": 2107,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "spell_gargoyle_stoneform",
+    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
+    "line": 2113,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "spell_unrelenting_rider_shadow_bolt_volley",
+    "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
+    "line": 2118,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "instance_maraudon",
+    "file": "src/scripts/dungeons/maraudon/instance_maraudon.cpp",
+    "line": 215,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "instance_state",
+      "doors",
+      "timers"
+    ]
+  },
+  {
+    "name": "boss_princess_theradras",
+    "file": "src/scripts/dungeons/maraudon/boss_princess_theradras.cpp",
+    "line": 131,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_noxxion",
+    "file": "src/scripts/dungeons/maraudon/boss_noxxion.cpp",
+    "line": 137,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_landslide",
+    "file": "src/scripts/dungeons/maraudon/boss_landslide.cpp",
+    "line": 93,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset"
+    ]
+  },
+  {
+    "name": "celebras_the_cursed",
+    "file": "src/scripts/dungeons/maraudon/boss_celebras_the_cursed.cpp",
+    "line": 330,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "threat"
+    ]
+  },
+  {
+    "name": "celebras_spirit",
+    "file": "src/scripts/dungeons/maraudon/boss_celebras_the_cursed.cpp",
+    "line": 335,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "threat"
+    ]
+  },
+  {
+    "name": "go_book_celebras",
+    "file": "src/scripts/dungeons/maraudon/boss_celebras_the_cursed.cpp",
+    "line": 341,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "doors",
+      "threat"
+    ]
+  },
+  {
     "name": "instance_onyxia_lair",
     "file": "src/scripts/dungeons/onyxias_lair/instance_onyxia_lair.cpp",
     "line": 72,
@@ -18822,153 +18697,9 @@
     ]
   },
   {
-    "name": "instance_blackwing_lair",
-    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
-    "line": 1429,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "go_orbe_domination",
-    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
-    "line": 1434,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "go_oeuf_raz",
-    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
-    "line": 1439,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "go_engin_suppression",
-    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
-    "line": 1444,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "at_orb_of_command",
-    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
-    "line": 1449,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "at_enter_vael_room",
-    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
-    "line": 1454,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_death_talon",
-    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
-    "line": 1459,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_corrupted_whelp",
-    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
-    "line": 1464,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_blackwing_technician",
-    "file": "src/scripts/dungeons/blackwing_lair/instance_blackwing_lair.cpp",
-    "line": 1469,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_victor_nefarius",
-    "file": "src/scripts/dungeons/blackwing_lair/boss_victor_nefarius.cpp",
-    "line": 683,
+    "name": "boss_incindis",
+    "file": "src/scripts/dungeons/molten_core/boss_incindis.cpp",
+    "line": 185,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
@@ -18976,15 +18707,14 @@
       "spells",
       "summons",
       "death_reset",
-      "instance_state",
       "timers",
       "threat"
     ]
   },
   {
-    "name": "boss_vaelastrasz",
-    "file": "src/scripts/dungeons/blackwing_lair/boss_vaelastrasz.cpp",
-    "line": 741,
+    "name": "npc_incendic_egg",
+    "file": "src/scripts/dungeons/molten_core/boss_incindis.cpp",
+    "line": 190,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
@@ -18992,127 +18722,14 @@
       "spells",
       "summons",
       "death_reset",
-      "instance_state",
       "timers",
       "threat"
     ]
   },
   {
-    "name": "npc_death_talon_Captain",
-    "file": "src/scripts/dungeons/blackwing_lair/boss_vaelastrasz.cpp",
-    "line": 749,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_death_talon_Seether",
-    "file": "src/scripts/dungeons/blackwing_lair/boss_vaelastrasz.cpp",
-    "line": 754,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_razorgore",
-    "file": "src/scripts/dungeons/blackwing_lair/boss_razorgore.cpp",
-    "line": 710,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "trigger_orb_of_command",
-    "file": "src/scripts/dungeons/blackwing_lair/boss_razorgore.cpp",
-    "line": 715,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_nefarian",
-    "file": "src/scripts/dungeons/blackwing_lair/boss_nefarian.cpp",
-    "line": 691,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_corrupted_totem",
-    "file": "src/scripts/dungeons/blackwing_lair/boss_nefarian.cpp",
-    "line": 696,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "instance_gnomeregan",
-    "file": "src/scripts/dungeons/gnomeregan/instance_gnomeregan.cpp",
-    "line": 320,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "instance_state",
-      "doors",
-      "timers"
-    ]
-  },
-  {
-    "name": "boss_flamegor",
-    "file": "src/scripts/dungeons/blackwing_lair/boss_flamegor.cpp",
-    "line": 140,
+    "name": "boss_golemagg",
+    "file": "src/scripts/dungeons/molten_core/boss_golemagg.cpp",
+    "line": 256,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
@@ -19125,9 +18742,9 @@
     ]
   },
   {
-    "name": "boss_firemaw",
-    "file": "src/scripts/dungeons/blackwing_lair/boss_firemaw.cpp",
-    "line": 138,
+    "name": "mob_core_rager",
+    "file": "src/scripts/dungeons/molten_core/boss_golemagg.cpp",
+    "line": 261,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
@@ -19140,60 +18757,9 @@
     ]
   },
   {
-    "name": "matrix_punchograph",
-    "file": "src/scripts/dungeons/gnomeregan/gnomeregan.cpp",
-    "line": 923,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_blastmaster_emi_shortfuse",
-    "file": "src/scripts/dungeons/gnomeregan/gnomeregan.cpp",
-    "line": 929,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_kernobee",
-    "file": "src/scripts/dungeons/gnomeregan/gnomeregan.cpp",
-    "line": 936,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "spells",
-      "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_ebonroc",
-    "file": "src/scripts/dungeons/blackwing_lair/boss_ebonroc.cpp",
-    "line": 136,
+    "name": "boss_gehennas",
+    "file": "src/scripts/dungeons/molten_core/boss_gehennas.cpp",
+    "line": 127,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
@@ -19206,57 +18772,68 @@
     ]
   },
   {
-    "name": "boss_thermaplugg",
-    "file": "src/scripts/dungeons/gnomeregan/boss_thermaplugg.cpp",
-    "line": 282,
+    "name": "boss_garr",
+    "file": "src/scripts/dungeons/molten_core/boss_garr.cpp",
+    "line": 273,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
       "ai_update",
       "spells",
-      "movement",
-      "summons",
       "death_reset",
       "instance_state",
       "timers"
     ]
   },
   {
-    "name": "go_gnomeface_button",
-    "file": "src/scripts/dungeons/gnomeregan/boss_thermaplugg.cpp",
-    "line": 288,
+    "name": "mob_firesworn",
+    "file": "src/scripts/dungeons/molten_core/boss_garr.cpp",
+    "line": 278,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
       "ai_update",
       "spells",
-      "movement",
-      "summons",
       "death_reset",
       "instance_state",
       "timers"
     ]
   },
   {
-    "name": "boss_chromaggus",
-    "file": "src/scripts/dungeons/blackwing_lair/boss_chromaggus.cpp",
-    "line": 440,
+    "name": "boss_baron_geddon",
+    "file": "src/scripts/dungeons/molten_core/boss_baron_geddon.cpp",
+    "line": 211,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_majordomo",
+    "file": "src/scripts/dungeons/molten_core/boss_majordomo_executus.cpp",
+    "line": 481,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
       "ai_update",
       "spells",
       "movement",
+      "summons",
       "death_reset",
       "instance_state",
-      "timers",
       "threat"
     ]
   },
   {
-    "name": "boss_broodlord",
-    "file": "src/scripts/dungeons/blackwing_lair/boss_broodlord_lashlayer.cpp",
-    "line": 212,
+    "name": "boss_magmadar",
+    "file": "src/scripts/dungeons/molten_core/boss_magmadar.cpp",
+    "line": 161,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
@@ -19269,9 +18846,9 @@
     ]
   },
   {
-    "name": "instance_emerald_sanctum",
-    "file": "src/scripts/dungeons/emerald_sanctum/instance_emerald_sanctum.cpp",
-    "line": 527,
+    "name": "boss_lucifron",
+    "file": "src/scripts/dungeons/molten_core/boss_lucifron.cpp",
+    "line": 116,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
@@ -19284,9 +18861,9 @@
     ]
   },
   {
-    "name": "sanctum_dreamer",
-    "file": "src/scripts/dungeons/emerald_sanctum/instance_emerald_sanctum.cpp",
-    "line": 532,
+    "name": "boss_shazzrah",
+    "file": "src/scripts/dungeons/molten_core/boss_shazzrah.cpp",
+    "line": 144,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
@@ -19294,104 +18871,13 @@
       "spells",
       "death_reset",
       "instance_state",
-      "timers",
       "threat"
     ]
   },
   {
-    "name": "sanctum_dragonkin",
-    "file": "src/scripts/dungeons/emerald_sanctum/instance_emerald_sanctum.cpp",
-    "line": 537,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "sanctum_wyrm",
-    "file": "src/scripts/dungeons/emerald_sanctum/instance_emerald_sanctum.cpp",
-    "line": 542,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "sanctum_supressor",
-    "file": "src/scripts/dungeons/emerald_sanctum/instance_emerald_sanctum.cpp",
-    "line": 547,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "sanctum_wyrmkin",
-    "file": "src/scripts/dungeons/emerald_sanctum/instance_emerald_sanctum.cpp",
-    "line": 552,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "sanctum_scalebane",
-    "file": "src/scripts/dungeons/emerald_sanctum/instance_emerald_sanctum.cpp",
-    "line": 557,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "erennius",
-    "file": "src/scripts/dungeons/emerald_sanctum/instance_emerald_sanctum.cpp",
-    "line": 562,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_solnius",
-    "file": "src/scripts/dungeons/emerald_sanctum/boss_solnius.cpp",
-    "line": 587,
+    "name": "boss_ragnaros",
+    "file": "src/scripts/dungeons/molten_core/boss_ragnaros.cpp",
+    "line": 655,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
@@ -19406,204 +18892,718 @@
     ]
   },
   {
-    "name": "instance_crescent_grove",
-    "file": "src/scripts/dungeons/crescent_grove/instance_crescent_grove.cpp",
-    "line": 81,
+    "name": "boss_sulfuron",
+    "file": "src/scripts/dungeons/molten_core/boss_sulfuron_harbinger.cpp",
+    "line": 154,
     "cmake_listed": true,
     "file_loader_call_found": true,
-    "dependency_signals": []
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "threat"
+    ]
   },
   {
-    "name": "boss_hailar_the_frigid",
-    "file": "src/scripts/dungeons/frostmane_hollow/boss_hailar_the_frigid.cpp",
+    "name": "mob_firewalker",
+    "file": "src/scripts/dungeons/molten_core/molten_core.cpp",
+    "line": 528,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_ancient_core_hound",
+    "file": "src/scripts/dungeons/molten_core/molten_core.cpp",
+    "line": 533,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_core_hound",
+    "file": "src/scripts/dungeons/molten_core/molten_core.cpp",
+    "line": 538,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_lava_surger",
+    "file": "src/scripts/dungeons/molten_core/molten_core.cpp",
+    "line": 543,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "mob_firelord",
+    "file": "src/scripts/dungeons/molten_core/molten_core.cpp",
+    "line": 548,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "instance_molten_core",
+    "file": "src/scripts/dungeons/molten_core/instance_molten_core.cpp",
+    "line": 669,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "summons",
+      "instance_state"
+    ]
+  },
+  {
+    "name": "go_rune_MC",
+    "file": "src/scripts/dungeons/molten_core/instance_molten_core.cpp",
+    "line": 674,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "summons",
+      "instance_state"
+    ]
+  },
+  {
+    "name": "boss_twin_golem",
+    "file": "src/scripts/dungeons/molten_core/boss_twin_golems.cpp",
+    "line": 92,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "death_reset",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_sorcerer_thane_thaurissan",
+    "file": "src/scripts/dungeons/molten_core/boss_thane.cpp",
+    "line": 268,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_image_of_sorcerer_thane",
+    "file": "src/scripts/dungeons/molten_core/boss_thane.cpp",
+    "line": 273,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_henry_stern",
+    "file": "src/scripts/dungeons/razorfen_downs/razorfen_downs.cpp",
+    "line": 497,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_lady_faltheress",
+    "file": "src/scripts/dungeons/razorfen_downs/razorfen_downs.cpp",
+    "line": 508,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_belnistrasz",
+    "file": "src/scripts/dungeons/razorfen_downs/razorfen_downs.cpp",
+    "line": 513,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "go_gong",
+    "file": "src/scripts/dungeons/razorfen_downs/razorfen_downs.cpp",
+    "line": 519,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "npc_tomb_creature",
+    "file": "src/scripts/dungeons/razorfen_downs/razorfen_downs.cpp",
+    "line": 529,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "instance_razorfen_downs",
+    "file": "src/scripts/dungeons/razorfen_downs/instance_razorfen_downs.cpp",
+    "line": 239,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "movement",
+      "summons",
+      "instance_state"
+    ]
+  },
+  {
+    "name": "instance_lower_karazhan_halls",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1193,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "shadowbane_glutton",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1198,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "phantom_cook",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1203,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "shadowbane_alpha",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1208,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "shadowbane_darkcaster",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1213,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "shadowbane_ragefang",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1218,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "haunted_blacksmith",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1223,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "phantom_guardsman",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1228,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "haunted_stable_tender",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1233,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "shattercage_spearman",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1238,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "shattercage_magiskull",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1243,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "skitterweb_crawler",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1248,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "skitterweb_darkfang",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1253,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "skitterweb_venomfang",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1258,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "skitterweb_leaper",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1263,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "phantom_servant",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1268,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "shadowbane_ambusher",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1273,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "grellkin_shadow_weaver",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1278,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "grellkin_primalist",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1283,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "grellkin_channeler",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1288,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "dark_rider_champion",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1293,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "dark_rider_apprentice",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/instance_lower_karazhan_halls.cpp",
+    "line": 1298,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "movement",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_moroes",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/boss_moroes.cpp",
+    "line": 571,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_grizikil",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/boss_grizikil.cpp",
+    "line": 112,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_clawlord_howlfang",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/boss_clawlord_howlfang.cpp",
+    "line": 110,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_brood_queen_araxxna",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/boss_brood_queen_araxxna.cpp",
+    "line": 179,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "skitterweb_egg",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/boss_brood_queen_araxxna.cpp",
+    "line": 184,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_blackwald_ii",
+    "file": "src/scripts/dungeons/lower_karazhan_halls/boss_blackwald_ii.cpp",
     "line": 147,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
       "ai_update",
       "spells",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_frostmane_ritualist",
-    "file": "src/scripts/dungeons/frostmane_hollow/boss_hailar_the_frigid.cpp",
-    "line": 152,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "instance_gilneas_city",
-    "file": "src/scripts/dungeons/gilneas_city/instance_gilneas_city.cpp",
-    "line": 349,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
+      "summons",
       "death_reset",
       "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "genn_greymane",
-    "file": "src/scripts/dungeons/gilneas_city/instance_gilneas_city.cpp",
-    "line": 354,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "greymane_knight",
-    "file": "src/scripts/dungeons/gilneas_city/instance_gilneas_city.cpp",
-    "line": 359,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "greymane_noble",
-    "file": "src/scripts/dungeons/gilneas_city/instance_gilneas_city.cpp",
-    "line": 364,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_lord_mortimer",
-    "file": "src/scripts/dungeons/gilneas_city/boss_lord_mortimer.cpp",
-    "line": 93,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_celia",
-    "file": "src/scripts/dungeons/gilneas_city/boss_celia.cpp",
-    "line": 96,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "instance_dragonmaw_retreat",
-    "file": "src/scripts/dungeons/dragonmaw_retreat/instance_dragonmaw_retreat.cpp",
-    "line": 87,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "instance_state"
-    ]
-  },
-  {
-    "name": "boss_zuluhed_the_whacked",
-    "file": "src/scripts/dungeons/dragonmaw_retreat/boss_zuluhed_the_whacked.cpp",
-    "line": 100,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_searistrasz",
-    "file": "src/scripts/dungeons/dragonmaw_retreat/boss_searistrasz.cpp",
-    "line": 108,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_halgan_redbrand",
-    "file": "src/scripts/dungeons/dragonmaw_retreat/boss_halgan_redbrand.cpp",
-    "line": 97,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_gowlfang",
-    "file": "src/scripts/dungeons/dragonmaw_retreat/boss_gowlfang.cpp",
-    "line": 60,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset"
-    ]
-  },
-  {
-    "name": "boss_bogpaw_truthsay",
-    "file": "src/scripts/dungeons/dragonmaw_retreat/boss_bogpaw_truthsay.cpp",
-    "line": 105,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
       "timers",
       "threat"
     ]
