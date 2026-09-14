@@ -1331,3 +1331,11 @@ timer-starvation correction, travel admission, service policy and remaining
 content/memory limits. This supersedes provisional build82/83/84/85 acceptance
 claims; it does not certify every gameplay scenario or a multi-hour soak.
 The dev world remains running. No production or other core was changed.
+
+### Nullable legacy random-bot event payloads (September14)
+
+Playerbot event persistence permits SQL NULL payloads. Every cache ingestion path
+must use Field::GetCppString() for optional text instead of constructing or
+assigning std::string from Field::GetString(). Build87 corrects both the lazy and
+bulk event loaders; existing legacy bots and saved event values are retained.
+Coverage: modules/ManTechPlayerbots/tests/turtle_nullable_events_regression.py.

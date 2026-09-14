@@ -62,3 +62,20 @@ for its existing 10,000-bot, 100% activity run.
 
 GitHub publication is a separate step requiring the exact destination approval
 requested during deployment. Local commits alone do not establish publication.
+
+### Production startup NULL event payload fix (build87, September14)
+
+The first production boot of build86 stopped while restoring saved random-bot
+state. The production event table contained 60,110 rows with SQL NULL payloads;
+its nullable `data` column is valid legacy schema. Native `Field::GetString()`
+returns nullptr for SQL NULL. The lazy loader assigned that pointer to a
+std::string, and the bulk loader had the same unsafe conversion. The crash dump's
+stack candidates resolve to EnsureEventCacheLoaded at the payload assignment.
+
+Both loaders now use native `Field::GetCppString()`, mapping absent optional
+payloads to empty strings and preserving existing event names, numeric values,
+timestamps and expiration intervals. No characters, accounts or event rows need
+to be deleted or rewritten. A source-derived C++ regression covers both loaders
+with NULL/empty/populated payloads, multiple bots, cache reuse and empty stores.
+This corrects a migration compatibility gap missed by the initial deployment
+checks; the earlier build86 deployment receipt is not proof of production startup.
