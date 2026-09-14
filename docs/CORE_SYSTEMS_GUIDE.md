@@ -1339,3 +1339,12 @@ must use Field::GetCppString() for optional text instead of constructing or
 assigning std::string from Field::GetString(). Build87 corrects both the lazy and
 bulk event loaders; existing legacy bots and saved event values are retained.
 Coverage: modules/ManTechPlayerbots/tests/turtle_nullable_events_regression.py.
+
+
+### Upstream loot/travel admission sync (September14, build88)
+
+The Turtle module includes the reviewed CMaNGOS delta through 266268c6. RPG and
+travel movement now defer while the selected loot target remains lootable;
+incidental RPG healing also defers, while party/selected-target healing retains
+its existing safety and urgency rules. Native ownership, NULL-safe event loading
+and Turtle adapters are unchanged. See TURTLE_UPSTREAM_SYNC_2026-09-14.md.

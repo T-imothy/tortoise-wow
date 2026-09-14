@@ -40,57 +40,6 @@
     ]
   },
   {
-    "name": "go_book_celebras",
-    "file": "src/scripts/dungeons/maraudon/boss_celebras_the_cursed.cpp",
-    "line": 341,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "instance_state",
-      "doors",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_kormok",
-    "file": "src/scripts/dungeons/scholomance/boss_kormok.cpp",
-    "line": 121,
-    "cmake_listed": true,
-    "file_loader_call_found": false,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset",
-      "threat"
-    ]
-  },
-  {
-    "name": "boss_headless_horseman",
-    "file": "src/scripts/dungeons/scarlet_monastery/boss_headless_horseman.cpp",
-    "line": 90,
-    "cmake_listed": true,
-    "file_loader_call_found": false,
-    "dependency_signals": [
-      "ai_update",
-      "death_reset"
-    ]
-  },
-  {
-    "name": "boss_azshir_the_sleepless",
-    "file": "src/scripts/dungeons/scarlet_monastery/boss_azshir_the_sleepless.cpp",
-    "line": 96,
-    "cmake_listed": true,
-    "file_loader_call_found": false,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
-      "death_reset"
-    ]
-  },
-  {
     "name": "spell_uldaman_awaken_vault_warder",
     "file": "src/scripts/dungeons/uldaman/uldaman.cpp",
     "line": 333,
@@ -115,35 +64,6 @@
       "ai_update",
       "spells",
       "movement",
-      "summons",
-      "death_reset",
-      "instance_state",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "npc_sandstalker",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/npc_sandstalker.cpp",
-    "line": 73,
-    "cmake_listed": true,
-    "file_loader_call_found": false,
-    "dependency_signals": [
-      "ai_update",
-      "death_reset",
-      "timers",
-      "threat"
-    ]
-  },
-  {
-    "name": "ossirian_crystal",
-    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_ossirian.cpp",
-    "line": 371,
-    "cmake_listed": true,
-    "file_loader_call_found": true,
-    "dependency_signals": [
-      "ai_update",
-      "spells",
       "summons",
       "death_reset",
       "instance_state",
@@ -198,6 +118,42 @@
     ]
   },
   {
+    "name": "boss_kormok",
+    "file": "src/scripts/dungeons/scholomance/boss_kormok.cpp",
+    "line": 121,
+    "cmake_listed": true,
+    "file_loader_call_found": false,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "threat"
+    ]
+  },
+  {
+    "name": "boss_headless_horseman",
+    "file": "src/scripts/dungeons/scarlet_monastery/boss_headless_horseman.cpp",
+    "line": 90,
+    "cmake_listed": true,
+    "file_loader_call_found": false,
+    "dependency_signals": [
+      "ai_update",
+      "death_reset"
+    ]
+  },
+  {
+    "name": "boss_azshir_the_sleepless",
+    "file": "src/scripts/dungeons/scarlet_monastery/boss_azshir_the_sleepless.cpp",
+    "line": 96,
+    "cmake_listed": true,
+    "file_loader_call_found": false,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset"
+    ]
+  },
+  {
     "name": "spell_gargoyle_stoneform",
     "file": "src/scripts/dungeons/naxxramas/instance_naxxramas.cpp",
     "line": 2113,
@@ -234,16 +190,47 @@
     ]
   },
   {
-    "name": "spell_hateforge_dispel_counterpart",
-    "file": "src/scripts/dungeons/hateforge_quarry/hateforge_quarry_trash.cpp",
-    "line": 269,
+    "name": "npc_sandstalker",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/npc_sandstalker.cpp",
+    "line": 73,
+    "cmake_listed": true,
+    "file_loader_call_found": false,
+    "dependency_signals": [
+      "ai_update",
+      "death_reset",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "ossirian_crystal",
+    "file": "src/scripts/dungeons/ruins_of_ahnqiraj/boss_ossirian.cpp",
+    "line": 371,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "summons",
+      "death_reset",
+      "instance_state",
+      "timers",
+      "threat"
+    ]
+  },
+  {
+    "name": "go_book_celebras",
+    "file": "src/scripts/dungeons/maraudon/boss_celebras_the_cursed.cpp",
+    "line": 341,
     "cmake_listed": true,
     "file_loader_call_found": true,
     "dependency_signals": [
       "ai_update",
       "spells",
       "death_reset",
-      "timers"
+      "instance_state",
+      "doors",
+      "threat"
     ]
   },
   {
@@ -301,6 +288,19 @@
     "line": 100,
     "cmake_listed": true,
     "file_loader_call_found": false,
+    "dependency_signals": [
+      "ai_update",
+      "spells",
+      "death_reset",
+      "timers"
+    ]
+  },
+  {
+    "name": "spell_hateforge_dispel_counterpart",
+    "file": "src/scripts/dungeons/hateforge_quarry/hateforge_quarry_trash.cpp",
+    "line": 269,
+    "cmake_listed": true,
+    "file_loader_call_found": true,
     "dependency_signals": [
       "ai_update",
       "spells",
