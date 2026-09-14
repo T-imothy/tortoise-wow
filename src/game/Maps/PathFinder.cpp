@@ -1,3 +1,4 @@
+#include "Util/DevDiagnostics.h"
 /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
@@ -26,6 +27,7 @@
 #include "Transport.h"
 
 #include <array>
+#include <cmath>
 #include <tuple>
 
 #include "Detour/Include/DetourCommon.h"
@@ -52,16 +54,28 @@ PathInfo::PathInfo(const Unit* owner) :
 {
     //DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ PathFinder::PathInfo for %u \n", m_sourceUnit->GetGUIDLow());
     createFilter();
+    RefreshMemoryCharge();
 }
 
 
 PathInfo::~PathInfo()
 {
+    ManTech::MemoryLedger::Remove(ManTech::MemoryKind::PathScratch, m_accountedPathBytes);
     //DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ PathInfo::~PathInfo() for %u \n", m_sourceUnit->GetGUID());
+}
+
+void PathInfo::RefreshMemoryCharge()
+{
+    uint64 const bytes = sizeof(*this) + m_pathPoints.capacity() * sizeof(Vector3);
+    if (!m_accountedPathBytes) ManTech::MemoryLedger::Add(ManTech::MemoryKind::PathScratch, bytes);
+    else if (bytes > m_accountedPathBytes) ManTech::MemoryLedger::Add(ManTech::MemoryKind::PathScratch, bytes - m_accountedPathBytes, 0);
+    else if (bytes < m_accountedPathBytes) ManTech::MemoryLedger::Remove(ManTech::MemoryKind::PathScratch, m_accountedPathBytes - bytes, 0);
+    m_accountedPathBytes = bytes;
 }
 
 void PathInfo::ResetForNewRequest()
 {
+    MemoryRefresh memoryRefresh{*this};
     clear();
     m_type = PATHFIND_BLANK;
     m_useStraightPath = false;
@@ -72,7 +86,114 @@ void PathInfo::ResetForNewRequest()
     m_navMesh = nullptr;
     m_navMeshQuery = nullptr;
     m_targetAllowedFlags = 0;
+    m_filter = dtQueryFilter();
     createFilter();
+}
+
+
+namespace
+{
+    dtPolyRef FindInspectionPoly(dtNavMeshQuery const* query, float x, float y, float z)
+    {
+        if (!query || !MaNGOS::IsValidMapCoord(x, y, z))
+            return 0;
+        float point[3] = {y, z, x}, nearest[3];
+        dtQueryFilter filter;
+        return PathInfo::FindWalkPoly(query, point, filter, nearest, 5.0f);
+    }
+}
+
+void PathInfo::setAreaCost(uint32 area, float cost)
+{
+    if (area < DT_MAX_AREAS && std::isfinite(cost) && cost >= 1.0f)
+        m_filter.setAreaCost(area, cost);
+}
+
+uint32 PathInfo::getArea(float x, float y, float z) const
+{
+    const uint32 mapId = m_sourceUnit ? m_sourceUnit->GetMapId() : m_coordinateMapId;
+    return getArea(mapId, x, y, z);
+}
+
+uint32 PathInfo::getArea(uint32 mapId, float x, float y, float z) const
+{
+    auto* manager = MMAP::MMapFactory::createOrGetMMapManager();
+    auto const* mesh = manager->GetNavMesh(mapId);
+    auto const* query = manager->GetNavMeshQuery(mapId);
+    if (!mesh || !query)
+        return AREA_NONE;
+    auto guard = mesh->acquireRead();
+    dtPolyRef ref = FindInspectionPoly(query, x, y, z);
+    unsigned char area = AREA_NONE;
+    if (!ref || dtStatusFailed(mesh->getPolyArea(ref, &area)))
+        return AREA_NONE;
+    return area;
+}
+
+unsigned short PathInfo::getFlags(uint32 mapId, float x, float y, float z) const
+{
+    auto* manager = MMAP::MMapFactory::createOrGetMMapManager();
+    auto const* mesh = manager->GetNavMesh(mapId);
+    auto const* query = manager->GetNavMeshQuery(mapId);
+    if (!mesh || !query)
+        return 0;
+    auto guard = mesh->acquireRead();
+    dtPolyRef ref = FindInspectionPoly(query, x, y, z);
+    unsigned short flags = 0;
+    if (!ref || dtStatusFailed(mesh->getPolyFlags(ref, &flags)))
+        return 0;
+    return flags;
+}
+
+void PathInfo::setArea(uint32 area)
+{
+    if (m_sourceUnit)
+        setArea(m_sourceUnit->GetMapId(), m_sourceUnit->GetPositionX(), m_sourceUnit->GetPositionY(), m_sourceUnit->GetPositionZ(), area, 0.0f);
+}
+
+void PathInfo::setArea(uint32 mapId, float x, float y, float z, uint32 area, float radius)
+{
+    if (!MaNGOS::IsValidMapCoord(x, y, z) || area >= DT_MAX_AREAS || !std::isfinite(radius) || radius < 0.0f)
+        return;
+    auto* manager = MMAP::MMapFactory::createOrGetMMapManager();
+    auto* mesh = const_cast<dtNavMesh*>(manager->GetNavMesh(mapId));
+    auto const* query = manager->GetNavMeshQuery(mapId);
+    if (!mesh || !query)
+        return;
+    // The native reentrant gate keeps selection and mutation atomic with
+    // concurrent queries/tile replacement. No read-to-write lock upgrade.
+    dtAccessGate::Write guard(mesh->accessGate());
+    dtQueryFilter filter;
+    filter.setIncludeFlags(NAV_GROUND);
+    filter.setExcludeFlags(NAV_WATER | NAV_MAGMA | NAV_SLIME | NAV_STEEP_SLOPES);
+    float point[3] = {y,z,x}, nearest[3];
+    dtPolyRef ref = FindWalkPoly(query, point, filter, nearest, 5.0f);
+    if (!ref)
+        return;
+    constexpr int maxPolys = 2560;
+    std::array<dtPolyRef, maxPolys> polys;
+    int count = 0;
+    if (dtStatusFailed(query->findPolysAroundCircle(ref, nearest, radius, &filter, polys.data(), nullptr, nullptr, &count, maxPolys)))
+        return;
+    for (int i = 0; i < count; ++i)
+    {
+        unsigned char oldArea = AREA_NONE;
+        if (dtStatusSucceed(mesh->getPolyArea(polys[i], &oldArea)) && oldArea < area)
+            mesh->setPolyArea(polys[i], static_cast<unsigned char>(area));
+    }
+    // Traversability flags are unchanged. Only callers setting a cost for
+    // the selected area will prefer a different route; native defaults stay 1.
+}
+
+bool PathInfo::ComputePathToRandomPoint(Vector3 const& center, float radius)
+{
+    clear();
+    m_type = PATHFIND_NOPATH;
+    if (!m_sourceUnit || !MaNGOS::IsValidMapCoord(center.x, center.y, center.z) || !std::isfinite(radius) || radius <= 0.0f)
+        return false;
+    const float angle = frand(0.0f, 2.0f * M_PI_F), distance = frand(0.0f, radius);
+    const Vector3 destination(center.x + std::cos(angle) * distance, center.y + std::sin(angle) * distance, center.z);
+    return calculate(destination.x, destination.y, destination.z, false) && (m_type & PATHFIND_NORMAL);
 }
 
 void PathInfo::setPathLengthLimit(float dist)
@@ -82,6 +203,16 @@ void PathInfo::setPathLengthLimit(float dist)
 
 bool PathInfo::calculate(float destX, float destY, float destZ, bool forceDest, bool offsets)
 {
+    MemoryRefresh memoryRefresh{*this};
+    // The map/instance compatibility constructor has no Unit owner.
+    if (!m_sourceUnit)
+    {
+        m_type = PATHFIND_NOPATH;
+        m_pathPoints.clear();
+        return false;
+    }
+
+
     float x, y, z;
     m_sourceUnit->GetSafePosition(x, y, z, m_transport);
 
@@ -90,6 +221,21 @@ bool PathInfo::calculate(float destX, float destY, float destZ, bool forceDest, 
 
 bool PathInfo::calculate(Vector3 const& start, Vector3 dest, bool forceDest, bool offsets)
 {
+    MemoryRefresh memoryRefresh{*this};
+    MANTECH_DIAG_SCOPE(Path, 16, nullptr);
+
+    // Null-owner callers need an explicit map, and malformed coordinates
+    // must never reach Detour. NOPATH has no usable points.
+    if ((!m_sourceUnit && m_coordinateMapId == UINT32_MAX) ||
+        !std::isfinite(start.x) || !std::isfinite(start.y) || !std::isfinite(start.z) ||
+        !std::isfinite(dest.x) || !std::isfinite(dest.y) || !std::isfinite(dest.z))
+    {
+        m_type = PATHFIND_NOPATH;
+        m_pathPoints.clear();
+        return false;
+    }
+
+
     TurtleDiagnostics::Scope diagnosticPath(TurtleDiagnostics::Path);
     // A m_navMeshQuery object is not thread safe, but a same PathInfo can be shared between threads.
     // So need to get a new one.
@@ -935,6 +1081,7 @@ dtStatus PathInfo::findSmoothPath(const float* startPos, const float* endPos,
 // Nostalrius
 bool PathInfo::UpdateForCaster(Unit* pTarget, float castRange)
 {
+    MemoryRefresh memoryRefresh{*this};
     // If already in range and LOS
     if (pTarget->IsWithinDist3d(m_sourceUnit->GetPositionX(), m_sourceUnit->GetPositionY(), m_sourceUnit->GetPositionZ(), castRange) &&
             pTarget->IsWithinLOS(m_sourceUnit->GetPositionX(), m_sourceUnit->GetPositionY(), m_sourceUnit->GetPositionZ()))
@@ -946,9 +1093,8 @@ bool PathInfo::UpdateForCaster(Unit* pTarget, float castRange)
         m_pathPoints[1] = getStartPosition();
         return true;
     }
-    uint32 maxIndex = m_pathPoints.size() - 1;
     // We have always keep at least 2 points (else, there is no mvt !)
-    for (uint32 i = 1; i <= maxIndex; ++i)
+    for (size_t i = 1; i < m_pathPoints.size(); ++i)
     {
         if (pTarget->IsWithinDist3d(m_pathPoints[i].x, m_pathPoints[i].y, m_pathPoints[i].z, castRange) &&
                 pTarget->IsWithinLOS(m_pathPoints[i].x, m_pathPoints[i].y, m_pathPoints[i].z))
@@ -980,6 +1126,7 @@ bool PathInfo::UpdateForCaster(Unit* pTarget, float castRange)
 
 bool PathInfo::UpdateForMelee(Unit* pTarget, float meleeReach)
 {
+    MemoryRefresh memoryRefresh{*this};
     // Si deja en ligne de vision, et a distance, c'est bon.
     if (pTarget->IsWithinDist3d(m_sourceUnit->GetPositionX(), m_sourceUnit->GetPositionY(), m_sourceUnit->GetPositionZ(), meleeReach))
     {
@@ -991,9 +1138,8 @@ bool PathInfo::UpdateForMelee(Unit* pTarget, float meleeReach)
         return true;
     }
 
-    uint32 maxIndex = m_pathPoints.size() - 1;
     // We have always keep at least 2 points (else, there is no mvt !)
-    for (uint32 i = 1; i <= maxIndex; ++i)
+    for (size_t i = 1; i < m_pathPoints.size(); ++i)
     {
         if (pTarget->IsWithinDist3d(m_pathPoints[i].x, m_pathPoints[i].y, m_pathPoints[i].z, meleeReach))
         {
@@ -1013,10 +1159,15 @@ bool PathInfo::UpdateForMelee(Unit* pTarget, float meleeReach)
 
 void PathInfo::CutPathWithDynamicLoS()
 {
-    uint32 maxIndex = m_pathPoints.size() - 1;
+    MemoryRefresh memoryRefresh{*this};
+    // NOPATH deliberately has no points (missing tiles, steep slopes, invalid
+    // coordinates). Do not underflow size-1 or manufacture a movement shortcut.
+    // Coordinate-only queries have no live map's dynamic collision ownership.
+    if (m_pathPoints.size() < 2 || !m_sourceUnit || !m_sourceUnit->FindMap())
+        return;
     Vector3 out;
     // We have always keep at least 2 points (else, there is no mvt !)
-    for (uint32 i = 1; i <= maxIndex; ++i)
+    for (size_t i = 1; i < m_pathPoints.size(); ++i)
         if (m_sourceUnit->GetMap()->GetDynamicObjectHitPos(m_pathPoints[i - 1], m_pathPoints[i], out, -0.1f))
         {
             m_pathPoints[i] = out;

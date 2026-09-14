@@ -938,7 +938,12 @@ class World
         // the manager owns construction, callbacks, lifetime and reclaim.
         HeadlessSessionStartResult StartHeadlessSession(uint32 accountId, ObjectGuid characterGuid,
             LocaleConstant locale, std::string const& tag);
+        HeadlessSessionStartResult StartPreparedHeadlessSession(LoginQueryHolder* holder,
+            LocaleConstant locale, std::string const& tag);
         bool StopHeadlessSession(ObjectGuid characterGuid, bool save = true);
+        // Only around synchronous world-owned callbacks, never map jobs.
+        void BeginHeadlessStopDeferral();
+        void EndHeadlessStopDeferral();
         HeadlessSessionState GetHeadlessSessionState(ObjectGuid characterGuid) const;
 
 

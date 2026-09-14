@@ -1,3 +1,4 @@
+#include "Util/DevDiagnostics.h"
 /*
  * Copyright (C) 2017 Elysium Project <https://github.com/elysium-project>
  * Distributed under the GNU General Public License, version 2 or later.
@@ -119,7 +120,7 @@ void ThreadPool::Execute(Callable const& function)
 {
     if (!function)
         return;
-    try { function(); }
+    try { MANTECH_DIAG_SCOPE(JobExecute, 1, m_name.c_str()); function(); }
     catch (...)
     {
         {

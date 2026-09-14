@@ -3710,3 +3710,11 @@ bool dtNavMeshQuery::isInClosedList(dtPolyRef ref) const
 
 	return false;
 }
+
+// ManTech diagnostics: pool capacities are stable after native initialization.
+size_t dtNavMeshQuery::getOwnedMemoryBytes() const
+{
+    return sizeof(*this) + (m_nodePool ? m_nodePool->getMemUsed() : 0)
+        + (m_tinyNodePool ? m_tinyNodePool->getMemUsed() : 0)
+        + (m_openList ? m_openList->getMemUsed() : 0);
+}

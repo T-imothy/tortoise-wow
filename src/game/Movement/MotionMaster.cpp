@@ -1,3 +1,4 @@
+#include "Util/DevDiagnostics.h"
 /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  * Copyright (C) 2009-2011 MaNGOSZero <https://github.com/mangos/zero>
@@ -162,6 +163,7 @@ MotionMaster::~MotionMaster()
 
 void MotionMaster::UpdateMotion(uint32 diff)
 {
+    MANTECH_DIAG_SCOPE(Movement, 32, "motion_update");
     TurtleDiagnostics::Scope diagnosticMotion(TurtleDiagnostics::Motion);
     if (m_owner->HasUnitState(UNIT_STAT_CAN_NOT_MOVE))
         return;
@@ -201,6 +203,7 @@ void MotionMaster::UpdateMotion(uint32 diff)
 
 void MotionMaster::UpdateMotionAsync(uint32 diff)
 {
+    MANTECH_DIAG_SCOPE(Movement, 32, "motion_async");
     m_needsAsyncUpdate = false;
     if (m_owner->HasUnitState(UNIT_STAT_CAN_NOT_MOVE))
         return;

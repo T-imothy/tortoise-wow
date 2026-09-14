@@ -508,6 +508,14 @@ class Map : public GridRefManager<NGridType>
                 store.emplace(it->first.GetCounter(), it->second);
             return store;
         }
+        std::vector<Creature*> GetCreatureSnapshot()
+        {
+            std::vector<Creature*> result;
+            std::shared_lock<std::shared_mutex> lock(m_objectsStore_lock);
+            auto range = m_objectsStore.range<Creature>();
+            for (auto it = range.first; it != range.second; ++it) result.push_back(it->second);
+            return result;
+        }
         virtual bool CanEnter(Player* /*player*/) { return true; }
         const char* GetMapName() const;
         time_t GetTime() const;

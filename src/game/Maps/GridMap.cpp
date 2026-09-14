@@ -118,6 +118,9 @@ bool GridMap::loadData(char const* filename)
 
 void GridMap::unloadData()
 {
+    ManTech::MemoryLedger::Remove(ManTech::MemoryKind::Terrain, m_payloadBytes, m_payloadArrays);
+    m_payloadBytes = m_payloadArrays = 0;
+
     delete[] m_area_map;
     delete[] m_V9;
     delete[] m_V8;
@@ -146,6 +149,7 @@ bool GridMap::loadAreaData(FILE* in, uint32 offset, uint32 /*size*/)
     if (!(header.flags & MAP_AREA_NO_AREA))
     {
         m_area_map = new uint16 [16 * 16];
+        AccountPayload(sizeof(uint16) * (16 * 16));
         fread(m_area_map, sizeof(uint16), 16 * 16, in);
     }
 
@@ -166,7 +170,9 @@ bool GridMap::loadHeightData(FILE* in, uint32 offset, uint32 /*size*/)
         if ((header.flags & MAP_HEIGHT_AS_INT16))
         {
             m_uint16_V9 = new uint16 [129 * 129];
+            AccountPayload(sizeof(uint16) * (129 * 129));
             m_uint16_V8 = new uint16 [128 * 128];
+            AccountPayload(sizeof(uint16) * (128 * 128));
             fread(m_uint16_V9, sizeof(uint16), 129 * 129, in);
             fread(m_uint16_V8, sizeof(uint16), 128 * 128, in);
             m_gridIntHeightMultiplier = (header.gridMaxHeight - header.gridHeight) / 65535;
@@ -175,7 +181,9 @@ bool GridMap::loadHeightData(FILE* in, uint32 offset, uint32 /*size*/)
         else if ((header.flags & MAP_HEIGHT_AS_INT8))
         {
             m_uint8_V9 = new uint8 [129 * 129];
+            AccountPayload(sizeof(uint8) * (129 * 129));
             m_uint8_V8 = new uint8 [128 * 128];
+            AccountPayload(sizeof(uint8) * (128 * 128));
             fread(m_uint8_V9, sizeof(uint8), 129 * 129, in);
             fread(m_uint8_V8, sizeof(uint8), 128 * 128, in);
             m_gridIntHeightMultiplier = (header.gridMaxHeight - header.gridHeight) / 255;
@@ -184,7 +192,9 @@ bool GridMap::loadHeightData(FILE* in, uint32 offset, uint32 /*size*/)
         else
         {
             m_V9 = new float [129 * 129];
+            AccountPayload(sizeof(float) * (129 * 129));
             m_V8 = new float [128 * 128];
+            AccountPayload(sizeof(float) * (128 * 128));
             fread(m_V9, sizeof(float), 129 * 129, in);
             fread(m_V8, sizeof(float), 128 * 128, in);
             m_gridGetHeight = &GridMap::getHeightFromFloat;
@@ -215,15 +225,19 @@ bool GridMap::loadGridMapLiquidData(FILE* in, uint32 offset, uint32 /*size*/)
     if (!(header.flags & MAP_LIQUID_NO_TYPE))
     {
         m_liquidEntry = new uint16[16 * 16];
+        AccountPayload(sizeof(uint16) * (16 * 16));
         fread(m_liquidEntry, sizeof(uint16), 16 * 16, in);
 
         m_liquidFlags = new uint8[16 * 16];
+
+        AccountPayload(sizeof(uint8) * (16 * 16));
         fread(m_liquidFlags, sizeof(uint8), 16 * 16, in);
     }
 
     if (!(header.flags & MAP_LIQUID_NO_HEIGHT))
     {
         m_liquid_map = new float [m_liquid_width * m_liquid_height];
+        AccountPayload(sizeof(float) * (m_liquid_width * m_liquid_height));
         fread(m_liquid_map, sizeof(float), m_liquid_width * m_liquid_height, in);
     }
 
@@ -726,7 +740,19 @@ void TerrainInfo::CleanUpGrids(const uint32 diff)
     // on every tick when the once-per-minute cleanup is not due.
     i_timer.Update(diff);
     if (!i_timer.Passed())
-        return;
+    {
+        m_pressureCheckElapsed += std::min<uint32>(diff, 1000);
+        if (m_pressureCheckElapsed < 1000) return;
+        m_pressureCheckElapsed = 0;
+        size_t retained = 0;
+        {
+            dtAccessGate::Read terrainLifetime(&m_lifetimeGate);
+            for (auto const& row : m_GridMaps)
+                for (auto const& cell : row)
+                    if (GridMap* map = cell.load()) retained += map->GetPayloadBytes();
+        }
+        if (retained <= 64u * 1024u * 1024u) return;
+    }
 
     dtAccessGate::Write terrainLifetime(&m_lifetimeGate);
     for (int y = 0; y < MAX_NUMBER_OF_GRIDS; ++y)

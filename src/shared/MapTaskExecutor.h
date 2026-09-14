@@ -1,3 +1,4 @@
+#include "Util/DevDiagnostics.h"
 #pragma once
 #include <condition_variable>
 #include <deque>
@@ -55,9 +56,21 @@ public:
     MapTaskExecutor(MapTaskExecutor const&) = delete;
     MapTaskExecutor& operator=(MapTaskExecutor const&) = delete;
     size_t Size() const { return workers.size(); }
-    template<class F> std::future<void> Submit(F&& function)
+    // Diagnostic names must have static lifetime (all callers use literals).
+    template<class F> std::future<void> Submit(F&& function, char const* name = "map_task")
     {
+#ifdef MANTECH_DEV_DIAGNOSTICS
+        auto const context = ManTech::Diag::Context;
+        auto const queued = ManTech::Diag::Enabled.load(std::memory_order_relaxed) ? ManTech::Diag::Now() : 0;
+        std::packaged_task<void()> task([function = std::forward<F>(function), context, queued, name]() mutable {
+            MANTECH_DIAG_CONTEXT(unsigned(context >> 32), unsigned(context));
+            ManTech::Diag::JobQueued(queued, name);
+            MANTECH_DIAG_SCOPE(JobExecute, 1, name);
+            function();
+        });
+#else
         std::packaged_task<void()> task(std::forward<F>(function));
+#endif
         auto result = task.get_future();
         if (workers.empty()) { task(); return result; }
         bool inlineWork = false;
@@ -91,9 +104,10 @@ class MapTaskJoin
 {
 public:
     std::vector<std::future<void>> tasks;
-    ~MapTaskJoin() { for (auto& task : tasks) if (task.valid()) task.wait(); }
+    ~MapTaskJoin() { MANTECH_DIAG_SCOPE(TaskWait, 1, "task_group_cleanup"); for (auto& task : tasks) if (task.valid()) task.wait(); }
     void Get()
     {
+        MANTECH_DIAG_SCOPE(TaskWait, 1, "task_group_join");
         std::exception_ptr failure;
         for (auto& task : tasks)
             try { if (task.valid()) task.get(); } catch (...) { if (!failure) failure = std::current_exception(); }

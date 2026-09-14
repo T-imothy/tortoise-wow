@@ -55,26 +55,39 @@ SqlTransaction::~SqlTransaction()
 
 bool SqlTransaction::Execute(SqlConnection *conn)
 {
-    if(m_queue.empty())
-        return true;
-
+    if (m_queue.empty()) return true;
     LOCK_DB_CONN(conn);
-
-    conn->BeginTransaction();
-
-    const int nItems = m_queue.size();
-    for (int i = 0; i < nItems; ++i)
+    // Only explicitly replayable native saves opt in. Mixed-engine databases
+    // retain failure behavior until their transactional migration is installed.
+    unsigned const attempts = m_retryDeadlock && conn->CanReplayTransaction() ? 3 : 1;
+    for (unsigned attempt = 0; attempt < attempts; ++attempt)
     {
-        SqlOperation * pStmt = m_queue[i];
-
-        if(!pStmt->Execute(conn))
+        if (!conn->BeginTransaction()) return false;
+        bool failed = false;
+        bool deadlock = false;
+        for (SqlOperation* statement : m_queue)
         {
+            conn->SetStatementDeadlock(false);
+            if (!statement->Execute(conn))
+            {
+                failed = true;
+                deadlock = conn->LastStatementWasDeadlock();
+                break;
+            }
+        }
+        if (!failed)
+        {
+            // A lost COMMIT response is ambiguous; never replay it.
+            if (conn->CommitTransaction()) return true;
             conn->RollbackTransaction();
             return false;
         }
+        if (!conn->RollbackTransaction()) return false;
+        if (!deadlock || attempt + 1 == attempts) return false;
+        sLog.outError("DB_TRANSACTION_RETRY serial=%u attempt=%u statements=%zu reason=deadlock",
+            GetSerialId(), attempt + 2, m_queue.size());
     }
-
-    return conn->CommitTransaction();
+    return false;
 }
 
 SqlPreparedRequest::SqlPreparedRequest(int nIndex, SqlStmtParameters * arg ) : m_nIndex(nIndex), m_param(arg)

@@ -445,6 +445,8 @@ public:
 	/// The maximum number of tiles supported by the navigation mesh.
 	/// @return The maximum number of tiles supported by the navigation mesh.
 	int getMaxTiles() const;
+	/// Native object, tile-slot array and lookup table; excludes tile payloads.
+	size_t getOwnedMemoryBytes() const;
 	
 	/// Gets the tile at the specified index.
 	///  @param[in]	i		The tile index. [Limit: 0 >= index < #getMaxTiles()]
