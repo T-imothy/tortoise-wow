@@ -1403,3 +1403,24 @@ run_turtle_build90_fixes_test.py compiles actual source bodies against controlle
 fixtures for20 reproduced DBC-rule failures, admission/security variants, repeated
 completion, name-pool exhaustion, vendor lists and native graveyard transitions.
 These focused regressions do not certify live combat or long-run memory behavior.
+
+
+## September 15 build91: ManTech pursuit, incidents and party tactics
+
+The module's ReachTargetAction records lack of LOS/progress and feeds bounded
+per-AI target exclusions into existing AttackersValue validation. Native movement,
+combat ownership and encounter behavior are retained. Player-led bots, PvP and
+enemies already fighting are exempt. Full reset/resurrection/map transitions
+clear pursuit state. Incident collection is a separate optional observer.
+
+`.bot action interrupt` and `.bot action cc <mark>` reuse the world-owned
+BotRecruitment dispatcher, its controller authorization, bounded queue and receipt
+cache. Requests expire after three seconds and revalidate lifecycle, party, map
+and selection/mark before one eligible bot calls the existing native casting
+helper. A started response is admission, not confirmation of the spell's effect.
+No new native hook, packet ownership change or database migration is introduced.
+
+See modules/ManTechPlayerbots/docs/TURTLE_BOT_CAPABILITIES.md for supported
+abilities, exclusions, protocol and diagnostic controls. Focused tests compile
+actual module policies/dispatcher/executor and retain existing native ownership
+and recruitment regression coverage; live combat effects remain separate checks.

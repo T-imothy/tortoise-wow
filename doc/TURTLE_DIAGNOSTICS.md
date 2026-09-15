@@ -1726,3 +1726,21 @@ when perfMonEnabled is true. Enabled operation lifetime and the independent
 aggregate diagnostics remain intact. No percentage speedup is claimed. See
 docs/TURTLE_BUILD90_RUNTIME_FIXES.md for fixes, native interaction checks,
 architecture fixture limitations and unresolved memory/content investigations.
+
+
+### September 15 build91: bounded per-bot incidents
+
+The active ManTech module now observes sustained stuck movement, death, repeated
+action failure and unreachable-target exclusions. `Diagnostics.Mode = 2` plus
+`Diagnostics.Incidents = 1` enables observations at most once per second per AI;
+transitions/30-second refreshes feed a bounded mutex-protected store. Existing
+manager flushes write complete snapshots to PlayerbotIncidents.log, capped at
+8 MiB plus one rotated file. Limits are 1024 active and 200 resolved records;
+overflow and enabled state are explicit. No SQL table or per-bot file I/O.
+
+The local panel distinguishes stale data, disabled collection and observation
+resets from verified recovery. Disabling incidents removes the extra observations
+without disabling the independently configured pursuit policy. See
+modules/ManTechPlayerbots/docs/TURTLE_BOT_CAPABILITIES.md for thresholds,
+coverage limits, retention, controls and focused tests. This adds no scheduler
+policy change or production population/activity override.
