@@ -86,3 +86,25 @@ purposes and character data. The graveyard IDs and SQL are Turtle-specific and
 must not be copied. Neither a world-tick speedup nor a memory-leak fix has been
 established by this change set.
 
+
+## Final full-load dev receipt
+
+At09:51:15 workstation time on September15, dev reached10,000/10,000 bots with
+10,000 full-AI eligible, background100 and priorities disabled. Pending logins0;
+world pending0/rejected0. The09:51:15 and09:51:46 windows averaged172 and178ms,
+with maxima216 and254ms. Private memory16,329–16,373MiB. The population reached
+its target22m44s after process start; this is a short full-load check, not a
+multi-hour soak or proof that every bot is fighting.
+
+Current-session bounded errors through09:51:56: SQLerrors0, duplicate keys0,
+assertions0, deadlocks0, graveyard warnings0, new crash dumps0. Content warnings
+remain:83equipment,68trainer,101pet-spell,16waypoint and47empty-vendor messages
+(entries91292 and1650). Generic gossip remains capable of reporting bad content
+flags; the vendor-selection fix does not claim to eliminate these warnings.
+
+Local commits: module1da05e2b, native graveyardc971875c, integrationfd2b52f2.
+GitHub push was rejected by automatic approval review because authorization for
+both exact repository destinations was not established. A user approval question
+is pending; no push occurred. Public website deployment was separately rejected
+pending authorization for the public aggregate telemetry destination; no website
+files changed. The code and analytics artifacts remain saved locally.
