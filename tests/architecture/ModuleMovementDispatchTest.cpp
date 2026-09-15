@@ -26,7 +26,7 @@ struct MovementAction{
  Player* bot;float waited=-1;int hazards=0;
  void GeneratePathAvoidingHazards(std::vector<WorldPosition>&){++hazards;}
  void WaitForReach(float distance){waited=distance;}
- void DispatchMovement(TravelPath,bool,bool);
+ bool DispatchMovement(TravelPath,bool,bool);
 };
 #include "ModuleMovementDispatchNative.inc"
 void Check(bool v,const char* msg){if(!v)throw std::runtime_error(msg);}
@@ -39,9 +39,9 @@ int main(){try{
  }
  Player p;MovementAction a{&p};a.DispatchMovement({},true,false);Check(p.motion.clears==0,"empty path clears active movement");
  a.DispatchMovement({{WorldPosition(0.0f),WorldPosition(10)}},true,false);Check(p.motion.route.size()==2,"duplicate live origin inserted");
- for(bool generate:{false,true}){Player single;MovementAction one{&single};one.DispatchMovement({{WorldPosition(10)}},generate,true);
-  Check(single.motion.pointStarts==1&&single.motion.pathStarts==0,"single point has multiple owners");
-  Check(single.motion.options==(MOVE_WALK_MODE|(generate?MOVE_PATHFINDING:0)),"native point options corrupted");}
+ for(bool generate:{false,true}){Player single;MovementAction one{&single};
+  Check(!one.DispatchMovement({{WorldPosition(10)}},generate,true),"single-point route must be rejected");
+  Check(single.motion.pointStarts==0&&single.motion.pathStarts==0&&single.motion.clears==0,"rejected route mutated movement");}
  Player flying;flying.fly=true;MovementAction f{&flying};f.DispatchMovement({{WorldPosition(0.0f),WorldPosition(10)}},true,false);
  Check(flying.motion.pointStarts==1&&flying.motion.pathStarts==0,"free-flight path lost native point owner");
  std::cout<<"Active module dispatch preserves a single native movement owner, route corners and walk flags\n";

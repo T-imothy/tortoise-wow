@@ -1,5 +1,7 @@
 // Native boundary fragments with deterministic dependencies, not live gameplay.
 #include <cstdint>
+#include <cmath>
+#define MANTECH_DIAG_SCOPE(...) ((void)0)
 #include <cstdlib>
 #include <iostream>
 #include <list>
@@ -15,6 +17,8 @@ struct Vector3 { float x, y, z; Vector3(float a, float b, float c) : x(a), y(b),
 struct PathOwner { int calls = 0; void GetSafePosition(float& x, float& y, float& z, void*) { ++calls; x=1; y=2; z=3; } };
 enum { PATHFIND_NORMAL = 1, PATHFIND_NOPATH = 8 };
 struct PathInfo {uint32 m_coordinateMapId=UINT32_MAX;
+    // This fixture checks path admission; allocation accounting has separate tests.
+    struct MemoryRefresh { PathInfo& owner; };
     PathOwner* m_sourceUnit = nullptr;
     void* m_transport = nullptr;
     int m_type = PATHFIND_NORMAL;

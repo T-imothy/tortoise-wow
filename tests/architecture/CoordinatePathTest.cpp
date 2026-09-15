@@ -2,6 +2,7 @@
 #include "DetourNavMeshBuilder.h"
 #include "DetourNavMeshQuery.h"
 #include "DetourCommon.h"
+#include "../../src/shared/Memory/MemoryLedger.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -12,11 +13,15 @@
 #include <stdexcept>
 #include <tuple>
 #include <vector>
-using uint32=uint32_t;using uint16=uint16_t;using uint8=uint8_t;using int32=int32_t;
+using uint64=uint64_t;using uint32=uint32_t;using uint16=uint16_t;using uint8=uint8_t;using int32=int32_t;
 static void Check(bool v){if(!v)throw std::runtime_error("native coordinate path assertion failed");}
 #define ASSERT(x) Check(bool(x))
 #define MANGOS_ASSERT(x) ASSERT(x)
 #define DEBUG_LOG(...) ((void)0)
+#define MANTECH_DIAG_SCOPE(...) ((void)0)
+constexpr float M_PI_F=3.14159265358979323846f; constexpr uint8 AREA_NONE=0;
+static float frand(float a,float b){return (a+b)*0.5f;}
+namespace MaNGOS { bool IsValidMapCoord(float x,float y,float z){return std::isfinite(x)&&std::isfinite(y)&&std::isfinite(z);} }
 #define SMOOTH_PATH_SLOP 0.4f
 #define SMOOTH_PATH_STEP_SIZE 2.0f
 struct Vector3{float x=0,y=0,z=0;Vector3()=default;Vector3(float a,float b,float c):x(a),y(b),z(c){}Vector3 operator-(Vector3 p)const{return {x-p.x,y-p.y,z-p.z};}float squaredLength()const{return x*x+y*y+z*z;}};
@@ -26,13 +31,13 @@ struct GridMapLiquidData{float level=0;};
 struct Terrain{bool IsSwimmable(float,float,float)const{return false;}uint32 getLiquidStatus(float,float,float,uint32,GridMapLiquidData*)const{return LIQUID_MAP_NO_WATER;}};
 struct Map{bool FindCollisionModel(float,float,float,float,float,float)const{return false;}};
 struct Transport{void CalculatePassengerOffset(float&,float&,float&){}uint32 GetDisplayId()const{return 1;}};
-struct Unit{bool IsPlayer()const{return true;}uint32 mapId=821;Terrain terrain;Map map;bool CanSwim()const{return false;}bool CanFly()const{return false;}bool CanWalk()const{return true;}bool HasUnitState(uint32)const{return false;}uint32 GetTypeId()const{return TYPEID_PLAYER;}uint32 GetGUIDLow()const{return 7;}uint32 GetMapId()const{return mapId;}float GetObjectBoundingRadius()const{return 0.5f;}Terrain const* GetTerrain()const{return &terrain;}Map const* GetMap()const{return &map;}char const* GetName()const{return "fixture";}void GetZoneAndAreaId(uint32& z,uint32& a)const{z=a=0;}void UpdateGroundPositionZ(float&,float&,float&)const{}void GetSafePosition(float& x,float& y,float& z,Transport*)const{x=2;y=2;z=0;}};
+struct Unit{float GetPositionX()const{return 2;}float GetPositionY()const{return 2;}float GetPositionZ()const{return 0;}bool IsPlayer()const{return true;}uint32 mapId=821;Terrain terrain;Map map;bool CanSwim()const{return false;}bool CanFly()const{return false;}bool CanWalk()const{return true;}bool HasUnitState(uint32)const{return false;}uint32 GetTypeId()const{return TYPEID_PLAYER;}uint32 GetGUIDLow()const{return 7;}uint32 GetMapId()const{return mapId;}float GetObjectBoundingRadius()const{return 0.5f;}Terrain const* GetTerrain()const{return &terrain;}Map const* GetMap()const{return &map;}char const* GetName()const{return "fixture";}void GetZoneAndAreaId(uint32& z,uint32& a)const{z=a=0;}void UpdateGroundPositionZ(float&,float&,float&)const{}void GetSafePosition(float& x,float& y,float& z,Transport*)const{x=2;y=2;z=0;}};
 struct Creature:Unit{};
 struct Config{bool GetBoolDefault(char const*,bool v)const{return v;}}sConfig;
 struct Log{template<class...A>void outError(char const*,A...)const{}}sLog;
 namespace TurtleDiagnostics{enum{Path};struct Scope{Scope(int){}};}
 namespace MMAP{
-struct MMapManager{std::map<uint32,dtNavMeshQuery const*> maps;uint32 selected=0;dtNavMeshQuery const* GetNavMeshQuery(uint32 id){selected=id;auto i=maps.find(id);return i==maps.end()?nullptr:i->second;}dtNavMeshQuery const* GetModelNavMeshQuery(uint32){return nullptr;}};
+struct MMapManager{std::map<uint32,dtNavMeshQuery const*> maps;uint32 selected=0;dtNavMesh* GetNavMesh(uint32 id){auto i=maps.find(id);return i==maps.end()?nullptr:const_cast<dtNavMesh*>(i->second->getAttachedNavMesh());}dtNavMeshQuery const* GetNavMeshQuery(uint32 id){selected=id;auto i=maps.find(id);return i==maps.end()?nullptr:i->second;}dtNavMeshQuery const* GetModelNavMeshQuery(uint32){return nullptr;}};
 namespace MMapFactory{MMapManager* createOrGetMMapManager(){static MMapManager m;return &m;}}
 }
 using restricted_movement_t=std::tuple<uint32,uint32,uint32>;

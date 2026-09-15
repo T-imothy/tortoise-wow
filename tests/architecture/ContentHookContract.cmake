@@ -150,7 +150,7 @@ endif()
 message(STATUS "PASS: navigation readers/writers and terrain cleanup lifetime contracts")
 
 # Whole-map idle AI handoff, never actor-level parallel mutation.
-foreach(required "sMapMgr.IdleBotAI().Submit(runIdleBatch)" "done.get();"
+foreach(required "sMapMgr.IdleBotAI().Submit(runIdleBatch, \"idle_bot_map_batch\")" "done.get();"
     "TurtleDiagnostics::OwnerHandoff attribution" "request.stamp.Matches")
     string(FIND "${map}" "${required}" found)
     if(found EQUAL -1)

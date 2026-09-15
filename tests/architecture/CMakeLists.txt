@@ -183,7 +183,7 @@ endif()
 add_test(NAME NpcInteractionTraceTest COMMAND NpcInteractionTraceTest)
 set_tests_properties(NpcInteractionTraceTest PROPERTIES TIMEOUT 20)
 extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/strategy/actions/MovementActions.cpp"
-    "void MovementAction::DispatchMovement(" "Unit* MovementAction::GetMover(" BotMoveDispatch.inc)
+    "bool MovementAction::DispatchMovement(" "Unit* MovementAction::GetMover(" BotMoveDispatch.inc)
 extract_native_fragment("${CORE_ROOT}/src/game/Movement/MotionMaster.cpp"
     "void MotionMaster::MovePath(" "void MotionMaster::MoveWaypointAsDefault(" BotNativeMovePath.inc)
 extract_native_fragment("${CORE_ROOT}/src/game/Movement/PointMovementGenerator.cpp"
@@ -658,7 +658,7 @@ add_test(NAME NativeModuleCommandPermissionTest COMMAND NativeModuleCommandPermi
 
 # Active module dispatch must choose a single native movement owner.
 extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/ai/playerbot/strategy/actions/MovementActions.cpp"
-    "void MovementAction::DispatchMovement(" "Unit* MovementAction::GetMover(" ModuleMovementDispatchNative.inc)
+    "bool MovementAction::DispatchMovement(" "Unit* MovementAction::GetMover(" ModuleMovementDispatchNative.inc)
 add_executable(ModuleMovementDispatchTest ModuleMovementDispatchTest.cpp)
 target_compile_features(ModuleMovementDispatchTest PRIVATE cxx_std_17)
 target_include_directories(ModuleMovementDispatchTest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
@@ -1225,7 +1225,7 @@ add_test(NAME ModuleSecurityCheckTest COMMAND ModuleSecurityCheckTest)
 extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/runtime/PlayerbotRuntimeFacade.cpp"
     "bool RandomBotFacade::Revive(" "void RandomBotFacade::PrintTeleportCache(" ModuleNativeAdminRevive.inc)
 extract_native_fragment("${CORE_ROOT}/modules/TortoiseBots/runtime/PlayerbotRuntimeFacade.cpp"
-    "bool RandomBotFacade::Refresh(" "void RandomBotFacade::UpdateGearSpells(" ModuleNativeRefresh.inc)
+    "bool RandomBotFacade::Refresh(" "bool RandomBotFacade::UpdateGearSpells(" ModuleNativeRefresh.inc)
 extract_native_fragment("${CORE_ROOT}/src/game/Objects/Player.cpp"
     "void Player::ModifyMoney(" "void Player::MoneyChanged(" NativeRefreshMoney.inc)
 add_executable(ModuleNativeRefreshTest ModuleNativeRefreshTest.cpp)
@@ -1429,4 +1429,11 @@ if(MSVC)
       --output ${CMAKE_CURRENT_BINARY_DIR}/arch4-port-tests --cxx ${CMAKE_CXX_COMPILER})
     set_tests_properties(Arch4PortRegressions PROPERTIES TIMEOUT 180 ENVIRONMENT "PYTHONUTF8=1")
   endif()
+endif()
+if(MSVC AND Python3_Interpreter_FOUND)
+  add_test(NAME TurtleBuild90Fixes COMMAND ${Python3_EXECUTABLE}
+    ${CMAKE_CURRENT_SOURCE_DIR}/run_turtle_build90_fixes_test.py
+    --root ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    --output ${CMAKE_CURRENT_BINARY_DIR}/turtle-build90-fixes)
+  set_tests_properties(TurtleBuild90Fixes PROPERTIES TIMEOUT 90 ENVIRONMENT "PYTHONUTF8=1")
 endif()

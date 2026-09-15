@@ -115,7 +115,7 @@ struct TravelPath {std::vector<WorldPosition> points;std::vector<WorldPosition> 
 struct MovementAction
 {
     Player* bot;bool hazard=false;uint32 avoids=0,waits=0;
-    void DispatchMovement(TravelPath,bool,bool);
+    bool DispatchMovement(TravelPath,bool,bool);
     void GeneratePathAvoidingHazards(std::vector<WorldPosition>& path)
     {++avoids;if(hazard&&path.size()>2)path[1].value.y+=10;}
     void WaitForReach(float){++waits;}
@@ -148,10 +148,10 @@ int main()
                 Check(bot.spline.points[1].x==5,"first route segment was overwritten");
                 Check(!bot.mm.point,"a stale point generator can restart the replaced path");
             }
-            bot.StopMoving();action.DispatchMovement({{{20,2,3}}},generate,walk);
-            Check(bool(bot.mm.point),"a one-point path must use the native point generator");
-            Check(bot.spline.points.back().x==20,"short path did not reach requested destination");
+            bot.StopMoving();
             auto launches=bot.spline.launches;auto clears=bot.mm.clears;
+            Check(!action.DispatchMovement({{{20,2,3}}},generate,walk),"degenerate route must report rejection");
+            Check(bot.spline.launches==launches&&bot.mm.clears==clears,"rejected route must preserve current movement");
             action.DispatchMovement({},generate,walk);
             Check(bot.spline.launches==launches&&bot.mm.clears==clears,"empty path must not interrupt current movement");
         }

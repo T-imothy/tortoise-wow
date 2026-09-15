@@ -28,6 +28,8 @@ struct Unit {
 };
 enum PathType{PATHFIND_NOPATH=1,PATHFIND_SHORTCUT=2,PATHFIND_NORMAL=4,PATHFIND_CASTER=8};
 struct PathInfo {
+ // This geometry fixture does not exercise memory accounting.
+ struct MemoryRefresh { PathInfo& owner; };
  Unit const* m_sourceUnit;std::vector<Vector3>m_pathPoints;PathType m_type=PATHFIND_NOPATH;
  bool UpdateForCaster(Unit*,float);bool UpdateForMelee(Unit*,float);void CutPathWithDynamicLoS();
  void clear(){m_pathPoints.clear();}Vector3 getStartPosition(){return m_sourceUnit->p;}

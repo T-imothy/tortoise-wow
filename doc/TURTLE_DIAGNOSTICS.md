@@ -1711,3 +1711,18 @@ timer-starvation correction, travel admission, service policy and remaining
 content/memory limits. This supersedes provisional build82/83/84/85 acceptance
 claims; it does not certify every gameplay scenario or a multi-hour soak.
 The dev world remains running. No production or other core was changed.
+
+### September15 build90: activity policy context and disabled-monitor overhead
+
+PB_DIAG_STATE appends background_config_pct (configured botActiveAlone) and
+activity_priorities_disabled (0/1). They are scalar values in the existing
+configured diagnostic interval; they add no retained per-bot state. The existing
+diagnostics toggle controls output. These distinguish configured background
+eligibility from activity_pct (load controller) and bots_active (full-AI eligible),
+which is not a combat count. Scheduling policy is unchanged.
+
+UpdateAI, UpdateAIReaction and UpdateAIInternal now create performance labels only
+when perfMonEnabled is true. Enabled operation lifetime and the independent
+aggregate diagnostics remain intact. No percentage speedup is claimed. See
+docs/TURTLE_BUILD90_RUNTIME_FIXES.md for fixes, native interaction checks,
+architecture fixture limitations and unresolved memory/content investigations.

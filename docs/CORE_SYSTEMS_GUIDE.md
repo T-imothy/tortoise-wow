@@ -1373,3 +1373,33 @@ tests/architecture and accepting --root SOURCE --output TEST_DIRECTORY. These
 exercise actual method bodies with controlled dependencies, not full-world
 Eluna execution or trade settlement. Existing chat admission/link regressions
 also pass. See TURTLE_PENQLE_SYNC_2026-09-14.md for the deployment/live result.
+
+### Build89 runtime follow-up (September15, build90 candidate)
+
+The selected ManTech module checks the same DBC name rules as Player::LoadFromDB
+before including imported characters in its random pool. Failed names remain
+intact for owner-directed rename; eligible existing characters refill the target.
+Completed query holders release their population reservation even when native
+admission rejects login. Native bans, ownership, rename and session checks remain.
+Name creation consumes rejected candidates under one lock; an exhausted pool
+must not call the locking public name picker recursively.
+
+OutdoorPvPEP now uses Turtle WorldSafeLocs128 at (1978.47,-3655.89,119.79), beside
+the Crown Guard banner. The previous927 does not exist in the deployed DBC.
+Native LinkGraveYard/UnLinkGraveYard still own capture, neutralization and faction
+transitions, with inDB=false. RemoveGraveYardLink removes a neutral existing link
+when called for a faction, so the database's default128/139 link is handled by
+existing capture initialization. Other graveyards remain untouched. The manual
+world SQL cleanup removes only redundant, loader-rejected subzone rows136/5180
+and137/2041 when an encompassing parent link exists; it adds no graveyards.
+
+Bot merchant-purpose selection and selling require stock in at least one native
+entry/template list, matching gossip's merchant availability. Quest/gossip and
+native purchase conditions remain separate. Performance-monitor labels in three
+AI update paths are now constructed only while that monitor is enabled; this
+does not disable runtime diagnostics or change activity/scan scheduling.
+
+run_turtle_build90_fixes_test.py compiles actual source bodies against controlled
+fixtures for20 reproduced DBC-rule failures, admission/security variants, repeated
+completion, name-pool exhaustion, vendor lists and native graveyard transitions.
+These focused regressions do not certify live combat or long-run memory behavior.
