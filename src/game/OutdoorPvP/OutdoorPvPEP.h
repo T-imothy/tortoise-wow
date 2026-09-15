@@ -242,7 +242,9 @@ uint32 const EP_HordeBuffs[4] = { SPELL_HORDE_ECHOES_OF_LORDAERON_RANK_1, SPELL_
 uint32 const EP_Zone = 139; // Eastern Plaguelands.
 uint32 const TFV_area = 2258; // The Fungal Vale.
 
-uint32 const EP_GraveYardId = 927;
+// Turtle WorldSafeLocs: Crown Guard graveyard beside the banner at (1985, -3654).
+// 927 is the later-expansion ID and is absent from Turtle's DBC.
+uint32 const EP_GraveYardId = 128;
 
 uint8 const EP_BuffZonesNum = 3;
 
