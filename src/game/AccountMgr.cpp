@@ -276,6 +276,13 @@ AccountTypes AccountMgr::GetSecurityFromDatabase(uint32 acc_id)
     }
 }
 
+bool AccountMgr::IsAccountBannedInDatabase(uint32 acc_id)
+{
+    std::unique_ptr<QueryResult> result(LoginDatabase.PQuery(
+        "SELECT 1 FROM `account_banned` WHERE `id` = '%u' AND `active` = 1 AND (`unbandate` > UNIX_TIMESTAMP() OR `unbandate` = `bandate`) LIMIT 1", acc_id));
+    return result != nullptr;
+}
+
 void AccountMgr::SetSecurity(uint32 accId, AccountTypes sec)
 {
     m_accountSecurity[accId] = sec;

@@ -112,6 +112,10 @@ class AccountMgr
         // fills at startup: callers outside the game (SOAP) must see a row that
         // was inserted or changed by SQL while the world runs.
         AccountTypes GetSecurityFromDatabase(uint32 acc_id);
+        // Reads account_banned with realmd's predicate (AuthSocket.cpp) instead of
+        // the cache LoadAccountBanList fills at startup: a ban inserted by SQL or by
+        // realmd's failed-login autoban is not in the cache.
+        bool IsAccountBannedInDatabase(uint32 acc_id);
         void SetSecurity(uint32 accId, AccountTypes sec);
 
         void LoadGmLevels();
