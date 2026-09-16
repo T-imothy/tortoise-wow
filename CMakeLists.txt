@@ -532,10 +532,18 @@ if(WIN32)
     CONFIGURATIONS Debug
   )
 
+  # FindACE.cmake resolves ACE via the -DACE_ROOT cmake variable OR the ACE_ROOT environment
+  # variable - matched here, or a build using the latter would link against ACE fine and
+  # silently skip installing its DLL.
   if(ACE_ROOT)
-    # Normalize backslashes from -DACE_ROOT=C:\path\... before file(GLOB) - an unescaped
+    set(ACE_ROOT_TO_INSTALL "${ACE_ROOT}")
+  elseif(DEFINED ENV{ACE_ROOT})
+    set(ACE_ROOT_TO_INSTALL "$ENV{ACE_ROOT}")
+  endif()
+  if(ACE_ROOT_TO_INSTALL)
+    # Normalize backslashes from ACE_ROOT=C:\path\... before file(GLOB) - an unescaped
     # backslash in the matched path breaks the generated cmake_install.cmake.
-    file(TO_CMAKE_PATH "${ACE_ROOT}" ACE_ROOT_NORMALIZED)
+    file(TO_CMAKE_PATH "${ACE_ROOT_TO_INSTALL}" ACE_ROOT_NORMALIZED)
 
     # ACE.dll: not installed anywhere else (unlike OpenSSL/MySQL, ACE isn't bundled under
     # dep/windows), but mangosd.exe/realmd.exe both need it. GLOB, not required - ACE can

@@ -197,7 +197,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/dep/libdeflate
   ${CMAKE_SOURCE_DIR}/src/framework
   ${CMAKE_BINARY_DIR}
-  # Before ACE_INCLUDE_DIR: a vcpkg-tree ACE_ROOT also carries vcpkg's own OpenSSL 3.x headers.
+  # First - see the OpenSSL/ACE/TBB ordering note in src/mangosd's CMakeLists.txt.
   ${OPENSSL_INCLUDE_DIR}
   ${ACE_INCLUDE_DIR}
   ${MYSQL_INCLUDE_DIR}

@@ -69,10 +69,11 @@ set(MODULES_COMMON_INCLUDES
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
   ${CMAKE_BINARY_DIR}
   ${CMAKE_BINARY_DIR}/src/shared
-  ${TBB_INCLUDE_DIRS}
   # Was missing from this list entirely (modules #including <openssl/x.h> had no way to
-  # resolve it) - see the OpenSSL/ACE ordering note in src/mangosd's CMakeLists.txt.
+  # resolve it), and needs to come first - see the OpenSSL/ACE/TBB ordering note in
+  # src/mangosd's CMakeLists.txt.
   ${OPENSSL_INCLUDE_DIR}
+  ${TBB_INCLUDE_DIRS}
   ${ACE_INCLUDE_DIR}
   ${MYSQL_INCLUDE_DIR}
 )
