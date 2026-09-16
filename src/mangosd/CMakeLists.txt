@@ -17,15 +17,7 @@
 
 set(EXECUTABLE_NAME mangosd)
 
-# SOAP remote-command interface. The gsoap C++ runtime is vendored as a Linux
-# static lib (dep/lib/gsoap/libgsoap++.a), so SOAP does not build on Windows.
-# Default: ON for Linux, OFF for Windows. Override with -DENABLE_SOAP=ON/OFF.
-if(WIN32)
-  set(_ENABLE_SOAP_DEFAULT OFF)
-else()
-  set(_ENABLE_SOAP_DEFAULT ON)
-endif()
-option(ENABLE_SOAP "Build the SOAP remote-command interface (vendored gsoap, Linux only)" ${_ENABLE_SOAP_DEFAULT})
+# SOAP remote-command interface: off unless -DENABLE_SOAP=ON (root CMakeLists).
 set (EXECUTABLE_SRCS 
 	CliRunnable.h
 	DynamicModules.h
@@ -153,12 +145,11 @@ target_link_libraries(${EXECUTABLE_NAME}
     libdeflate
 )
 
-# SOAP remote-command interface: vendored gsoap C++ runtime (2.8.135).
-# Linux-only (vendored static lib); guard behind ENABLE_SOAP so Windows can build.
+# SOAP remote-command interface: the gsoap runtime target from dep/src/gsoap.
 if(ENABLE_SOAP)
   target_compile_definitions(${EXECUTABLE_NAME} PRIVATE ENABLE_SOAP)
   target_link_libraries(${EXECUTABLE_NAME}
-      ${CMAKE_SOURCE_DIR}/dep/lib/gsoap/libgsoap++.a
+      gsoap
   )
 endif()
 

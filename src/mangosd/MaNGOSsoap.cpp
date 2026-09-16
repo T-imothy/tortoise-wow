@@ -8,6 +8,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <thread>
 
@@ -66,6 +67,9 @@ int SOAPThread::ParseAndAuthenticate(struct soap* soap)
     if (int const error = s_defaultParse(soap))
         return error;                                       // gsoap's own verdict (405 for GET, SOAP_STOP, ...)
 
+    if (World::IsStopped())
+        return soap->error = 503;                           // shutting down: no database work, no command
+
     soap->authrealm = "MaNGOS";                             // http_parse clears it per request; read when a 401 is built
 
     int status = Authenticate(soap);
@@ -95,6 +99,7 @@ void SOAPThread::Work()
     soap.accept_timeout = AcceptTimeout;
     soap.recv_timeout   = DataTimeout;
     soap.send_timeout   = DataTimeout;
+    soap.transfer_timeout = DataTimeout;                    // whole message; recv/send timeouts are per call, a trickling client resets them
     soap.recv_maxlength = MaxRequestBytes;                  // 0 would let a caller stream any size into memory
 
     // gsoap's default HTTP parser reads the headers (Basic auth included) and
@@ -137,24 +142,26 @@ namespace
 {
     // Per-request state carried to the world thread through CliCommandHolder's
     // std::any callback argument. The world thread fills output/finished; the
-    // SOAP worker thread waits on finished.
+    // SOAP worker thread waits on finished. Shared, not a raw pointer: the
+    // handler may stop waiting at shutdown while the holder still exists.
     struct SoapCommandState
     {
         std::string output;
         std::atomic<bool> finished{false};
         bool success = false;
     };
+    using SoapCommandStatePtr = std::shared_ptr<SoapCommandState>;
 
     void SoapPrint(std::any arg, const char* text)
     {
-        auto* const state = std::any_cast<SoapCommandState*>(arg);
+        auto const state = std::any_cast<SoapCommandStatePtr>(arg);
         if (state && text)
             state->output += text;
     }
 
     void SoapCommandFinished(std::any arg, bool success)
     {
-        auto* const state = std::any_cast<SoapCommandState*>(arg);
+        auto const state = std::any_cast<SoapCommandStatePtr>(arg);
         if (state)
         {
             state->success = success;
@@ -179,17 +186,26 @@ int ns1__executeCommand(struct soap* soap, char* command, char** result)
     if (!command || !*command)
         return soap_sender_fault(soap, "Command must not be empty", "The supplied command was an empty string");
 
-    SoapCommandState state;
+    auto const state = std::make_shared<SoapCommandState>();
 
-    // Commands execute on the world thread; block until it signals completion.
-    sWorld.QueueCliCommand(new CliCommandHolder(accountId, SEC_CONSOLE, &state, command, &SoapPrint, &SoapCommandFinished));
+    // Commands execute on the world thread; wait until it signals completion.
+    // Once the world is stopped nothing processes the queue any more
+    // (World::InternalShutdown deletes what is left without calling back), so
+    // stop waiting. A command the world thread was already running when the
+    // stop flag flipped does complete; we cannot tell that case apart here.
+    sWorld.QueueCliCommand(new CliCommandHolder(accountId, SEC_CONSOLE, state, command, &SoapPrint, &SoapCommandFinished));
 
-    while (!state.finished.load(std::memory_order_acquire))
+    while (!state->finished.load(std::memory_order_acquire))
+    {
+        if (World::IsStopped())
+            return soap_receiver_fault(soap, "Server is shutting down", "The command may not have been executed");
+
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
 
-    char* const out = soap_strdup(soap, state.output.c_str());
+    char* const out = soap_strdup(soap, state->output.c_str());
 
-    if (!state.success)
+    if (!state->success)
         return soap_sender_fault(soap, out, out);
 
     *result = out;

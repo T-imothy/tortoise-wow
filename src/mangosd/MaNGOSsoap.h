@@ -32,7 +32,7 @@ class SOAPThread
 {
     private:
         static const int AcceptTimeout = 3;                 // seconds; lets the loop poll World::IsStopped()
-        static const int DataTimeout   = 5;                 // seconds
+        static const int DataTimeout   = 5;                 // seconds, per recv/send and for the whole message
         static const int BackLogSize   = 100;
         static const int MaxRequestBytes = 64 * 1024;       // whole HTTP message; no command comes near it
 
