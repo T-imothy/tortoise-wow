@@ -16,6 +16,8 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 set(EXECUTABLE_NAME mangosd)
+
+# SOAP remote-command interface: off unless -DENABLE_SOAP=ON (root CMakeLists).
 set (EXECUTABLE_SRCS 
 	CliRunnable.h
 	DynamicModules.h
@@ -29,6 +31,17 @@ set (EXECUTABLE_SRCS
 
 )
 
+
+if(ENABLE_SOAP)
+  list(APPEND EXECUTABLE_SRCS
+    MaNGOSsoap.h
+    MaNGOSsoap.cpp
+    soap/soapStub.h
+    soap/soapH.h
+    soap/soapC.cpp
+    soap/soapServer.cpp
+  )
+endif()
 
 if(WIN32)
   list(APPEND EXECUTABLE_SRCS
@@ -68,6 +81,9 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/game/Threat
   ${CMAKE_SOURCE_DIR}/src/game/Transports
   ${CMAKE_SOURCE_DIR}/src/game/vmap
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/soap
+  ${CMAKE_SOURCE_DIR}/dep/include/gsoap
   ${CMAKE_BINARY_DIR}/src/shared
   ${CMAKE_BINARY_DIR}
   # First: whatever points at a vcpkg tree (ACE_ROOT here; TBB_ROOT too, in src/game and
@@ -130,6 +146,14 @@ endif()
 target_link_libraries(${EXECUTABLE_NAME}
     libdeflate
 )
+
+# SOAP remote-command interface: the gsoap runtime target from dep/src/gsoap.
+if(ENABLE_SOAP)
+  target_compile_definitions(${EXECUTABLE_NAME} PRIVATE ENABLE_SOAP)
+  target_link_libraries(${EXECUTABLE_NAME}
+      gsoap
+  )
+endif()
 
 
 if(WIN32)
