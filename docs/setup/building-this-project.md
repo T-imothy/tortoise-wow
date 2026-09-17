@@ -34,6 +34,7 @@ Useful CMake options:
 | `-DPREFIX=../server` | `../server` | Install directory for binaries and config templates. |
 | `-DUSE_EXTRACTORS=ON` | `OFF` | Build map and DBC extraction tools. |
 | `-DMODULES=disabled` | `disabled` | Module build mode. Use `static` or `dynamic` to enable modules. |
+| `-DENABLE_SOAP=ON` | `OFF` | Build the optional SOAP remote-command interface into `mangosd`. |
 | `-DUSE_STD_MALLOC=ON` | `ON` | Use standard malloc instead of TBB malloc. |
 
 ## Windows
@@ -219,6 +220,20 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPREFIX=../server -DMODULES=dyna
 
 Individual modules can be controlled with generated options such as
 `-DMODULE_MOD_EXAMPLE=static`.
+
+## Building SOAP Remote Commands
+
+SOAP remote commands are disabled by default. To build the optional SOAP
+endpoint into `mangosd`, configure with:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPREFIX=../server -DENABLE_SOAP=ON
+cmake --build build --parallel
+cmake --install build
+```
+
+See [SOAP Remote-Command Interface](../management/soap-remote-command-interface.md) for
+runtime configuration, authentication, and security guidance.
 
 ## After Building
 

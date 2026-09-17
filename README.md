@@ -31,37 +31,6 @@ Modules can be given the topic [`tortoise-module`](https://github.com/topics/tor
 
 See `modules/README.md` for module layout, build options, config loading, SQL migrations, and authoring notes.
 
-## SOAP Remote-Command Interface
-
-`mangosd` can expose a SOAP endpoint (the classic MaNGOS `urn:MaNGOS` `executeCommand` interface) so an external tool can run one server command per request and read that command's output back. It is off by default at build time and at run time.
-
-Build it in with:
-
-```
-cmake -S . -B build -DENABLE_SOAP=ON
-```
-
-This compiles the bundled gSOAP runtime (`dep/src/gsoap`, version 2.8.135) and links it into `mangosd`. Without the flag nothing SOAP-related is built.
-
-Then enable it in `mangosd.conf`:
-
-```
-SOAP.Enabled = 1
-SOAP.IP = 127.0.0.1
-SOAP.Port = 7878
-```
-
-Requests use HTTP Basic auth with a game account of at least administrator rank (`account.rank` 4). Banned accounts and lower ranks are refused. Keep `SOAP.IP` on localhost unless the port is otherwise protected; the interface has no encryption.
-
-Example:
-
-```
-curl -u ADMIN:PASSWORD -H 'Content-Type: text/xml' --data \
-  '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="urn:MaNGOS"><SOAP-ENV:Body><ns1:executeCommand><command>server info</command></ns1:executeCommand></SOAP-ENV:Body></SOAP-ENV:Envelope>' \
-  http://127.0.0.1:7878/
-```
-
-The command's output comes back in `<result>`; a failed command comes back as a SOAP fault carrying the same text. HTTP 401 means the credentials were not accepted, 403 that the account is banned or below administrator rank.
 
 ## Operating Systems
 
