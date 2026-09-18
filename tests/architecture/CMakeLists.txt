@@ -57,8 +57,10 @@ target_include_directories(ThreadPoolBatchTest PRIVATE ../../src/shared)
 target_link_libraries(ThreadPoolBatchTest PRIVATE Threads::Threads)
 add_test(NAME ThreadPoolBatchTest COMMAND ThreadPoolBatchTest)
 set_tests_properties(ThreadPoolBatchTest PROPERTIES TIMEOUT 60)
-add_test(NAME ContentHookContract COMMAND ${CMAKE_COMMAND}
-    -DSOURCE_ROOT=${CMAKE_CURRENT_SOURCE_DIR}/../.. -P ${CMAKE_CURRENT_SOURCE_DIR}/ContentHookContract.cmake)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../modules/mod-playerbots/src/playerbot/PlayerbotScripts.cpp")
+    add_test(NAME ContentHookContract COMMAND ${CMAKE_COMMAND}
+        -DSOURCE_ROOT=${CMAKE_CURRENT_SOURCE_DIR}/../.. -P ${CMAKE_CURRENT_SOURCE_DIR}/ContentHookContract.cmake)
+endif()
 
 add_executable(MapDiscoveryTest MapDiscoveryTest.cpp)
 target_compile_features(MapDiscoveryTest PRIVATE cxx_std_17)
