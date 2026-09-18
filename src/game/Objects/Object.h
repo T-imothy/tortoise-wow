@@ -1115,6 +1115,7 @@ class WorldObject : public Object
         void GetAlivePlayerListInRange(WorldObject const* pSource, std::list<Player*>& lList, float fMaxSearchRange) const;
 
         bool isActiveObject() const { return m_isActiveObject || m_viewPoint.hasViewers(); }
+        bool IsActiveObject() const { return isActiveObject(); }
         void SetActiveObjectState(bool on);
 
         ViewPoint& GetViewPoint() { return m_viewPoint; }
@@ -1236,6 +1237,9 @@ virtual uint32 GetLevel() const = 0;
 
         // Event handler
         EventProcessor m_Events;
+    public:
+        EventProcessor& GetEvents() { return m_Events; }
+    protected:
 
 		inline void SetExclusiveVisibleFor(WorldObject* visibleFor)
 		{
