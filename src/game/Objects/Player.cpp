@@ -898,24 +898,11 @@ Player::Player(WorldSession *session) : Unit(),
     ++PerfStats::g_totalPlayers;
 }
 
-// Implemented by mod-playerbots (PlayerbotMgr.cpp); PlayerbotStubs.cpp supplies
-// an empty body when BUILD_PLAYERBOTS=OFF. Same core->module seam as the
-// BotActionLog_ probes.
-void Playerbot_OnPlayerDestroyed(Player const* player);
-
 Player::~Player()
 {
     // Clear all pointers to this player in all zone scripts
     if (m_uint32Values)
         sZoneScriptMgr.OnPlayerGettingDestroyed(this);
-
-    // Same idea, for the bot holders' guid->Player maps. Without it an entry
-    // outlives its Player and every 'if (bot)' check downstream passes on freed
-    // memory - crash_2026-09-01_08-26-40 (IsFreeAltBot, this=0x0) and _14-34-37
-    // (AllowActivity, this=0x6ecf766476c57200). Clearing at the point of
-    // destruction is the one test that cannot mistake a Player between maps for
-    // a destroyed one, which is exactly what the earlier guard got wrong.
-    Playerbot_OnPlayerDestroyed(this);
 
     DeletePacketBroadcaster();
     RemoveAI();
