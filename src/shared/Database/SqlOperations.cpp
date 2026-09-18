@@ -116,7 +116,7 @@ bool SqlQuery::Execute(SqlConnection *conn)
     /// execute the query and store the result in the callback
     m_callback->SetResult(conn->Query(m_sql));
     /// add the callback to the sql result queue of the thread it originated from
-    m_queue->add(m_callback);
+    m_queue->Add(m_callback, m_highPriority);
 
     return true;
 }
@@ -128,7 +128,6 @@ void SqlResultQueue::Update(uint32 timeout)
     // application of their results is serialized with world/map lifetime.
     // A bounded count also guarantees progress when the clock has low resolution.
     for (unsigned n = 0; n < 64; ++n)
-
     {
         if (n && timeout && WorldTimer::getMSTimeDiffToNow(begin) >= timeout)
             break;
@@ -139,7 +138,6 @@ void SqlResultQueue::Update(uint32 timeout)
         {
             m_priorityBurst = 0;
             found = nextCallback(callback, false);
-
         }
         if (!found)
             found = nextCallback(callback, true) || nextCallback(callback, false);
@@ -156,7 +154,6 @@ void SqlResultQueue::Update(uint32 timeout)
             sLog.out(LOG_PERFORMANCE, "DB_CALLBACK_SLOW elapsed_ms=%u high_priority=%u pending=%zu",
                 elapsed, owned->IsHighPriority() ? 1 : 0, PendingCount());
     }
-
 }
 
 bool SqlResultQueue::nextCallback(MaNGOS::IQueryCallback*& callback, bool priority)
@@ -169,17 +166,24 @@ bool SqlResultQueue::nextCallback(MaNGOS::IQueryCallback*& callback, bool priori
         return true;
     }
     return priority ? _priorityWaitingQueries.next(callback) : next(callback);
-
 }
 
 SqlResultQueue::SqlResultQueue(const char* /*Name*/) : numUnsafeQueries(0) {}
 SqlResultQueue::~SqlResultQueue(){}
 
+void SqlResultQueue::Add(MaNGOS::IQueryCallback* callback, bool highPriority)
+{
+    callback->SetHighPriority(highPriority);
+    if (highPriority)
+        _priorityWaitingQueries.add(callback);
+    else
+        add(callback);
+}
+
 void SqlResultQueue::CancelAll()
 {
     MaNGOS::IQueryCallback* cb;
     while (nextCallback(cb, true) || nextCallback(cb, false))
-
     {
         cb->SetResult(nullptr);
         cb->Execute();
@@ -187,16 +191,19 @@ void SqlResultQueue::CancelAll()
     }
 }
 
-bool SqlQueryHolder::Execute(MaNGOS::IQueryCallback * callback, Database *database, SqlResultQueue *queue)
+bool SqlQueryHolder::Execute(MaNGOS::IQueryCallback * callback, Database *database, SqlResultQueue *queue, bool highPriority)
 {
     if(!callback || !database || !queue)
         return false;
 
     /// delay the execution of the queries, sync them with the delay thread
     /// which will in turn resync on execution (via the queue) and call back
-    SqlQueryHolderEx *holderEx = new SqlQueryHolderEx(this, callback, queue, serialId);
+    SqlQueryHolderEx *holderEx = new SqlQueryHolderEx(this, callback, queue, serialId, highPriority);
 
-    database->AddToSerialDelayQueue(holderEx);
+    if (highPriority)
+        database->AddToPrioritySerialDelayQueue(holderEx);
+    else
+        database->AddToSerialDelayQueue(holderEx);
     return true;
 }
 
@@ -322,7 +329,7 @@ bool SqlQueryHolderEx::Execute(SqlConnection *conn)
     }
 
     /// sync with the caller thread
-    m_queue->add(m_callback);
+    m_queue->Add(m_callback, m_highPriority);
 
     return true;
 }
