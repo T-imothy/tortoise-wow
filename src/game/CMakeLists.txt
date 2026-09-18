@@ -604,10 +604,11 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/shared
   ${CMAKE_BINARY_DIR}
   ${CMAKE_BINARY_DIR}/src/shared
+  # First: a vcpkg-tree ACE_ROOT or TBB_ROOT below also carries vcpkg's own OpenSSL 3.x headers.
+  ${OPENSSL_INCLUDE_DIR}
   ${MYSQL_INCLUDE_DIR}
   ${TBB_INCLUDE_DIRS}
   ${ACE_INCLUDE_DIR}
-  ${OPENSSL_INCLUDE_DIR}
 )
 
 if(WIN32)

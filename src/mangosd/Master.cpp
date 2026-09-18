@@ -710,6 +710,7 @@ int Master::Run()
     if (progress_thread.joinable())
         progress_thread.join();
 
+
     ///- Stop freeze protection before shutdown tasks
     if (freeze_thread)
     {

@@ -57,7 +57,7 @@ endif()
 add_test(NAME AuctionOwnerNotificationTest COMMAND AuctionOwnerNotificationTest)
 set_tests_properties(AuctionOwnerNotificationTest PROPERTIES TIMEOUT 20)
 extract_native_fragment("${CORE_ROOT}/src/mangosd/MaNGOSsoap.cpp"
-    "namespace\n{" "////////////////////////////////////////////////////////////////////////////////" NativeSoapCommands.inc)
+    "struct SoapCommandState" "////////////////////////////////////////////////////////////////////////////////" NativeSoapCommands.inc)
 extract_native_fragment("${CORE_ROOT}/src/game/Objects/ItemPrototype.h"
     "enum BagFamily" "enum ItemSubclassWeapon" NativeBagEnums.inc)
 extract_native_fragment("${CORE_ROOT}/src/game/Objects/ItemPrototype.h"

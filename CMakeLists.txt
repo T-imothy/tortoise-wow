@@ -366,7 +366,7 @@ if(WIN32)
   # Hence: let the builder point at their own OpenSSL. The code itself is happy
   # with either version. Passing nothing keeps the bundled copy, as before.
   if(NOT OPENSSL_INCLUDE_DIR)
-    set(OPENSSL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/dep/windows/include/openssl)
+    set(OPENSSL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/dep/windows/include)
   endif()
   if(NOT OPENSSL_LIBRARIES)
     set(OPENSSL_LIBRARIES ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libssl.lib ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libcrypto.lib)
@@ -700,6 +700,32 @@ if(WIN32)
       OPTIONAL
     )
   endif()
+  # FindACE.cmake resolves ACE via the -DACE_ROOT cmake variable OR the ACE_ROOT environment
+  # variable - matched here, or a build using the latter would link against ACE fine and
+  # silently skip installing its DLL.
+  if(ACE_ROOT)
+    set(ACE_ROOT_TO_INSTALL "${ACE_ROOT}")
+  elseif(DEFINED ENV{ACE_ROOT})
+    set(ACE_ROOT_TO_INSTALL "$ENV{ACE_ROOT}")
+  endif()
+  if(ACE_ROOT_TO_INSTALL)
+    # Normalize backslashes from ACE_ROOT=C:\path\... before file(GLOB) - an unescaped
+    # backslash in the matched path breaks the generated cmake_install.cmake.
+    file(TO_CMAKE_PATH "${ACE_ROOT_TO_INSTALL}" ACE_ROOT_NORMALIZED)
+
+    # ACE.dll: not installed anywhere else (unlike OpenSSL/MySQL, ACE isn't bundled under
+    # dep/windows), but mangosd.exe/realmd.exe both need it. GLOB, not required - ACE can
+    # also be linked statically, in which case there's no DLL to install.
+    file(GLOB ACE_RELEASE_DLL "${ACE_ROOT_NORMALIZED}/bin/ACE.dll")
+    file(GLOB ACE_DEBUG_DLL   "${ACE_ROOT_NORMALIZED}/debug/bin/ACE.dll")
+    if(ACE_RELEASE_DLL)
+      install(FILES ${ACE_RELEASE_DLL} DESTINATION ${LIBS_DIR} CONFIGURATIONS Release)
+    endif()
+    if(ACE_DEBUG_DLL)
+      install(FILES ${ACE_DEBUG_DLL} DESTINATION ${LIBS_DIR} CONFIGURATIONS Debug)
+    endif()
+  endif()
+
   if(PLATFORM MATCHES X86)
     # Copy dll's Windows needs
     install(

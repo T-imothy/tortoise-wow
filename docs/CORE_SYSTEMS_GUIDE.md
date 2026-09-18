@@ -1424,3 +1424,26 @@ See modules/ManTechPlayerbots/docs/TURTLE_BOT_CAPABILITIES.md for supported
 abilities, exclusions, protocol and diagnostic controls. Focused tests compile
 actual module policies/dispatcher/executor and retain existing native ownership
 and recruitment regression coverage; live combat effects remain separate checks.
+
+
+### Penqle 1.18 development refresh (September 17)
+
+Penqle `1181dev` through `010cdb6d` is integrated over the September 14
+baseline. The Moonwhisper quest and Holy Strike/Mending Light source changes
+retain their matching world migrations. Mending Light now filters invalid and
+full-health targets, prioritizes an injured caster, and applies the caster
+healing reduction after the complete effect total is known.
+
+Channel admission is checked before module broadcast hooks execute, and the
+hook remains on the caller/world thread rather than the asynchronous delivery
+thread. The local `Player*` channel overloads remain adapters to the native
+`ObjectGuid` path; they do not bypass membership, mute, moderation, or public
+channel echo-only rules.
+
+SOAP now authenticates before reading the request body, checks live database
+rank and ban state, limits requests to 64 KiB, and retains the authenticated
+rank when the command is queued. The local explicit stop signal and shared
+callback lifetime remain in place so shutdown joins the listener before the
+databases close. Windows builds use the parent OpenSSL include directory and
+install ACE when dynamically linked; local external OpenSSL overrides and the
+existing playerbot Boost link path remain supported.

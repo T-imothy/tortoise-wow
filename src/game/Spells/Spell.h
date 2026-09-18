@@ -621,6 +621,8 @@ class Spell
         Corpse* GetCorpseTarget() const { return corpseTarget; }
         GameObject* GetGOTarget() const { return gameObjTarget; }
         float GetTotalEffectDamage() const { return m_damage; }
+        float GetTotalEffectHealing() const { return m_healing; }
+        void SetTotalEffectHealing(float healing) { m_healing = healing; }
         float damage = 0;
     protected:
 

@@ -15,20 +15,16 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-set (gsoap_SRCS 
-	stdsoap2.cpp
-
+# gSOAP 2.8.135 runtime (stdsoap2.cpp, built from source so the link floor is
+# the builder's own glibc). Only added when ENABLE_SOAP is ON; mangosd links it.
+add_library(gsoap STATIC
+  stdsoap2.cpp
 )
 
-
-include_directories(
-  ${CMAKE_CURRENT_SOURCE_DIR}
+target_include_directories(gsoap PUBLIC
   ${CMAKE_SOURCE_DIR}/dep/include/gsoap
 )
 
-add_library(gsoap STATIC
-  ${gsoap_SRCS}
-)
 if(WIN32)
   target_link_libraries(gsoap PUBLIC ws2_32)
 endif()

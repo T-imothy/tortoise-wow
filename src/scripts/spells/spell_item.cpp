@@ -16,6 +16,24 @@ enum ItemSpells
     SPELL_ITEM_CACOPHONY_OF_KNOWLEDGE = 58232,
 };
 
+enum MoonwhisperBundleOfBeads
+{
+    QUEST_BOUND_IN_STONE = 42051,
+
+    SPELL_BUNDLE_OF_BEADS_CHANNEL = 37098,
+
+    MAP_KALIMDOR = 1,
+    ZONE_MOONWHISPER_COAST = 5642,
+
+    AREA_SHRINE_OF_CYCLONES = 5655,
+    AREA_SHRINE_OF_BLAZES = 5665,
+    AREA_SHRINE_OF_CRAGS = 5666,
+
+    KILL_CREDIT_SHRINE_OF_CYCLONES = 60357,
+    KILL_CREDIT_SHRINE_OF_BLAZES = 60358,
+    KILL_CREDIT_SHRINE_OF_CRAGS = 60359
+};
+
 template <class T>
 SpellScript* GetSpellScript(SpellEntry const*)
 {
@@ -1490,6 +1508,48 @@ struct spell_sayges_dark_fortune : public SpellScript
         return effIdx != EFFECT_INDEX_1;
     }
 };
+
+static void CreditMoonwhisperBundleOfBeadsShrine(Player* player)
+{
+    if (!player)
+        return;
+
+    if (player->GetQuestStatus(QUEST_BOUND_IN_STONE) != QUEST_STATUS_INCOMPLETE)
+        return;
+
+    if (player->GetMapId() != MAP_KALIMDOR || player->GetZoneId() != ZONE_MOONWHISPER_COAST)
+        return;
+
+    switch (player->GetAreaId())
+    {
+        case AREA_SHRINE_OF_CYCLONES:
+            player->KilledMonsterCredit(KILL_CREDIT_SHRINE_OF_CYCLONES);
+            break;
+        case AREA_SHRINE_OF_BLAZES:
+            player->KilledMonsterCredit(KILL_CREDIT_SHRINE_OF_BLAZES);
+            break;
+        case AREA_SHRINE_OF_CRAGS:
+            player->KilledMonsterCredit(KILL_CREDIT_SHRINE_OF_CRAGS);
+            break;
+        default:
+            break;
+    }
+}
+
+struct spell_moonwhisper_bundle_of_beads : public AuraScript
+{
+    void OnBeforeApply(Aura* aura, bool apply) override
+    {
+        if (apply || !aura || aura->GetId() != SPELL_BUNDLE_OF_BEADS_CHANNEL || aura->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
+            return;
+
+        Unit* target = aura->GetTarget();
+        if (!target || target->GetTypeId() != TYPEID_PLAYER)
+            return;
+
+        CreditMoonwhisperBundleOfBeadsShrine(static_cast<Player*>(target));
+    }
+};
 }
 
 void AddSC_item_spell_scripts()
@@ -1568,5 +1628,6 @@ void AddSC_item_spell_scripts()
     RegisterAuraScript("spell_item_viper_venom", &GetAuraScript<spell_item_viper_venom>);
     RegisterAuraScript("spell_item_wild_regeneration", &GetAuraScript<spell_item_wild_regeneration>);
     RegisterAuraScript("spell_loop_of_infused_renewal", &GetAuraScript<spell_loop_of_infused_renewal>);
+    RegisterAuraScript("spell_moonwhisper_bundle_of_beads", &GetAuraScript<spell_moonwhisper_bundle_of_beads>);
     RegisterSpellScript("spell_sayges_dark_fortune", &GetSpellScript<spell_sayges_dark_fortune>);
 }

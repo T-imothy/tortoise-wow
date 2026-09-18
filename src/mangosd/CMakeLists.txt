@@ -17,6 +17,7 @@
 
 set(EXECUTABLE_NAME mangosd)
 
+# SOAP remote-command interface: off unless -DENABLE_SOAP=ON (root CMakeLists).
 set (EXECUTABLE_SRCS 
 	CliRunnable.h
 	DynamicModules.h
@@ -85,9 +86,12 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/dep/include/gsoap
   ${CMAKE_BINARY_DIR}/src/shared
   ${CMAKE_BINARY_DIR}
+  # First: whatever points at a vcpkg tree (ACE_ROOT here; TBB_ROOT too, in src/game and
+  # modules) also carries vcpkg's own OpenSSL 3.x headers - regardless of whether that came
+  # from -D or the matching environment variable, so this can't just be "before ACE_INCLUDE_DIR".
+  ${OPENSSL_INCLUDE_DIR}
   ${ACE_INCLUDE_DIR}
   ${MYSQL_INCLUDE_DIR}
-  ${OPENSSL_INCLUDE_DIR}
 )
 
 if(WIN32)

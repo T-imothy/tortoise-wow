@@ -24,6 +24,7 @@ starting point for browsing each documentation category.
 ## Management
 
 - [GM Commands](management/gm-commands.md)
+- [SOAP Remote-Command Interface](management/soap-remote-command-interface.md)
 
 ## Development
 

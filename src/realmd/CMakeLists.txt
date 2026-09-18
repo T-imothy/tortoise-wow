@@ -45,8 +45,9 @@ include_directories(
   ${CMAKE_BINARY_DIR}
   ${CMAKE_BINARY_DIR}/src/shared
   ${MYSQL_INCLUDE_DIR}
-  ${ACE_INCLUDE_DIR}
+  # First - see the OpenSSL/ACE/TBB ordering note in src/mangosd's CMakeLists.txt.
   ${OPENSSL_INCLUDE_DIR}
+  ${ACE_INCLUDE_DIR}
 )
 
 if(WIN32)

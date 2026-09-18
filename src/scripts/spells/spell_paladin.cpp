@@ -34,6 +34,14 @@ enum PaladinSpells
     SPELL_PALADIN_HOLY_SHOCK_HEAL_R3               = 25903,
     SPELL_PALADIN_HOLY_SHOCK_HEAL_R4               = 51787,
     SPELL_PALADIN_HOLY_SHOCK_RESET_CHANCE          = 51825,
+    SPELL_PALADIN_MENDING_LIGHT_R1                 = 51324,
+    SPELL_PALADIN_MENDING_LIGHT_R2                 = 51875,
+    SPELL_PALADIN_MENDING_LIGHT_R3                 = 51876,
+    SPELL_PALADIN_MENDING_LIGHT_R4                 = 51877,
+    SPELL_PALADIN_MENDING_LIGHT_R5                 = 51878,
+    SPELL_PALADIN_MENDING_LIGHT_R6                 = 51879,
+    SPELL_PALADIN_MENDING_LIGHT_R7                 = 51880,
+    SPELL_PALADIN_MENDING_LIGHT_R8                 = 51881,
     SPELL_PALADIN_RIGHTEOUS_FURY                   = 25780,
     SPELL_PALADIN_RIGHTEOUS_STRIKES_R1             = 51341,
     SPELL_PALADIN_RIGHTEOUS_STRIKES_R2             = 51342,
@@ -419,12 +427,100 @@ struct spell_paladin_holy_strike : public SpellScript
 
 struct spell_paladin_mending_light : public SpellScript
 {
-    bool OnEffectHealCalculate(Spell* spell, SpellEffectIndex effIdx, int32& heal) const override
+    void OnSetTargetMap(Spell* spell, SpellEffectIndex effIdx, uint32& targetMode, float& /*radius*/, uint32& unMaxTargets, bool& /*selectClosestTargets*/) const override
     {
-        if (effIdx == EFFECT_INDEX_1 && spell->GetUnitTarget() == spell->m_casterUnit)
-            heal /= 2;
+        switch (spell->m_spellInfo->Id)
+        {
+            case SPELL_PALADIN_MENDING_LIGHT_R1:
+            case SPELL_PALADIN_MENDING_LIGHT_R2:
+            case SPELL_PALADIN_MENDING_LIGHT_R3:
+            case SPELL_PALADIN_MENDING_LIGHT_R4:
+            case SPELL_PALADIN_MENDING_LIGHT_R5:
+            case SPELL_PALADIN_MENDING_LIGHT_R6:
+            case SPELL_PALADIN_MENDING_LIGHT_R7:
+            case SPELL_PALADIN_MENDING_LIGHT_R8:
+                if (effIdx == EFFECT_INDEX_0)
+                {
+                    targetMode = TARGET_UNIT_CASTER;
+                    unMaxTargets = 1;
+                }
+                else if (effIdx == EFFECT_INDEX_1 && targetMode == TARGET_ENUM_UNITS_RAID_WITHIN_CASTER_RANGE)
+                    unMaxTargets = spell->m_spellInfo->EffectChainTarget[effIdx] + 1;
+                break;
+        }
+    }
 
-        return true;
+    void OnTargetMapFilled(Spell* spell, SpellEffectIndex effIdx, uint32 targetMode, std::list<Unit*>& targets) const override
+    {
+        if (effIdx != EFFECT_INDEX_1 ||
+                targetMode != TARGET_ENUM_UNITS_RAID_WITHIN_CASTER_RANGE ||
+                !spell->m_casterUnit)
+            return;
+
+        switch (spell->m_spellInfo->Id)
+        {
+            case SPELL_PALADIN_MENDING_LIGHT_R1:
+            case SPELL_PALADIN_MENDING_LIGHT_R2:
+            case SPELL_PALADIN_MENDING_LIGHT_R3:
+            case SPELL_PALADIN_MENDING_LIGHT_R4:
+            case SPELL_PALADIN_MENDING_LIGHT_R5:
+            case SPELL_PALADIN_MENDING_LIGHT_R6:
+            case SPELL_PALADIN_MENDING_LIGHT_R7:
+            case SPELL_PALADIN_MENDING_LIGHT_R8:
+                break;
+            default:
+                return;
+        }
+
+        Unit* caster = spell->m_casterUnit;
+        ObjectGuid const casterGuid = caster->GetObjectGuid();
+
+        targets.remove_if([caster](Unit const* target)
+        {
+            return !target ||
+                   target->GetTypeId() != TYPEID_PLAYER ||
+                   !target->IsAlive() ||
+                   !caster->IsFriendlyTo(target) ||
+                   target->GetHealth() >= target->GetMaxHealth();
+        });
+
+        targets.remove_if([casterGuid](Unit const* target)
+        {
+            return target && target->GetObjectGuid() == casterGuid;
+        });
+
+        if (caster->GetTypeId() == TYPEID_PLAYER &&
+                caster->IsAlive() &&
+                caster->GetHealth() < caster->GetMaxHealth())
+            targets.push_front(caster);
+    }
+
+    void OnEffectExecuted(Spell* spell, SpellEffectIndex effIdx) const override
+    {
+        if (effIdx != EFFECT_INDEX_1 || !spell->m_casterUnit)
+            return;
+
+        Unit* target = spell->GetUnitTarget();
+        if (!target || target->GetObjectGuid() != spell->m_casterUnit->GetObjectGuid())
+            return;
+
+        switch (spell->m_spellInfo->Id)
+        {
+            case SPELL_PALADIN_MENDING_LIGHT_R1:
+            case SPELL_PALADIN_MENDING_LIGHT_R2:
+            case SPELL_PALADIN_MENDING_LIGHT_R3:
+            case SPELL_PALADIN_MENDING_LIGHT_R4:
+            case SPELL_PALADIN_MENDING_LIGHT_R5:
+            case SPELL_PALADIN_MENDING_LIGHT_R6:
+            case SPELL_PALADIN_MENDING_LIGHT_R7:
+            case SPELL_PALADIN_MENDING_LIGHT_R8:
+                break;
+            default:
+                return;
+        }
+
+        uint32 const healing = uint32(spell->GetTotalEffectHealing());
+        spell->SetTotalEffectHealing((healing + 1) / 2);
     }
 };
 

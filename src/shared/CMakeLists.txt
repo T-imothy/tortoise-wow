@@ -197,9 +197,10 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/dep/libdeflate
   ${CMAKE_SOURCE_DIR}/src/framework
   ${CMAKE_BINARY_DIR}
-  ${ACE_INCLUDE_DIR}
-  ${MYSQL_INCLUDE_DIR} 
+  # First - see the OpenSSL/ACE/TBB ordering note in src/mangosd's CMakeLists.txt.
   ${OPENSSL_INCLUDE_DIR}
+  ${ACE_INCLUDE_DIR}
+  ${MYSQL_INCLUDE_DIR}
 )
 
 if(WIN32)

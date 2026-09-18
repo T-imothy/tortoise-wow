@@ -34,6 +34,7 @@ Useful CMake options:
 | `-DPREFIX=../server` | `../server` | Install directory for binaries and config templates. |
 | `-DUSE_EXTRACTORS=ON` | `OFF` | Build map and DBC extraction tools. |
 | `-DMODULES=disabled` | `disabled` | Module build mode. Use `static` or `dynamic` to enable modules. |
+| `-DENABLE_SOAP=ON` | `OFF` | Build the optional SOAP remote-command interface into `mangosd`. |
 | `-DUSE_STD_MALLOC=ON` | `ON` | Use standard malloc instead of TBB malloc. |
 
 ## Windows
@@ -46,7 +47,9 @@ Recommended tools:
 - ACE built for the same architecture as your server build
 
 The repository includes Windows copies of several libraries under `dep/windows`,
-but ACE is still required separately.
+but ACE is still required separately. If you don't already have a working ACE
+build, [vcpkg](https://vcpkg.io/) is one convenient way to get one — see the
+optional section below — but any ACE build for your architecture works.
 
 1. Open **Developer PowerShell for VS 2022**.
 2. Clone the repository:
@@ -59,7 +62,7 @@ but ACE is still required separately.
 3. Configure the build. Replace `C:\deps\ACE` with your ACE install path:
 
    ```powershell
-   cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DPREFIX=server -DACE_ROOT=C:\deps\ACE
+   cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=server -DACE_ROOT=C:\deps\ACE
    ```
 
 4. Build the server:
@@ -76,6 +79,20 @@ but ACE is still required separately.
 
 The installed files will be placed in the `server` directory unless you used a
 different `PREFIX`.
+
+### Optional: getting ACE via vcpkg
+
+Building ACE for Windows by hand is not entirely trivial. [vcpkg](https://vcpkg.io/)
+is one convenient, optional way to obtain a working build instead:
+
+```powershell
+git clone https://github.com/microsoft/vcpkg.git C:\deps\vcpkg
+C:\deps\vcpkg\bootstrap-vcpkg.bat
+C:\deps\vcpkg\vcpkg.exe install ace:x64-windows
+```
+
+This installs ACE under `C:\deps\vcpkg\installed\x64-windows` — use that as
+`-DACE_ROOT` in step 3 above instead of a hand-built ACE.
 
 ## Ubuntu
 
@@ -203,6 +220,20 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPREFIX=../server -DMODULES=dyna
 
 Individual modules can be controlled with generated options such as
 `-DMODULE_MOD_EXAMPLE=static`.
+
+## Building SOAP Remote Commands
+
+SOAP remote commands are disabled by default. To build the optional SOAP
+endpoint into `mangosd`, configure with:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPREFIX=../server -DENABLE_SOAP=ON
+cmake --build build --parallel
+cmake --install build
+```
+
+See [SOAP Remote-Command Interface](../management/soap-remote-command-interface.md) for
+runtime configuration, authentication, and security guidance.
 
 ## After Building
 

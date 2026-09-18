@@ -7,7 +7,10 @@
  * stdin console stream.
  *
  * Off unless SOAP.Enabled = 1. Binds 127.0.0.1:7878 by default and requires a
- * SEC_ADMINISTRATOR account. Commands are queued to the world thread via
+ * SEC_ADMINISTRATOR account that is not banned; both are checked before the
+ * request body is read (401 / 403). A declared Content-Length over 64 KiB is
+ * refused with 413; a chunked or undeclared body over that is cut off and the
+ * connection closed. Commands are queued to the world thread via
  * sWorld.QueueCliCommand and their captured output is returned to the caller.
  */
 
@@ -22,16 +25,17 @@
 #include "soap/soapH.h"
 #include "soap/soapStub.h"
 
+#include <atomic>
 #include <string>
 #include <thread>
-#include <atomic>
 
 class SOAPThread
 {
     private:
-        static const int AcceptTimeout = 3;                 // seconds; lets the loop poll World::IsStopped()
-        static const int DataTimeout   = 5;                 // seconds
-        static const int BackLogSize   = 100;
+        static const int AcceptTimeout = 3;
+        static const int DataTimeout = 5;
+        static const int BackLogSize = 100;
+        static const int MaxRequestBytes = 64 * 1024;
 
         const std::string m_host;
         const int m_port;
@@ -40,6 +44,7 @@ class SOAPThread
         std::thread m_workerThread;
 
         void Work();
+        static int ParseAndAuthenticate(struct soap* soap);
 
     public:
         static const AccountTypes MinLevel = SEC_ADMINISTRATOR;

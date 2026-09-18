@@ -1,9 +1,9 @@
 #include <any>
 #include <atomic>
 #include <chrono>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
-#include <functional>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -11,16 +11,14 @@
 using uint32 = unsigned;
 enum AccountTypes { SEC_PLAYER, SEC_MODERATOR, SEC_GAMEMASTER, SEC_ADMINISTRATOR, SEC_CONSOLE };
 void check(bool value) { if (!value) throw std::runtime_error("SOAP contract failed"); }
-struct soap { const char* userid="admin"; const char* passwd="valid"; void* user=nullptr; };
+struct soap { void* user=nullptr; };
 constexpr int SOAP_OK=0;
 int soap_sender_fault(soap*, const char*, const char*) { return 400; }
 int soap_receiver_fault(soap*, const char*, const char*) { return 503; }
 char* soap_strdup(soap*,const char* text) { auto* p=static_cast<char*>(std::malloc(std::strlen(text)+1)); std::strcpy(p,text); return p; }
 struct AccountMgr {
     AccountTypes security=SEC_ADMINISTRATOR;
-    uint32 GetId(const char* name) { return std::string(name)=="admin" ? 7 : 0; }
-    bool CheckPassword(uint32,const char* password) { return std::string(password)=="valid"; }
-    AccountTypes GetSecurity(uint32) { return security; }
+    AccountTypes GetSecurityFromDatabase(uint32) { return security; }
 } sAccountMgr;
 struct CliCommandHolder {
     uint32 account; AccountTypes security; std::any arg;
@@ -35,19 +33,20 @@ struct World {
     static bool IsStopped() { return stopped.load(); }
     void QueueCliCommand(CliCommandHolder* command) { pending.reset(command); if(stopOnQueue) stopped=true; }
 } sWorld;
-struct SOAPThread { static constexpr AccountTypes MinLevel=SEC_ADMINISTRATOR; bool stop=false; bool IsStopping() { return stop; } };
+struct SOAPThread { static constexpr AccountTypes MinLevel=SEC_ADMINISTRATOR; };
+namespace {
 #include "NativeSoapCommands.inc"
 int main() {
     soap request; char command[]="server info"; char empty[]=""; char* result=nullptr;
-    request.userid=nullptr; check(ns1__executeCommand(&request,command,&result)==401);
-    request.userid="missing"; check(ns1__executeCommand(&request,command,&result)==401);
-    request.userid="admin"; request.passwd="wrong"; check(ns1__executeCommand(&request,command,&result)==401);
-    request.passwd="valid"; sAccountMgr.security=SEC_GAMEMASTER;
+    check(ns1__executeCommand(&request,command,&result)==401);
+    request.user=reinterpret_cast<void*>(uintptr_t(7));
+    sAccountMgr.security=SEC_GAMEMASTER;
     check(ns1__executeCommand(&request,command,&result)==403);
     sAccountMgr.security=SEC_ADMINISTRATOR;
     check(ns1__executeCommand(&request,empty,&result)==400); check(!sWorld.pending);
-    // Shutdown may discard the queued command without calling its completion.
-    // The request must return and its callback state must remain alive safely.
+
+    // Shutdown may discard a queued command without calling completion. The
+    // shared callback state must remain valid until the holder is destroyed.
     sWorld.stopOnQueue=true;
     check(ns1__executeCommand(&request,command,&result)==503);
     check(sWorld.pending->account==7 && sWorld.pending->security==SEC_ADMINISTRATOR);
@@ -55,12 +54,8 @@ int main() {
     sWorld.pending->print(sWorld.pending->arg,"late output");
     sWorld.pending->finished(sWorld.pending->arg,true);
     check(!weak.expired()); sWorld.pending.reset(); check(weak.expired());
+
     World::stopped=false; sWorld.stopOnQueue=false;
-    // Worker-local shutdown also rejects new work independently of World.
-    SOAPThread worker; worker.stop=true; request.user=&worker;
-    check(ns1__executeCommand(&request,command,&result)==503); check(!sWorld.pending);
-    request.user=nullptr;
-    // Exercise release/acquire completion using a separate native-command owner.
     auto state=std::make_shared<SoapCommandState>();
     std::thread owner([state] { SoapPrint(state,"one"); SoapPrint(state,"two"); SoapCommandFinished(state,true); });
     while(!state->finished.load(std::memory_order_acquire)) std::this_thread::yield();
