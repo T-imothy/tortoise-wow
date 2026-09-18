@@ -2214,13 +2214,6 @@ class Player final: public Unit
         float GetRecallY() const { return m_recallY; }
         float GetRecallZ() const { return m_recallZ; }
         float GetRecallO() const { return m_recallO; }
-        // Dungeon difficulty query, AzerothCore shape. One difficulty here.
-        Difficulty GetDifficulty(bool /*isRaid*/) const { return DUNGEON_DIFFICULTY_NORMAL; }
-        // The mode switches that came with heroics; nothing to switch here.
-        Difficulty GetDungeonDifficulty() const { return DUNGEON_DIFFICULTY_NORMAL; }
-        Difficulty GetRaidDifficulty() const { return DUNGEON_DIFFICULTY_NORMAL; }
-        void SetDungeonDifficulty(Difficulty) {}
-        void SetRaidDifficulty(Difficulty) {}
         void GetRecallPosition(uint32& map, float& x, float& y, float& z, float& o)
         {
             map = m_recallMap;
