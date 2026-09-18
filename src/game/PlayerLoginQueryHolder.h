@@ -45,6 +45,8 @@ public:
     SessionTransport GetTransport() const { return m_transport; }
     uint64 GetRequestToken() const { return m_requestToken; }
     bool Initialize();
+    void SetLoginRequestTime(uint32 value) { m_loginRequestTime = value; }
+    uint32 GetLoginRequestTime() const { return m_loginRequestTime; }
 
 private:
     friend class HeadlessSessionMgr;
@@ -53,5 +55,4 @@ private:
     SessionTransport const m_transport;
     uint64 m_requestToken;
     uint32 m_loginRequestTime = 0;
-
 };
