@@ -420,12 +420,6 @@ class Map : public GridRefManager<NGridType>
         static bool CheckGridIntegrity(Creature* c, bool moved);
 
         uint32 GetInstanceId() const { return i_InstanceId; }
-        // Dungeon difficulty arrived with The Burning Crusade. Every instance
-        // on this core is the only version of itself, so ported difficulty
-        // branches all take the normal arm.
-        // Returns the Difficulty type rather than a raw number so ported code
-        // can pass it straight on. There is only one value on this core.
-        Difficulty GetDifficulty() const { return DUNGEON_DIFFICULTY_NORMAL; }
         // AzerothCore asks the map; here the terrain answers.
         bool IsInWater(float x, float y, float z) const { return GetTerrain() && GetTerrain()->IsInWater(x, y, z); }
         // AzerothCore threads a phase mask and a collision selector through the
