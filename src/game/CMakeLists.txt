@@ -19,6 +19,8 @@ set (game_SRCS
     AccountMgr.cpp
     AuraRemovalMgr.cpp
     AutoBroadCastMgr.cpp
+    Autoscaling/AutoScaler.cpp
+    Autoscaling/AutoScaler.hpp
     Camera.cpp
     Conditions.cpp
     CreatureGroups.cpp

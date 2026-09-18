@@ -149,6 +149,7 @@ enum eScriptCommand
     SCRIPT_COMMAND_CREATE_ITEM              = 17,           // source = Player (from provided source or target)
                                                             // datalong = item_id
                                                             // datalong2 = amount
+                                                            // datalong3 = optional money cost in copper
     SCRIPT_COMMAND_DESPAWN_CREATURE         = 18,           // source = Creature
                                                             // datalong = despawn_delay
                                                             // datalong2 = respawn_delay
@@ -677,6 +678,7 @@ struct ScriptInfo
         {
             uint32 itemId;                                  // datalong
             uint32 amount;                                  // datalong2
+            uint32 moneyCost;                               // datalong3; optional copper cost
         } createItem;
 
         struct                                              // SCRIPT_COMMAND_DESPAWN_CREATURE (18)
@@ -1656,6 +1658,14 @@ class ScriptMgr
         typedef std::unordered_map<int32, CreatureEscortData> EscortDataMap;
 
         AreaTriggerScriptMap    m_AreaTriggerScripts;
+
+    public:
+        // Read-only view for modules that need the candidate list itself
+        // (mod-dungeon-clear's areatrigger relay walks every scripted trigger
+        // once at startup). Same pattern as ObjectMgr::GetAllCreatureData.
+        AreaTriggerScriptMap const& GetAllAreaTriggerScripts() const { return m_AreaTriggerScripts; }
+
+    private:
         EventIdScriptMap        m_EventIdScripts;
 
         ScriptNameMap           m_scriptNames;
@@ -1933,9 +1943,9 @@ template<class TScript> typename ScriptRegistry<TScript>::AfterDatabaseLoadScrip
 template<class TScript> typename ScriptRegistry<TScript>::EnabledHooksList ScriptRegistry<TScript>::EnabledHooks;
 template<class TScript> uint32 ScriptRegistry<TScript>::_scriptIdCounter = 0;
 
-// Generic questions the core can ask any module that drives simulated
-// characters. Keeping these behind script hooks avoids bot implementation
-// types and ownership in the core.
+// Questions the core asks of whatever module drives simulated characters.
+// Deliberately not named after any one module: the playerbots tree answers
+// these today, a second population module would answer the same names.
 class Player;
 bool Script_IsAIControlled(Player const* player);
 bool Script_IsMachineDriven(Player const* player);

@@ -27,6 +27,7 @@
 #include "World.h"
 #include "ObjectMgr.h"
 #include "ScriptMgr.h"
+#include "ScriptObjects.h"
 #include "ObjectGuid.h"
 #include "SpellMgr.h"
 #include "QuestDef.h"
@@ -64,6 +65,7 @@
 #include "GuardMgr.h"
 #include "GuidObjectScaling.h"
 #include "PerfStats.h"
+#include "Autoscaling/AutoScaler.hpp"
 
 // apply implementation of the singletons
 #include "Policies/SingletonImp.h"
@@ -268,6 +270,18 @@ void Creature::AddToWorld()
         AIM_Initialize();
     if (!bWasInWorld && m_zoneScript)
         m_zoneScript->OnCreatureCreate(this);
+
+    // The backported AllCreatureScript surface never had a caller for
+    // OnCreatureAddWorld - modules registering it were silently dead. Fire it
+    // where AzerothCore does: creature fully in the world, first entry only.
+    // (AllCreatureScript has no per-hook registry; ForEach walks all scripts.)
+    if (!bWasInWorld && IsInWorld())
+    {
+        ScriptRegistry<AllCreatureScript>::ForEach([&](AllCreatureScript* script)
+        {
+            script->OnCreatureAddWorld(this);
+        });
+    }
 }
 
 void Creature::RemoveFromWorld()
@@ -275,6 +289,11 @@ void Creature::RemoveFromWorld()
     ///- Remove the creature from the accessor
     if (IsInWorld())
     {
+        ScriptRegistry<AllCreatureScript>::ForEach([&](AllCreatureScript* script)
+        {
+            script->OnCreatureRemoveWorld(this);
+        });
+
         if (AI())
             AI()->OnRemoveFromWorld();
         if (GetObjectGuid().GetHigh() == HIGHGUID_UNIT)
@@ -709,7 +728,6 @@ void Creature::Update(uint32 update_diff, uint32 diff)
     });
 
     TurtleDiagnostics::CreatureProbe::Stage(this, TurtleDiagnostics::CreatureState);
-
     // AI was locked and switch was delayed to next update.
     if (HasCreatureState(CSTATE_INIT_AI_ON_UPDATE))
     {
@@ -798,6 +816,15 @@ void Creature::Update(uint32 update_diff, uint32 diff)
                 if (!IsLikePlayer())
                     SetTempPacified(5000);
 
+                // Scaling: apply to all dungeon/raid instances, linear vs. 40-player baseline
+                if (GetMap()->IsDungeon())
+                {
+                    uint32 playerCount = GetMap()->GetPlayersCountExceptGMs();
+                    uint32 maxCount = ((DungeonMap*)GetMap())->GetMaxPlayers();
+                    if (playerCount > 0)
+                        sAutoScaler->ScaleCreature(this, playerCount, maxCount, GetMap());
+                }
+                
                 GetMap()->Add(this);
 
                 if (uint16 poolid = sPoolMgr.IsPartOfAPool<Creature>(GetGUIDLow()))
@@ -933,7 +960,14 @@ void Creature::Update(uint32 update_diff, uint32 diff)
                         !i_motionMaster.GetCurrent()->IsReachable() &&
                         !HasDistanceCasterMovement() && !GetCharmerOrOwnerGuid().IsPlayer() &&
                         (!CanReachWithMeleeAutoAttack(GetVictim()) || !IsWithinLOSInMap(GetVictim())) &&
-                        !(GetVictim()->IsPlayer() && static_cast<Player*>(GetVictim())->GetSession()->GetAntiCheat()->IsInKnockBack());
+                        // GetAntiCheat() is null for synthetic bot sessions;
+                        // unguarded, the dereference crashes whenever a creature
+                        // has a bot as its current victim. Treat null-anticheat
+                        // as "not in knockback" (the safer default for bots).
+                        !(GetVictim()->IsPlayer() && [&]() {
+                            auto* ac = static_cast<Player*>(GetVictim())->GetSession()->GetAntiCheat();
+                            return ac && ac->IsInKnockBack();
+                        }());
                 }
             }
 
