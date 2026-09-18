@@ -429,6 +429,7 @@ class BattleGround
         static void BlockMovement(Player* plr, bool apply = true);
 
         virtual Team GetWinningTeam() const = 0;
+        virtual ObjectGuid GetFlagCarrierGuid(uint32 = 0) const { return ObjectGuid(); }
 
         void SendMessageToAll(int32 entry, ChatMsg type, Player const* source = nullptr);
         void SendYellToAll(int32 entry, uint32 language, ObjectGuid guid);

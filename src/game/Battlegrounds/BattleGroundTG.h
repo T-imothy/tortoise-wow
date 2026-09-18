@@ -32,7 +32,7 @@ public:
     WorldSafeLocsEntry const* GetClosestGraveYard(Player* player) override;
     void FillInitialWorldStates(WorldPacket& data, uint32& count) override;
     void HandleCommand(Player* player, ChatHandler* handler, char* args) override;
-    ObjectGuid GetFlagCarrierGuid(uint32 = 0) const { return m_carrier; }
+    ObjectGuid GetFlagCarrierGuid(uint32 = 0) const override { return m_carrier; }
     // Map-owner bot consumers may query objectives, never mutate match state.
     bool GetObjective(Player* player, float& x, float& y, float& z) const;
     ObjectGuid GetAvailableFlag() const;
