@@ -685,7 +685,11 @@ Player::Player(WorldSession *session) : Unit(),
 
     m_areaUpdateId = 0;
 
-    m_nextSave = sWorld.getConfig(CONFIG_UINT32_INTERVAL_SAVE);
+    uint32 const saveInterval = sWorld.getConfig(CONFIG_UINT32_INTERVAL_SAVE);
+    // Keep thousands of bot saves from re-forming into one periodic DB spike
+    // after a forced save or shutdown. Real-player timing remains unchanged.
+    m_nextSave = Script_IsMachineDriven(this) && saveInterval ?
+        urand(saveInterval * 3 / 4, saveInterval * 5 / 4) : saveInterval;
 
     // randomize first save time in range [CONFIG_UINT32_INTERVAL_SAVE] around [CONFIG_UINT32_INTERVAL_SAVE]
     // this must help in case next save after mass player load after server startup

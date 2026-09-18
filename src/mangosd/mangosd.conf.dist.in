@@ -250,6 +250,13 @@ CleanCharacterDB = 1
 
 Continents.Instanciate = 0
 Continents.InactivePlayers.SkipUpdates = 5
+
+# Continents.HibernatedPlayers.SkipUpdates
+# Number of full player updates skipped for machine-driven characters on a
+# continent/zone with no real player. Combat, taxi, battleground, teleporting,
+# and real-player-controlled bots always bypass this limit.
+
+Continents.HibernatedPlayers.SkipUpdates = 19
 MapUpdate.ReduceGridActivationDist.Tick = 190
 MapUpdate.IncreaseGridActivationDist.Tick = 130
 MapUpdate.MinGridActivationDistance = 57
@@ -424,6 +431,11 @@ LogTimestamp = 1
 
 LogFileLevel = 1
 
+# Rotate append-mode logs at startup when they reach this size. Numbered files
+# .1 through LogRotateKeep are retained. Set either value to 0 to disable.
+LogRotateSizeMB = 100
+LogRotateKeep = 5
+
 # HonorLogFile. HonorLogFile name.
 
 HonorLogFile = "honor.log"
@@ -587,6 +599,9 @@ PerformanceLog.SlowAsynQueries = 200
 PerformanceLog.SlowPackets = 100
 PerformanceLog.SlowMapPackets = 100
 PerformanceLog.SlowPacketBroadcast = 0
+
+# Aggregated real-player/bot update cost and deferral counts. Set to 0 to disable.
+PerformanceLog.PlayerUpdateSummaryInterval = 30000
 
 # RaLogFile. Log file of RA commands.
 

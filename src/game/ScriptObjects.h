@@ -155,6 +155,7 @@ enum PlayerHook
     PLAYERHOOK_ON_ADDON_MESSAGE,
     PLAYERHOOK_IS_AI_CONTROLLED,
     PLAYERHOOK_IS_MACHINE_DRIVEN,
+    PLAYERHOOK_IS_UPDATE_CRITICAL,
     PLAYERHOOK_HAS_AI_FOLLOWERS,
     PLAYERHOOK_GET_ALLOWED_ROLES,
     PLAYERHOOK_SET_FORCED_ROLE,
@@ -223,6 +224,15 @@ class PlayerScript : public ScriptObject
         // particular bot implementation.
         virtual bool IsAIControlled(Player const* /*player*/) { return false; }
         virtual bool IsMachineDriven(Player const* /*player*/) { return false; }
+
+        // Machine-driven characters normally run on a reduced cadence. Modules
+        // return true while a character is attached to a real player or doing
+        // latency-sensitive work so map catch-up passes keep it responsive.
+        virtual bool IsUpdateCritical(Player const* /*player*/) { return false; }
+
+        // Whether this *human* player commands puppets of his own. Distinct from
+        // IsAIControlled: the master is a real player, his followers are not.
+
         virtual bool HasAIFollowers(Player const* /*player*/) { return false; }
         virtual bool GetAllowedRoles(Player const* /*player*/, uint8& /*roles*/) { return false; }
         virtual void SetForcedRole(Player* /*player*/, uint8 /*role*/) {}

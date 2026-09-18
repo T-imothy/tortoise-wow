@@ -3228,3 +3228,14 @@ void Script_SetForcedRole(Player* player, uint8 role)
         PLAYERHOOK_SET_FORCED_ROLE,
         [&](PlayerScript* script) { script->SetForcedRole(player, role); });
 }
+
+bool Script_IsUpdateCritical(Player const* player)
+{
+    if (!player)
+        return false;
+
+    return ScriptRegistry<PlayerScript>::ForEachEnabledHookWithReturn(PLAYERHOOK_IS_UPDATE_CRITICAL, [&](PlayerScript* script)
+    {
+        return script->IsUpdateCritical(player);
+    });
+}

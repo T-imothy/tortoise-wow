@@ -20,6 +20,7 @@
  */
 
 #include "Map.h"
+#include <shared_mutex>
 #include "MapManager.h"
 #include "Player.h"
 #include "GridNotifiers.h"
@@ -32,6 +33,7 @@
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "ScriptObjects.h"
+#include "ScriptMgr.h"
 #include "World.h"
 #include "Group.h"
 #include "MapRefManager.h"
@@ -58,11 +60,27 @@
 #include "LFGMgr.h"
 #include "Geometry.h"
 #include "CreatureGroups.h"
+#include "Autoscaling/AutoScaler.hpp"
 #include "Logging/DatabaseLogger.hpp"
 #include "PerfStats.h"
 
+#ifdef ENABLE_ELUNA
+#include "LuaEngine.h"
+#include "ElunaConfig.h"
+#endif
+
 Map::~Map()
 {
+#ifdef ENABLE_ELUNA
+    if (Eluna* eluna = GetEluna())
+    {
+        eluna->OnDestroy(this);
+        if (Instanceable())
+            eluna->FreeInstanceId(GetInstanceId());
+    }
+    sElunaMgr->Destroy(m_elunaInfo);
+#endif
+
     UnloadAll(true);
 
     if (!m_scriptSchedule.empty())
@@ -90,6 +108,12 @@ Map::~Map()
     --PerfStats::g_totalMaps;
 }
 
+// stub graveyard manager forwards to sObjectMgr.
+WorldSafeLocsEntry const* Map::GraveyardManagerStub::GetClosestGraveYard(float x, float y, float z, uint32 MapId, Team team) const
+{
+    return sObjectMgr.GetClosestGraveYard(x, y, z, MapId, team);
+}
+
 void Map::LoadMapAndVMap(int gx, int gy)
 {
     if (m_bLoadedGrids[gx][gx])
@@ -110,9 +134,10 @@ Map::Map(uint32 id, time_t expiry, uint32 InstanceId)
       _processingSendObjUpdates(false), _processingUnitsRelocation(false),
       m_updateFinished(false), m_updateDiffMod(0), m_GridActivationDistance(DEFAULT_VISIBILITY_DISTANCE),
       _lastPlayersUpdate(WorldTimer::getMSTime()), _lastMapUpdate(WorldTimer::getMSTime()),
-      _lastCellsUpdate(WorldTimer::getMSTime()), _inactivePlayersSkippedUpdates(0),
+      _lastCellsUpdate(WorldTimer::getMSTime()),
       _objUpdatesThreads(0), _unitRelocationThreads(0), _lastPlayerLeftTime(0),
-      m_lastMvtSpellsUpdate(0), _bonesCleanupTimer(0), m_uiScriptedEventsTimer(1000)
+      m_lastMvtSpellsUpdate(0), _bonesCleanupTimer(0), m_uiScriptedEventsTimer(1000),
+      m_playerPerfReportStart(WorldTimer::getMSTime())
 {
     m_CreatureGuids.Set(sObjectMgr.GetFirstTemporaryCreatureLowGuid());
     m_GameObjectGuids.Set(sObjectMgr.GetFirstTemporaryGameObjectLowGuid());
@@ -140,15 +165,38 @@ Map::Map(uint32 id, time_t expiry, uint32 InstanceId)
 
     if (IsContinent())
     {
-        m_motionThreads.reset(new ThreadPool(sWorld.getConfig(CONFIG_UINT32_CONTINENTS_MOTIONUPDATE_THREADS), "MotionUpdate"));
-        m_objectThreads.reset(new ThreadPool(std::max((int)sWorld.getConfig(CONFIG_UINT32_MAP_OBJECTSUPDATE_THREADS) -1,0), "ObjectUpdate"));
-        m_visibilityThreads.reset(new ThreadPool(std::max((int)sWorld.getConfig(CONFIG_UINT32_MAP_VISIBILITYUPDATE_THREADS) -1,0), "Visibility"));
+        int motionThreads = sWorld.getConfig(CONFIG_UINT32_CONTINENTS_MOTIONUPDATE_THREADS);
+        int objectThreads = std::max((int)sWorld.getConfig(CONFIG_UINT32_MAP_OBJECTSUPDATE_THREADS) - 1, 0);
+        int visibilityThreads = std::max((int)sWorld.getConfig(CONFIG_UINT32_MAP_VISIBILITYUPDATE_THREADS) - 1, 0);
+#ifdef ENABLE_ELUNA
+        if (sElunaConfig->IsElunaEnabled() && (motionThreads || objectThreads || visibilityThreads))
+        {
+            ELUNA_LOG_ERROR("Map %u has parallel object updates configured; disabling them because its Lua state is single-threaded", id);
+            motionThreads = 0;
+            objectThreads = 0;
+            visibilityThreads = 0;
+        }
+#endif
+        m_motionThreads.reset(new ThreadPool(motionThreads, "MotionUpdate"));
+        m_objectThreads.reset(new ThreadPool(objectThreads, "ObjectUpdate"));
+        m_visibilityThreads.reset(new ThreadPool(visibilityThreads, "Visibility"));
         m_cellThreads.reset(new ThreadPool(std::max((int)sWorld.getConfig(CONFIG_UINT32_MTCELLS_THREADS) - 1, 0), "CellUpdate"));
         m_visibilityThreads->start<ThreadPool::MySQL<ThreadPool::MultiQueue>>();
         m_cellThreads->start();
         m_motionThreads->start();
         m_objectThreads->start<ThreadPool::MySQL<ThreadPool::MultiQueue>>();
     }
+
+#ifdef ENABLE_ELUNA
+    if (sElunaConfig->IsElunaEnabled() && sElunaConfig->ShouldMapLoadEluna(id))
+    {
+        m_elunaInfo = { ElunaInfoKey::MakeKey(GetId(), GetInstanceId()) };
+        sElunaMgr->Create(this, m_elunaInfo);
+    }
+
+    if (Eluna* eluna = GetEluna())
+        eluna->OnCreate(this);
+#endif
 
     ++PerfStats::g_totalMaps;
 }
@@ -400,12 +448,22 @@ bool Map::Add(Player *player)
     // one could stay invisible from the other until re-zoning.
     // Inspired from the TrinityCore way.
     if (player->IsBeingTeleportedFar())
+    {
+        std::unique_lock<std::shared_mutex> lock(player->m_visibleGUIDs_lock);
         player->m_visibleGUIDs.clear();
+    }
     NGridType* grid = getNGrid(cell.GridX(), cell.GridY());
     player->GetViewPoint().Event_AddedToWorld(&(*grid)(cell.CellX(), cell.CellY()));
     player->SetIsNewObject(true);
     UpdateObjectVisibility(player, cell, p);
     player->SetIsNewObject(false);
+
+#ifdef ENABLE_ELUNA
+    if (Eluna* eluna = player->GetEluna())
+        eluna->OnMapChanged(player);
+    if (Eluna* eluna = GetEluna())
+        eluna->OnPlayerEnter(this, player);
+#endif
 
     if (i_data)
         i_data->OnPlayerEnter(player);
@@ -420,11 +478,26 @@ bool Map::Add(Player *player)
 
 void Map::ExistingPlayerLogin(Player* player)
 {
-    // Reset visibility list
-    for (ObjectGuidSet::const_iterator it = player->m_visibleGUIDs.begin(); it != player->m_visibleGUIDs.end(); ++it)
+    // Reset visibility list.
+    //
+    // Copy under the shared lock and walk the COPY: RemoveListener takes the
+    // broadcaster's own lock, and holding the visibility lock across it would
+    // invert the lock order against every reader. Both the read and the clear
+    // were unguarded before - a concurrent find() in Player::IsInVisibleList,
+    // hashing against a set another thread was erasing from, is what killed
+    // the World thread in crash_2026-08-31_11-01-01.
+    ObjectGuidSet visibleCopy;
+    {
+        std::shared_lock<std::shared_mutex> lock(player->m_visibleGUIDs_lock);
+        visibleCopy = player->m_visibleGUIDs;
+    }
+    for (ObjectGuidSet::const_iterator it = visibleCopy.begin(); it != visibleCopy.end(); ++it)
         if (Player* other = GetPlayer(*it))
             other->m_broadcaster->RemoveListener(player);
-    player->m_visibleGUIDs.clear();
+    {
+        std::unique_lock<std::shared_mutex> lock(player->m_visibleGUIDs_lock);
+        player->m_visibleGUIDs.clear();
+    }
 
     SendInitTransports(player);
     SendInitSelf(player);
@@ -694,7 +767,11 @@ inline void Map::UpdateActiveCellsAsynch(uint32 now, uint32 diff)
 
     // Mark all cells that need update
     for (m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
-        MarkCellsAroundObject(m_mapRefIter->getSource());
+    {
+        Player* player = m_mapRefIter->getSource();
+        if (ShouldUpdateBotCells(player))
+            MarkCellsAroundObject(player);
+    }
 
     for (m_activeNonPlayersIter = m_activeNonPlayers.begin(); m_activeNonPlayersIter != m_activeNonPlayers.end(); ++m_activeNonPlayersIter)
         MarkCellsAroundObject(*m_activeNonPlayersIter);
@@ -721,7 +798,8 @@ inline void Map::UpdateActiveCellsSynch(uint32 now, uint32 diff)
     for (m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
     {
         Player* plr = m_mapRefIter->getSource();
-        UpdateCellsAroundObject(now, diff, plr);
+        if (ShouldUpdateBotCells(plr))
+            UpdateCellsAroundObject(now, diff, plr);
     }
 
     // non-player active objects
@@ -745,6 +823,8 @@ inline void Map::UpdateCells(uint32 map_diff)
         return;
     _lastCellsUpdate = now;
 
+    ++_botCellUpdateSequence;
+
     /// update active cells around players and active objects
     if (IsContinent() && m_cellThreads->status() == ThreadPool::Status::READY)
         UpdateActiveCellsAsynch(now, diff);
@@ -761,6 +841,53 @@ inline void Map::UpdateCells(uint32 map_diff)
         m_motionThreads->processWorkload().wait();
     }
     unitsMvtUpdate.clear();
+}
+
+bool Map::ShouldUpdateBotCells(Player const* player) const
+{
+    if (!player || !player->IsInWorld())
+        return false;
+
+    if (!IsContinent() || !Script_IsMachineDriven(player) || IsResponsivePlayer(player))
+        return true;
+
+    uint32 const stride = GetPlayerUpdateStride(player);
+    return (_botCellUpdateSequence % stride) == (player->GetGUIDLow() % stride);
+}
+
+void Map::RefreshRealPlayerActivity()
+{
+    m_hasRealPlayers = false;
+    m_realPlayerZones.clear();
+
+    for (auto const& ref : m_mapRefManager)
+    {
+        Player const* player = ref.getSource();
+        if (!player || !player->IsInWorld() || Script_IsMachineDriven(player))
+            continue;
+
+        m_hasRealPlayers = true;
+        m_realPlayerZones.insert(player->GetZoneId());
+    }
+}
+
+bool Map::IsResponsivePlayer(Player const* player) const
+{
+    return player && (!Script_IsMachineDriven(player) || Script_IsUpdateCritical(player) ||
+        player->IsInCombat() || player->HasScheduledEvent() ||
+        player->GetSession()->HasRecentPacket(PACKET_PROCESS_SPELLS));
+}
+
+uint32 Map::GetPlayerUpdateStride(Player const* player) const
+{
+    if (!IsContinent() || !Script_IsMachineDriven(player) || IsResponsivePlayer(player))
+        return 1;
+
+    bool const nearRealActivity = m_hasRealPlayers && HasActiveZone(player->GetZoneId());
+    uint32 const skipped = nearRealActivity ?
+        sWorld.getConfig(CONFIG_UINT32_INACTIVE_PLAYERS_SKIP_UPDATES) :
+        sWorld.getConfig(CONFIG_UINT32_HIBERNATED_PLAYERS_SKIP_UPDATES);
+    return std::max<uint32>(1, skipped + 1);
 }
 
 
@@ -813,7 +940,7 @@ void Map::UpdateSessionsMovementAndSpellsIfNeeded()
     m_lastMvtSpellsUpdate = WorldTimer::getMSTime();
 }
 
-void Map::UpdatePlayers()
+void Map::UpdatePlayers(bool responsiveOnly)
 {
     uint32 now = WorldTimer::getMSTime();
     uint32 diff = WorldTimer::getMSTimeDiff(_lastPlayersUpdate, now);
@@ -821,27 +948,65 @@ void Map::UpdatePlayers()
     if (diff < sWorld.getConfig(CONFIG_UINT32_MAPUPDATE_UPDATE_PLAYERS_DIFF))
         return;
 
-    ++_inactivePlayersSkippedUpdates;
-    bool updateInactivePlayers = _inactivePlayersSkippedUpdates > sWorld.getConfig(CONFIG_UINT32_INACTIVE_PLAYERS_SKIP_UPDATES);
-    if (!IsContinent())
-        updateInactivePlayers = true;
+    if (!responsiveOnly)
+        ++_playerUpdateSequence;
+
     for (m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
     {
         Player* plr = m_mapRefIter->getSource();
         if (!plr || !plr->IsInWorld())
             continue;
-        if (!updateInactivePlayers && (!plr->IsInCombat() && !plr->GetSession()->HasRecentPacket(PACKET_PROCESS_SPELLS) && !plr->HasScheduledEvent()))
+        bool const machineDriven = Script_IsMachineDriven(plr);
+        bool const responsive = IsResponsivePlayer(plr);
+        uint32 const stride = GetPlayerUpdateStride(plr);
+        bool const dueUpdate = stride == 1 ||
+            (!responsiveOnly && (_playerUpdateSequence % stride) == (plr->GetGUIDLow() % stride));
+        if ((responsiveOnly && !responsive) || !dueUpdate)
         {
             plr->AddSkippedUpdateTime(diff);
+            ++m_playerPerfDeferred;
+            if (machineDriven && stride > sWorld.getConfig(CONFIG_UINT32_INACTIVE_PLAYERS_SKIP_UPDATES) + 1)
+                ++m_playerPerfHibernated;
             continue;
         }
+
+        auto const updateStart = std::chrono::steady_clock::now();
         WorldObject::UpdateHelper helper(plr);
         helper.UpdateRealTime(now, diff + plr->GetSkippedUpdateTime());
         plr->ResetSkippedUpdateTime();
+        uint64 const elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
+            std::chrono::steady_clock::now() - updateStart).count();
+        if (machineDriven)
+        {
+            ++m_playerPerfBotUpdates;
+            m_playerPerfBotMicros += elapsed;
+        }
+        else
+        {
+            ++m_playerPerfRealUpdates;
+            m_playerPerfRealMicros += elapsed;
+        }
     }
-    if (updateInactivePlayers)
-        _inactivePlayersSkippedUpdates = 0;
     _lastPlayersUpdate = now;
+
+    uint32 const reportInterval = sWorld.getConfig(CONFIG_UINT32_PERFLOG_PLAYER_SUMMARY_INTERVAL);
+    if (reportInterval && WorldTimer::getMSTimeDiff(m_playerPerfReportStart, now) >= reportInterval)
+    {
+        // Continents are the 4k-bot hot path. Instance summaries are useful
+        // only while a real player is present; suppress idle-bot instance spam.
+        if (IsContinent() || m_playerPerfRealUpdates)
+            sLog.out(LOG_PERFORMANCE,
+                "PLAYER_UPDATE_SUMMARY map=%u inst=%u real_updates=%llu real_ms=%.2f bot_updates=%llu bot_ms=%.2f deferred=%llu hibernated=%llu",
+                GetId(), GetInstanceId(),
+                static_cast<unsigned long long>(m_playerPerfRealUpdates), m_playerPerfRealMicros / 1000.0,
+                static_cast<unsigned long long>(m_playerPerfBotUpdates), m_playerPerfBotMicros / 1000.0,
+                static_cast<unsigned long long>(m_playerPerfDeferred),
+                static_cast<unsigned long long>(m_playerPerfHibernated));
+        m_playerPerfReportStart = now;
+        m_playerPerfRealUpdates = m_playerPerfBotUpdates = 0;
+        m_playerPerfRealMicros = m_playerPerfBotMicros = 0;
+        m_playerPerfDeferred = m_playerPerfHibernated = 0;
+    }
 }
 
 void Map::DoUpdate(uint32 maxDiff)
@@ -867,6 +1032,7 @@ void Map::DoUpdate(uint32 maxDiff)
 void Map::Update(uint32 t_diff)
 {
     XScopeStatTimer ScopeStatTimer{ UpdateTimer };
+    RefreshRealPlayerActivity();
     ScriptRegistry<AllMapScript>::ForEach([&](AllMapScript* script)
     {
         script->OnMapUpdate(this, t_diff);
@@ -893,7 +1059,7 @@ void Map::Update(uint32 t_diff)
     /// update players at tick
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
     UpdateSessionsMovementAndSpellsIfNeeded();
-    UpdatePlayers();
+    UpdatePlayers(false);
     uint32 playersUpdateTime = WorldTimer::getMSTimeDiffToNow(updateMapTime) - sessionsUpdateTime;
 
     UpdateCells(t_diff);
@@ -907,7 +1073,7 @@ void Map::Update(uint32 t_diff)
     uint32 visibilityUpdateTime = WorldTimer::getMSTimeDiffToNow(updateMapTime) - objectsUpdateTime - activeCellsUpdateTime - playersUpdateTime - sessionsUpdateTime;
 
     UpdateSessionsMovementAndSpellsIfNeeded();
-    UpdatePlayers();
+    UpdatePlayers(true);
     uint32 playersUpdateTime2 = WorldTimer::getMSTimeDiffToNow(updateMapTime) - objectsUpdateTime - activeCellsUpdateTime - playersUpdateTime - sessionsUpdateTime - visibilityUpdateTime;
 
     RemoveCorpses();
@@ -925,7 +1091,7 @@ void Map::Update(uint32 t_diff)
         {
             start = std::chrono::high_resolution_clock::now();
             UpdateSessionsMovementAndSpellsIfNeeded();
-            UpdatePlayers();
+            UpdatePlayers(true);
             ++additionnalUpdateCounts;
         }
         additionnalWaitTime = WorldTimer::getMSTimeDiffToNow(additionnalWaitTime);
@@ -954,6 +1120,14 @@ void Map::Update(uint32 t_diff)
         m_uiScriptedEventsTimer -= t_diff;
 
     ScriptsProcess();
+
+#ifdef ENABLE_ELUNA
+    if (Eluna* eluna = GetEluna())
+    {
+        eluna->UpdateEluna(t_diff);
+        eluna->OnMapUpdate(this, t_diff);
+    }
+#endif
 
     if (i_data)
         i_data->Update(t_diff);
@@ -1134,6 +1308,11 @@ void ScriptedEvent::SendEventToAllTargets(uint32 uiData)
 
 void Map::Remove(Player *player, bool remove)
 {
+#ifdef ENABLE_ELUNA
+    if (Eluna* eluna = GetEluna())
+        eluna->OnPlayerLeave(this, player);
+#endif
+
     ScriptRegistry<AllMapScript>::ForEach([&](AllMapScript* script)
     {
         script->OnPlayerLeaveAll(this, player);
@@ -1196,7 +1375,13 @@ void Map::Remove(Player *player, bool remove)
     RemoveUnitFromMovementUpdate(player);
     player->m_needUpdateVisibility = false;
 
-    for (ObjectGuidSet::const_iterator it = player->m_visibleGUIDs.begin(); it != player->m_visibleGUIDs.end(); ++it)
+    // Same copy-then-walk as ExistingPlayerLogin, and for the same reason.
+    ObjectGuidSet visibleCopy;
+    {
+        std::shared_lock<std::shared_mutex> lock(player->m_visibleGUIDs_lock);
+        visibleCopy = player->m_visibleGUIDs;
+    }
+    for (ObjectGuidSet::const_iterator it = visibleCopy.begin(); it != visibleCopy.end(); ++it)
         if (Player* other = GetPlayer(*it))
             other->m_broadcaster->RemoveListener(player);
 
@@ -1582,7 +1767,10 @@ void Map::UpdateActiveObjectVisibility(Player *player)
     UpdateActiveObjectVisibility(player, guids, data, visibleNow);
 
     if (data.HasData())
+    {
         data.Send(player->GetSession());
+        player->ActivateBroadcastListeners(visibleNow);
+    }
 }
 
 // Not compressed
@@ -1601,6 +1789,10 @@ void Map::UpdateActiveObjectVisibility(Player* player, ObjectGuidSet& visibleGui
 // Support for compressed data packet
 void Map::UpdateActiveObjectVisibility(Player *player, ObjectGuidSet &visibleGuids, UpdateData &data, std::set<WorldObject*> &visibleNow)
 {
+    // Belt and braces beside the Camera guard: m_activeNonPlayers holds raw
+    // pointers, and UnloadAll invalidates them as it goes. See Camera.cpp.
+    if (m_unloading)
+        return;
     for (const auto obj : m_activeNonPlayers)
     {
         if (obj->IsInWorld())
@@ -1647,6 +1839,16 @@ void Map::SendInitTransports(Player * player)
     // Hack to send out transports
     UpdateData transData;
     bool hasTransport = false;
+
+    // Moving-transport routes are supplied by gameobject_template and cached
+    // persistently by the Vanilla client in gameobjectcache.wdb. Custom client
+    // updates and database migrations can change a transport's TaxiPath id,
+    // leaving an otherwise valid client animating an obsolete route forever.
+    // Invalidate these small template records before the create blocks so the
+    // client requests the authoritative definition for every active vessel.
+    for (const auto itr : _transports)
+        sWorld.SendGameObjectStatsInvalidate(itr->GetEntry(), player->GetSession());
+
     for (const auto itr : _transports)
     {
         if (itr != player->GetTransport())
@@ -1655,6 +1857,11 @@ void Map::SendInitTransports(Player * player)
             itr->BuildCreateUpdateBlockForPlayer(&transData, player);
         }
     }
+
+    if (player->GetSession() && player->GetSession()->GetSecurity() > SEC_PLAYER)
+        sLog.outString("Transport visibility: sending %u moving transport(s) to GM %s on map %u instance %u.",
+            uint32(_transports.size()), player->GetName(), GetId(), GetInstanceId());
+
     transData.Send(player->GetSession(), hasTransport);
 }
 
@@ -1687,6 +1894,16 @@ inline void Map::setNGrid(NGridType *grid, uint32 x, uint32 y)
 void Map::AddObjectToRemoveList(WorldObject *obj)
 {
     MANGOS_ASSERT(obj->GetMapId() == GetId() && obj->GetInstanceId() == GetInstanceId());
+
+#ifdef ENABLE_ELUNA
+    if (Eluna* eluna = GetEluna())
+    {
+        if (Creature* creature = obj->ToCreature())
+            eluna->OnRemove(creature);
+        else if (GameObject* gameObject = obj->ToGameObject())
+            eluna->OnRemove(gameObject);
+    }
+#endif
 
     obj->CleanupsBeforeDelete();                            // remove or simplify at least cross referenced links
     std::unique_lock<std::mutex> lock(i_objectsToRemove_lock);
@@ -1901,14 +2118,26 @@ void Map::CreateInstanceData(bool load)
     if (i_data)
         return;
 
-    if (!i_mapEntry->scriptId)
+    bool isElunaAI = false;
+#ifdef ENABLE_ELUNA
+    if (Eluna* eluna = GetEluna())
+    {
+        i_data = eluna->GetInstanceData(this);
+        isElunaAI = i_data != nullptr;
+    }
+#endif
+
+    if (!i_mapEntry->scriptId && !isElunaAI)
         return;
 
     i_script_id = i_mapEntry->scriptId;
 
-    i_data = sScriptMgr.CreateInstanceData(this);
-    if (!i_data)
-        return;
+    if (!isElunaAI)
+    {
+        i_data = sScriptMgr.CreateInstanceData(this);
+        if (!i_data)
+            return;
+    }
 
     if (load)
     {
@@ -2111,6 +2340,9 @@ bool DungeonMap::Add(Player *player)
     if (IsRaid())
         ChatHandler(player).SendSysMessage("There is a grace period of 10 minutes allowing you to trade raid loot to others in case its wrongly assigned.");
 
+    //everything checked and added. scale now.
+    sAutoScaler->Scale(this);
+
     return true;
 }
 
@@ -2220,6 +2452,9 @@ void DungeonMap::Remove(Player *player, bool remove)
         m_unloadTimer = m_unloadWhenEmpty ? MIN_UNLOAD_DELAY : std::max(sWorld.getConfig(CONFIG_UINT32_INSTANCE_UNLOAD_DELAY), (uint32)MIN_UNLOAD_DELAY);
 
     Map::Remove(player, remove);
+
+    if (m_mapRefManager.getSize() > 0)
+        sAutoScaler->Scale(this);
 
     // for normal instances schedule the reset after all players have left
     SetResetSchedule(true);
@@ -3692,4 +3927,19 @@ Creature* Map::LoadCreatureSpawnWithGroup(uint32 leaderDbGuid, bool delaySpawn)
     }
 
     return pLeader;
+}
+
+
+// See the declarations in Map.h: the pass-through to the movemap manager for
+// module code that reaches the navmesh through the map.
+#include "Maps/MoveMap.h"
+
+dtNavMesh const* Map::MapCollisionData::MMapDataAccess::GetNavMesh() const
+{
+    return MMAP::MMapFactory::createOrGetMMapManager()->GetNavMesh(mapId);
+}
+
+dtNavMeshQuery const* Map::MapCollisionData::MMapDataAccess::GetNavMeshQuery() const
+{
+    return MMAP::MMapFactory::createOrGetMMapManager()->GetNavMeshQuery(mapId);
 }
