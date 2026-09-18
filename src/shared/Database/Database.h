@@ -140,14 +140,14 @@ class Database
         /// Synchronous DB queries
         QueryResult* Query(const char *sql);
 
-        inline QueryNamedResult* QueryNamed(const char *sql)
+        inline std::shared_ptr<QueryNamedResult> QueryNamed(const char *sql)
         {
             SqlConnection::Lock guard(getQueryConnection());
-            return guard->QueryNamed(sql);
+            return std::shared_ptr<QueryNamedResult>(guard->QueryNamed(sql));
         }
 
         QueryResult* PQuery(const char *format,...) ATTR_PRINTF(2,3);
-        QueryNamedResult* PQueryNamed(const char *format,...) ATTR_PRINTF(2,3);
+        std::shared_ptr<QueryNamedResult> PQueryNamed(const char *format,...) ATTR_PRINTF(2,3);
 
         inline bool DirectExecute(const char* sql)
         {
@@ -194,6 +194,8 @@ class Database
         template<class Class, typename ParamType1>
             bool AsyncPQuery(Class *object, void (Class::*method)(QueryResult*, ParamType1), ParamType1 param1, const char *format,...) ATTR_PRINTF(5,6);
         template<class Class, typename ParamType1>
+            bool AsyncPQueryPriority(Class *object, void (Class::*method)(QueryResult*, ParamType1), ParamType1 param1, const char *format,...) ATTR_PRINTF(5,6);
+        template<class Class, typename ParamType1>
             bool AsyncPQueryUnsafe(Class *object, void (Class::*method)(QueryResult*, ParamType1), ParamType1 param1, const char *format,...) ATTR_PRINTF(5,6);
         template<class Class, typename ParamType1, typename ParamType2>
             bool AsyncPQuery(Class *object, void (Class::*method)(QueryResult*, ParamType1, ParamType2), ParamType1 param1, ParamType2 param2, const char *format,...) ATTR_PRINTF(6,7);
@@ -219,6 +221,8 @@ class Database
             bool DelayQueryHolder(Class *object, void (Class::*method)(QueryResult*, SqlQueryHolder*), SqlQueryHolder *holder);
         template<class Class>
             bool DelayQueryHolderUnsafe(Class *object, void (Class::*method)(QueryResult*, SqlQueryHolder*), SqlQueryHolder *holder);
+        template<class Class>
+            bool DelayQueryHolderUnsafePriority(Class *object, void (Class::*method)(QueryResult*, SqlQueryHolder*), SqlQueryHolder *holder);
         template<class Class, typename ParamType1>
             bool DelayQueryHolder(Class *object, void (Class::*method)(QueryResult*, SqlQueryHolder*, ParamType1), SqlQueryHolder *holder, ParamType1 param1);
 
@@ -275,6 +279,13 @@ class Database
         void AllowAsyncTransactions() { m_bAllowAsyncTransactions = true; }
         void AddToDelayQueue(SqlOperation* op);
         inline bool NextDelayedOperation(SqlOperation*& op) { return m_delayQueue->next(op); }
+        inline void AddToPriorityDelayQueue(SqlOperation* op)
+        {
+            if (m_numAsyncWorkers)
+                m_threadsBodies[0]->addPriorityOperation(op);
+            else
+                AddToDelayQueue(op);
+        }
 
         inline void AddToSerialDelayQueue(int workerId, SqlOperation* op) { m_threadsBodies[workerId]->addSerialOperation(op); }
         bool NextSerialDelayedOperation(int workerId, SqlOperation*& op);
@@ -282,6 +293,9 @@ class Database
         bool HasAsyncQuery();
 
         void AddToSerialDelayQueue(SqlOperation *op);
+        void AddToPrioritySerialDelayQueue(SqlOperation* op);
+        size_t GetPendingAsyncOperationCount() const;
+        size_t GetPendingResultCount() const;
 
         // Frees data, cancels scheduled queries, closes connection
         void StopServer();

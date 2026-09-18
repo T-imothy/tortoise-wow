@@ -133,7 +133,15 @@ class SqlResultQueue : public LockedQueue<MaNGOS::IQueryCallback* , std::mutex>
         ~SqlResultQueue();
         void CancelAll();
         void Update(uint32 maxTime);
+        void Add(MaNGOS::IQueryCallback* callback, bool highPriority = false);
+        size_t PendingCount() const
+        {
+            return size() + _priorityWaitingQueries.size() + _threadUnsafeWaitingQueries.size() +
+                _priorityThreadUnsafeWaitingQueries.size();
+        }
         typedef LockedQueue<MaNGOS::IQueryCallback*, std::mutex> CallbackQueue;
+        CallbackQueue _priorityWaitingQueries;
+        CallbackQueue _priorityThreadUnsafeWaitingQueries;
         CallbackQueue _threadUnsafeWaitingQueries;
         uint32 numUnsafeQueries;
     private:
@@ -150,12 +158,10 @@ class SqlQuery : public SqlOperation
     public:
         SqlQuery(const char *sql, MaNGOS::IQueryCallback * callback, SqlResultQueue * queue, bool highPriority = false)
             : m_sql(mangos_strdup(sql)), m_callback(callback), m_queue(queue), m_highPriority(highPriority) { AccountQueryPayload(strlen(m_sql) + 1); }
-
         ~SqlQuery() { char* tofree = const_cast<char*>(m_sql); delete [] tofree; }
         bool Execute(SqlConnection *conn);
         bool IsReadOnly() const override { return true; }
         bool m_highPriority;
-
 };
 
 class SqlQueryHolder
@@ -181,7 +187,7 @@ class SqlQueryHolder
         }
         QueryResult* GetResult(size_t index);
         void SetResult(size_t index, QueryResult *result);
-        bool Execute(MaNGOS::IQueryCallback * callback, Database *db, SqlResultQueue *queue);
+        bool Execute(MaNGOS::IQueryCallback * callback, Database *db, SqlResultQueue *queue, bool highPriority = false);
         void DeleteAllResults();
         uint32 GetSerialId() const { return serialId; }
 };
@@ -196,7 +202,6 @@ class SqlQueryHolderEx : public SqlOperation
     public:
         SqlQueryHolderEx(SqlQueryHolder *holder, MaNGOS::IQueryCallback * callback, SqlResultQueue * queue, uint32 id, bool highPriority = false)
             : SqlOperation(id), m_holder(holder), m_callback(callback), m_queue(queue), m_highPriority(highPriority) { AccountQueryPayload(holder->GetQueryPayloadBytes()); }
-
         bool Execute(SqlConnection *conn);
         bool IsReadOnly() const override { return true; }
 };
