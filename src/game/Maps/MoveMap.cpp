@@ -21,6 +21,7 @@
 #include "VMapFactory.h"
 #include "MoveMap.h"
 #include "MoveMapSharedDefines.h"
+#include "Config/Config.h"
 
 namespace MMAP
 {
@@ -243,7 +244,6 @@ bool MMapManager::unloadMap(uint32 mapId, int32 x, int32 y)
         return false;
 
     std::shared_lock<std::shared_mutex> mapGuard(loadedMMaps_lock);
-
     // check if we have this map loaded
     if (loadedMMaps.find(mapId) == loadedMMaps.end())
     {
@@ -298,7 +298,6 @@ bool MMapManager::unloadMap(uint32 mapId)
         return false;
 
     std::shared_lock<std::shared_mutex> mapGuard(loadedMMaps_lock);
-
     if (loadedMMaps.find(mapId) == loadedMMaps.end())
     {
         // file may not exist, therefore not loaded
@@ -392,7 +391,13 @@ dtNavMeshQuery const* MMapManager::GetNavMeshQuery(uint32 mapId)
         // allocate mesh query
         navMeshQuery = dtAllocNavMeshQuery();
         MANGOS_ASSERT(navMeshQuery);
-        dtStatus dtResult = navMeshQuery->init(mmap->navMesh, 2048);
+        // Complex custom maps can exhaust the legacy 2048-node search even
+        // when a complete corridor exists. Keep the budget per map and query
+        // owner, with a fixed upper bound; never replace a live query on reload.
+        std::string nodeKey = "mmap.QueryNodes." + std::to_string(mapId);
+        int const requestedNodes = sConfig.GetIntDefault(nodeKey.c_str(), 2048);
+        int const queryNodes = std::max(2048, std::min(65535, requestedNodes));
+        dtStatus dtResult = navMeshQuery->init(mmap->navMesh, queryNodes);
         if (dtStatusFailed(dtResult))
         {
             ulock.unlock();
@@ -401,7 +406,7 @@ dtNavMeshQuery const* MMapManager::GetNavMeshQuery(uint32 mapId)
             return nullptr;
         }
 
-        DETAIL_LOG("MMAP:GetNavMeshQuery: created dtNavMeshQuery for mapId %03u thread %u", mapId, tid);
+        DETAIL_LOG("MMAP:GetNavMeshQuery: created dtNavMeshQuery for mapId %03u thread %u nodes %d", mapId, tid, queryNodes);
         mmap->navMeshQueries.insert(std::pair<std::thread::id, dtNavMeshQuery*>(tid, navMeshQuery));
         ManTech::MemoryLedger::Add(ManTech::MemoryKind::NavQueries, navMeshQuery->getOwnedMemoryBytes());
     }

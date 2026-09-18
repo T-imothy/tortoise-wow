@@ -1040,14 +1040,26 @@ inline void Map::UpdateCells(uint32 map_diff)
     /// update active cells around players and active objects
     UpdateDiscoveredCells(now, diff);
 
-    if (IsContinent() && m_motionThreads->status() == ThreadPool::Status::READY && !unitsMvtUpdate.empty())
+    if (IsContinent() && !unitsMvtUpdate.empty())
     {
-        for (auto it = unitsMvtUpdate.begin(); it != unitsMvtUpdate.end(); it++)
-            m_motionThreads << [it,diff](){
-                 if ((*it)->IsInWorld())
-                    (*it)->GetMotionMaster()->UpdateMotionAsync(diff);
-            };
-        m_motionThreads->processWorkload().get();
+        if (m_motionThreads->status() == ThreadPool::Status::READY)
+        {
+            for (auto it = unitsMvtUpdate.begin(); it != unitsMvtUpdate.end(); it++)
+                m_motionThreads << [it,diff](){
+                     if ((*it)->IsInWorld())
+                        (*it)->GetMotionMaster()->UpdateMotionAsync(diff);
+                };
+            // Keep ManTech's exception propagation and join before clearing.
+            m_motionThreads->processWorkload().get();
+        }
+        else
+        {
+            // Eluna disables parallel object updates, but units still reach this
+            // queue because the configured motion-thread count remains nonzero.
+            for (Unit* unit : unitsMvtUpdate)
+                if (unit->IsInWorld())
+                    unit->GetMotionMaster()->UpdateMotionAsync(diff);
+        }
     }
     unitsMvtUpdate.clear();
 }
@@ -1445,7 +1457,6 @@ void Map::UpdatePlayerAI(bool responsiveOnly)
         // wait after deferral. Execute one bounded AI update with the full delta;
         // player movement retains its separate simulation catch-up bound.
         uint32 const elapsed = player->GetAIElapsed(now);
-
         Request request{player->GetObjectGuid(), {GetId(), GetInstanceId(), player->GetMapWorkGeneration()},
             elapsed};
         // Match CMaNGOS: ordinary autonomous bots still receive full decisions
@@ -1462,9 +1473,14 @@ void Map::UpdatePlayerAI(bool responsiveOnly)
             request.dueAge = player->BackgroundAIDueAge(now);
             background.push_back(request);
         }
+        else
+        {
+            // The native module advanced its not-yet-due delay, so that sample
+            // has been accounted for even though no AI execution is required.
+            player->ConsumeAIElapsed(now);
+        }
     }
     auto execute = [this, now](Request const& request, bool minimal)
-
     {
         Player* player = GetPlayer(request.guid);
         if (!player || player->FindMap() != this || player->IsBeingTeleported() ||
@@ -1475,6 +1491,8 @@ void Map::UpdatePlayerAI(bool responsiveOnly)
             return;
         }
         ExecutionWatch::Set(ExecutionWatch::BotAI, GetId(), GetInstanceId(), player->GetGUIDLow());
+        // Only admitted, still-valid work consumes the snapshot's clock.
+        player->ConsumeAIElapsed(now);
         player->ClearBackgroundAIDueAge();
         // Earlier actions may have put this queued bot into combat. Promote
         // before dispatch; never send newly responsive gameplay to minimal AI.

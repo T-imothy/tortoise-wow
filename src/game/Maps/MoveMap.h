@@ -108,15 +108,22 @@ namespace MMAP
             // bot's 4-arg forms.
             bool loadMap(uint32 mapId, int32 x, int32 y, uint32 /*instanceId*/) { return loadMap(mapId, x, y); }
             bool loadMap(std::string const& /*dataPath*/, uint32 mapId, int32 x, int32 y) { return loadMap(mapId, x, y); }
-
             bool loadGameObject(uint32 displayId);
             bool unloadMap(uint32 mapId, int32 x, int32 y);
             bool unloadMap(uint32 mapId);
+            // bot calls these with various arg counts.
+            // Stubs that ignore extra args.
+            template<typename... A> bool loadAllMapTiles(A... /*args*/) { return false; }
+            template<typename... A> bool loadMapInstance(A... /*args*/) { return false; }
+            template<typename... A> bool IsMMapIsLoaded(A... /*args*/) const { return true; }
+            template<typename... A> bool loadMapAlt(A... /*args*/) { return false; }
             bool unloadMapInstance(uint32 mapId, std::thread::id instanceId);
 
             // The returned [dtNavMeshQuery const*] is NOT threadsafe
             // Returns a NavMeshQuery valid for current thread only.
             dtNavMeshQuery const* GetNavMeshQuery(uint32 mapId);
+            // bot's 2-arg form (instanceId ignored).
+            dtNavMeshQuery const* GetNavMeshQuery(uint32 mapId, uint32 /*instanceId*/) { return GetNavMeshQuery(mapId); }
             dtNavMeshQuery const* GetModelNavMeshQuery(uint32 displayId);
             dtNavMesh const* GetNavMesh(uint32 mapId);
 
