@@ -1744,3 +1744,20 @@ without disabling the independently configured pursuit policy. See
 modules/ManTechPlayerbots/docs/TURTLE_BOT_CAPABILITIES.md for thresholds,
 coverage limits, retention, controls and focused tests. This adds no scheduler
 policy change or production population/activity override.
+# September 19 runtime-log corrections
+
+Zero-point honor shares no longer emit the misleading negative-honor message;
+negative awards still emit it. No award rate or rounding was changed. No other
+error family was suppressed. The current and previous server logs are reviewed
+in `docs/RUNTIME_LOG_ISSUES_2026-09-19.md`. The bot mailbox packet correction uses
+the existing native mail handler and adds no diagnostic overhead.
+
+
+## September 19 upstream bot diagnostics
+
+Native ManTechPlayerbots now includes `cdebug why`, `cdebug engine`, `cdebug history`,
+and `.rndbot sample` / `.rndbot find` / `.rndbot history`. Action history is optional:
+`AiPlayerbot.ActionHistorySize` defaults to 0 (off); enabling it retains that many
+records per bot. Leave it off fleet-wide unless needed, or enable selected bots
+with the history command. Statistics run on existing native world-owner dispatch.
+No new logging worker or always-on allocation capture was introduced.

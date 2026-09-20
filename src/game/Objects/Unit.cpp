@@ -4699,7 +4699,9 @@ void Unit::_ApplyAllAuraMods()
 
 bool Unit::HasAuraType(AuraType auraType) const
 {
-    return !GetAurasByType(auraType).empty();
+    // A boolean probe must not materialize a lifetime-stable empty list.
+    // No reference escapes this call; the sparse read is sufficient.
+    return !m_modAuras[auraType].empty();
 }
 
 Aura* Unit::GetAura(uint32 spellId, SpellEffectIndex effindex)

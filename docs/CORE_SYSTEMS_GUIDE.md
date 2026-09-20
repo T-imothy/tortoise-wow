@@ -1,5 +1,31 @@
 # Turtle core: native systems and change contracts
 
+September 19 upstream bot integration: ManTechPlayerbots target values now store
+GUIDs and resolve live native units at their point of use. Manual target reset
+and lazy access retain virtual dispatch. Cross-map helper work uses the existing
+bounded WorldActions queue; summon/custom-cast/world-buff apply actions declare
+world-owner execution. See modules/ManTechPlayerbots/docs/UPSTREAM-SYNC-20260919.md
+for preserved behavior and validation limits.
+
+September 19 runtime-log review: honor shares rounded to zero are normal and
+are no longer mislabeled as negative errors. Negative results still log; reward
+calculation and payouts are unchanged. Groups with no eligible recipients skip
+the rate division. Native bot mailbox use queues `CMSG_GET_MAIL_LIST`, preserving
+the mailbox GUID and the native mail handler's interaction checks. Other object
+types retain `CMSG_GAMEOBJ_USE`. `RuntimeLogRegression.py` exercises extracted
+production award loops and packet dispatch; live gameplay remains unverified.
+
+September 18 aura memory correction: `Unit::HasAuraType` now probes the sparse
+array directly, matching the CMaNGOS reference. Previously this boolean query
+called the stable-reference getter, permanently materializing empty aura lists
+on every queried Unit. ManTechPlayerbots' six full-type scans now skip absent
+types through this predicate before requesting a list. `GetAurasByType` retains
+its stable-reference contract; no allocated list is reclaimed while its Unit
+lives. `AuraProbeMemoryTest` extracts the native predicate and checks repeated
+empty probes, present/removed/reapplied auras, stable references and teardown.
+The old predicate fails the regression. This removes a demonstrated retention
+source but does not account for all production memory or establish RAM savings.
+
 Chat-channel follow-up (2026-09-09): ObjectMgr's database loader preserves each
 channel ID. Fixed names/shortcuts match exactly and localized zone names match
 the anchored prefix/suffix around `%s`; custom names containing a built-in name

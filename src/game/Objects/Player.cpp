@@ -24561,6 +24561,8 @@ void Player::RewardHonorOnDeath()
         }
 
         uint32 totalRewarded = rewarded.size();
+        if (!totalRewarded)
+            continue;
         float honorRate = itr.second;
         honorRate *= MaNGOS::XP::xp_in_group_rate(totalRewarded, false);
         honorRate /= totalDamage;
@@ -24578,7 +24580,7 @@ void Player::RewardHonorOnDeath()
 
             if (rewPoints > 0)
                 rewItr->GetHonorMgr().Add(rewPoints, HONORABLE, this);
-            else
+            else if (rewPoints < 0)
             {
                 sLog.outError("HONOR GIVEN %i NEGATIVE. %f, %f, %f", rewPoints, honorRate, HonorMgr::HonorableKillPoints(rewItr, this, 1),
                     rewItr->GetTotalAuraMultiplier(SPELL_AURA_MOD_HONOR_GAIN));
@@ -24601,7 +24603,7 @@ void Player::RewardHonorOnDeath()
         {
             rewItr.first->GetHonorMgr().Add(rewPoints, HONORABLE, this);
         }
-        else
+        else if (rewPoints < 0)
         {
             sLog.outError("HONOR GIVEN %i NEGATIVE. %f, %f, %f", rewPoints, rewItr.second / float(totalDamage), HonorMgr::HonorableKillPoints(rewItr.first, this, 1),
                 rewItr.first->GetTotalAuraMultiplier(SPELL_AURA_MOD_HONOR_GAIN));
