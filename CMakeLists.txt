@@ -350,9 +350,22 @@ endif()
 
 # Win32 delifered packages
 if(WIN32)
-  set(MYSQL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/dep/windows/include/mysql)
-  set(MYSQL_LIBRARY ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libmySQL.lib)
-  set(MYSQL_DEBUG_LIBRARY ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_debug/libmySQL.lib)
+  if(DEP_ARCH STREQUAL "x64")
+    # Headers, import library and runtime must come from the same client release.
+    set(TURTLE_MYSQL_ROOT "${CMAKE_SOURCE_DIR}/dep/windows/mysql-8.4.11-x64")
+    set(MYSQL_INCLUDE_DIR "${TURTLE_MYSQL_ROOT}/include")
+    set(MYSQL_LIBRARY "${TURTLE_MYSQL_ROOT}/lib/libmysql.lib")
+    set(MYSQL_DEBUG_LIBRARY "${MYSQL_LIBRARY}")
+    set(TURTLE_MYSQL_RUNTIME "${TURTLE_MYSQL_ROOT}/lib/libmysql.dll"
+        "${TURTLE_MYSQL_ROOT}/bin/libcrypto-3-x64.dll"
+        "${TURTLE_MYSQL_ROOT}/bin/libssl-3-x64.dll")
+    file(COPY ${TURTLE_MYSQL_RUNTIME} DESTINATION "${CMAKE_BINARY_DIR}/bin")
+
+  else()
+    set(MYSQL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/dep/windows/include/mysql)
+    set(MYSQL_LIBRARY ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libmySQL.lib)
+    set(MYSQL_DEBUG_LIBRARY ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_debug/libmySQL.lib)
+  endif()
   # The bundled OpenSSL is 1.1.1, headers and import libraries together, and it
   # works as long as nothing else puts OpenSSL headers on the search path. That
   # stops being true the moment ACE or Boost come from vcpkg: its shared include
@@ -658,7 +671,6 @@ if(WIN32)
     FILES
       ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libcrypto-1_1${OPENSSL_DLL_SUFFIX}.dll
       ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libssl-1_1${OPENSSL_DLL_SUFFIX}.dll
-      ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libmySQL.dll
     DESTINATION ${LIBS_DIR}
     CONFIGURATIONS Release
   )
@@ -666,10 +678,17 @@ if(WIN32)
     FILES
       ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_debug/libcrypto-1_1${OPENSSL_DLL_SUFFIX}.dll
       ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_debug/libssl-1_1${OPENSSL_DLL_SUFFIX}.dll
-      ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_debug/libmySQL.dll
     DESTINATION ${LIBS_DIR}
     CONFIGURATIONS Debug
   )
+
+  if(DEP_ARCH STREQUAL "x64")
+    install(FILES ${TURTLE_MYSQL_RUNTIME} DESTINATION ${LIBS_DIR})
+  endif()
+  if(NOT DEP_ARCH STREQUAL "x64")
+    install(FILES ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libmySQL.dll DESTINATION ${LIBS_DIR} CONFIGURATIONS Release RelWithDebInfo MinSizeRel)
+    install(FILES ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_debug/libmySQL.dll DESTINATION ${LIBS_DIR} CONFIGURATIONS Debug)
+  endif()
 
   # libeay32.dll above is the OpenSSL 1.0 runtime, but what actually gets linked
   # is libssl.lib and libcrypto.lib - the 1.1 import libraries, whose runtime is

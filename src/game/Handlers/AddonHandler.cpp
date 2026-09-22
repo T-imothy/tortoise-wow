@@ -26,7 +26,7 @@
 #include "Policies/SingletonImp.h"
 
 #ifdef WIN32
-#include "..\zlib\zlib.h"
+#include "zlib/zlib.h"
 #else
 #include "zlib.h"
 #endif

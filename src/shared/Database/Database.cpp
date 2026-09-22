@@ -69,16 +69,17 @@ SqlPreparedStatement * SqlConnection::GetStmt( int nIndex )
         std::string fmt = m_db.GetStmtString(nIndex);
         MANGOS_ASSERT(fmt.length());
         //allocate SQlPreparedStatement object
-        pStmt = CreateStatement(fmt);
-        //prepare statement
-        if(!pStmt->prepare())
+        std::unique_ptr<SqlPreparedStatement> pending(CreateStatement(fmt));
+        // Keep ownership until preparation succeeds, including exception paths.
+        if(!pending->prepare())
         {
             //MANGOS_ASSERT(false && "Unable to prepare SQL statement");
             sLog.outError("Can't prepare %s, statement not executed!", fmt.c_str());
             return nullptr;
         }
 
-        //save statement in internal registry
+        // Transfer ownership to the connection only after successful preparation.
+        pStmt = pending.release();
         m_holder[nIndex] = pStmt;
     }
     else

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2017-2018 namreeb (legal@namreeb.org)
  *
  * This is private software and may not be shared under any circumstances,
@@ -32,7 +32,7 @@
 #include <openssl/sha.h>
 
 #ifdef WIN32
-#include "..\zlib\zlib.h"
+#include "zlib/zlib.h"
 #else
 #include "zlib.h"
 #endif

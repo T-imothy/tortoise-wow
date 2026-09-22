@@ -4,6 +4,7 @@
 #include "Memory/MemoryLedger.h"
 #include "Memory/AllocationProfile.h"
 #include "Memory/EntityLedger.h"
+#include "PerfStats.h"
 #include <ctime>
 #include <fstream>
 #include <sstream>
@@ -47,7 +48,8 @@ inline std::string MemoryJson() {
     for(unsigned k=0;k<unsigned(MemoryKind::Count);++k){auto v=MemoryLedger::Read(MemoryKind(k));bool measured=k==unsigned(MemoryKind::Units)||k==unsigned(MemoryKind::AuraBuckets)||k==unsigned(MemoryKind::UpdateFields)||k==unsigned(MemoryKind::OptionalState)||k==unsigned(MemoryKind::AuraIndexes)||k==unsigned(MemoryKind::EventHolders)||k==unsigned(MemoryKind::Network)||k==unsigned(MemoryKind::Terrain)||k==unsigned(MemoryKind::DatabaseWork)||k==unsigned(MemoryKind::NavTiles)||k==unsigned(MemoryKind::NavShared)||k==unsigned(MemoryKind::NavQueries)||k==unsigned(MemoryKind::Collision)||k==unsigned(MemoryKind::PathScratch);if(k)s<<',';s<<"{\"name\":"<<Json(names[k])<<",\"instrumented\":"<<(measured?"true":"false")<<",\"count\":"<<v.count<<",\"requested_bytes\":"<<v.bytes<<",\"peak_requested_bytes\":"<<v.peak<<'}';}
     s<<"],\"entities\":[";
     for(unsigned k=0;k<unsigned(EntityKind::Count);++k){if(k)s<<',';s<<"{\"name\":"<<Json(EntityLedger::Name(EntityKind(k)))<<",\"count\":"<<EntityLedger::Read(EntityKind(k))<<'}';}
-    s<<"],\"coverage\":\"Ledger categories are partial and can overlap. Do not subtract their sum from private bytes or call the remainder a leak. Committed image/mapped regions are address-space classification, not resident RAM. Allocation captures exclude pre-existing allocations and external DLL malloc heaps.\"}";return s.str();
+    s<<"],\"database_query_results\":"<<PerfStats::g_totalQueryResults.load(std::memory_order_relaxed);
+    s<<",\"coverage\":\"Ledger categories are partial and can overlap. Do not subtract their sum from private bytes or call the remainder a leak. Committed image/mapped regions are address-space classification, not resident RAM. Allocation captures exclude pre-existing allocations and external DLL malloc heaps.\"}";return s.str();
 }
 inline std::string Snapshot() {
     std::ostringstream s;s<<"{\"version\":1,\"pid\":"<<GetCurrentProcessId()<<",\"timestamp\":"<<std::time(nullptr)<<",\"enabled\":"<<(Enabled.load()?"true":"false")<<",\"capture_active\":"<<(TraceDeadline.load()>Now()?"true":"false")<<",\"threads_registered\":"<<Assigned.load()<<",\"thread_drops\":"<<ThreadDrops.load()<<",\"label_drops\":"<<LabelDrops.load()<<",\"metrics\":[";

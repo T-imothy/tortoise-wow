@@ -1,5 +1,10 @@
 # Turtle core: native systems and change contracts
 
+September 20 bot memory: twelve common ManTechPlayerbots registration contexts
+plus 118 class-specific contexts share immutable creator tables. Per-bot created objects, mutable values, reset/erase
+and local overrides remain independent. Native core contracts are unchanged.
+See modules/ManTechPlayerbots/docs/SHARED_FACTORY_MEMORY_2026-09-20.md.
+
 September 19 upstream bot integration: ManTechPlayerbots target values now store
 GUIDs and resolve live native units at their point of use. Manual target reset
 and lazy access retain virtual dispatch. Cross-map helper work uses the existing
@@ -1473,3 +1478,20 @@ callback lifetime remain in place so shutdown joins the listener before the
 databases close. Windows builds use the parent OpenSSL include directory and
 install ACE when dynamically linked; local external OpenSSL overrides and the
 existing playerbot Boost link path remain supported.
+
+September 21 database ownership: SqlConnection::GetStmt owns a newly created statement until preparation succeeds. Failure/exception releases it; successful statements remain connection-owned and cached. See CMANGOS_MEMORY_COMPARISON_2026-09-21.md and tests/StatementOwnershipRegression.py. This fixes a failure-path leak; current production logs do not connect it to observed RAM growth.
+
+## September 21: native bot SQL result ownership
+
+Turtle synchronous Query/PQuery returns owning raw pointers, unlike CMaNGOS unique_ptr results. The active ManTechPlayerbots module now owns 88 previously raw query results explicitly; async callbacks and holder transfers retain their existing contracts. See modules/ManTechPlayerbots/docs/QUERY_RESULT_OWNERSHIP_2026-09-21.md for runtime evidence and source-only validation. No build or deployment was performed.
+
+### September 22 pending teleport acknowledgments
+
+`Player::SwitchInstance` calls `ResolvePendingMovementChanges(false, false)`.
+Excluded TELEPORT entries must remain queued, not merely skip execution before
+being erased. The resolver now selects eligible entries, copies and removes each
+before executing its native completion, and reacquires the queue on each pass.
+This preserves pending ACKs across continent instance switches and avoids holding
+queue references across relocation callbacks. The normal ACK handler and timeout
+path still finish teleports; no warning suppression or packet-validation change.
+Source-reviewed only; build and live verification are user-managed.

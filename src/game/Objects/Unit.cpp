@@ -7506,11 +7506,22 @@ void Unit::ResolvePendingMovementChanges(bool sendToClient, bool includingTelepo
 {
     while (!m_pendingMovementChanges.empty())
     {
-        auto change = m_pendingMovementChanges.begin();
-        if ((change->movementChangeType != TELEPORT || includingTeleport) &&
-            change->movementCounter == GetLastCounterForMovementChangeType(change->movementChangeType))
-            ResolvePendingMovementChange(*change, sendToClient);
-        m_pendingMovementChanges.pop_front();
+        // Instance switching resolves other changes but must leave teleport
+        // acknowledgments queued for the normal completion/timeout path.
+        auto pending = std::find_if(m_pendingMovementChanges.begin(), m_pendingMovementChanges.end(),
+            [includingTeleport](PlayerMovementPendingChange const& change)
+        {
+            return includingTeleport || change.movementChangeType != TELEPORT;
+        });
+        if (pending == m_pendingMovementChanges.end())
+            break;
+
+        // Completion can enter native relocation callbacks. Do not retain a
+        // reference or iterator into the queue across those callbacks.
+        PlayerMovementPendingChange const change = *pending;
+        m_pendingMovementChanges.erase(pending);
+        if (change.movementCounter == GetLastCounterForMovementChangeType(change.movementChangeType))
+            ResolvePendingMovementChange(change, sendToClient);
     }
 }
 

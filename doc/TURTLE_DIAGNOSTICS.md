@@ -1761,3 +1761,7 @@ and `.rndbot sample` / `.rndbot find` / `.rndbot history`. Action history is opt
 records per bot. Leave it off fleet-wide unless needed, or enable selected bots
 with the history command. Statistics run on existing native world-owner dispatch.
 No new logging worker or always-on allocation capture was introduced.
+
+## September 21: live database result count
+
+The existing memory snapshot exports `memory.database_query_results` from `PerfStats::g_totalQueryResults` (one relaxed atomic read). This is a live object count, not bytes or a complete database-memory ledger. Use it to check synchronous result cleanup after the native bot ownership fix. It follows the existing diagnostics build/runtime gates. The manually requested HeapSummary capture took about 32 seconds per snapshot on the large production heap; exclude those intervals from normal tick comparisons and avoid periodic heap-summary requests.
