@@ -1495,3 +1495,26 @@ This preserves pending ACKs across continent instance switches and avoids holdin
 queue references across relocation callbacks. The normal ACK handler and timeout
 path still finish teleports; no warning suppression or packet-validation change.
 Source-reviewed only; build and live verification are user-managed.
+
+
+### September 25: reviewed upstream behavior fixes
+
+Creature health scaling now preserves at least one health point when a
+nonzero template health rounds down; genuinely zero template health stays zero
+(upstream 0695ec09). No database conversion or configuration change is needed.
+
+The active ManTechPlayerbots module retains external packet triggers until
+their action is dequeued, including deferral to the world owner. Its existing
+map/world continuation checks run before release. Strategy rebuilds discard
+held triggers that no longer have a handler; trigger objects remain owned by
+the AI context. Offered resurrection packets are delayed rather than dropped
+when an earlier request is pending, and resurrection outranks repopulation.
+
+Further adaptations cover empty quest reward selection, conjured consumable
+trade eligibility, caster-owned paladin blessings, and mapless bot emotes and
+zone diagnostics during transfer. Native Turtle area-name and packet APIs are
+preserved. The disabled TortoiseBots module is not part of these changes.
+
+These are source changes, not a claim that the observed long-session memory
+growth is resolved. Build, live verification, deployment and publication remain
+user-managed. No SQL migration is required by this batch.
