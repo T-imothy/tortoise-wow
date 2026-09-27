@@ -1,0 +1,38 @@
+{
+  "format": "JSON Lines; UTF-8; one reference record per line",
+  "files": {
+    "ai_playerbot_help_texts.jsonl": {
+      "rows": 2922,
+      "sha256": "7ef8cc9f8c0b7563c6b249e1283962e05a9b3bbb58c6b6cec81b084c792b04c7",
+      "bytes": 3142923
+    },
+    "ai_playerbot_texts.jsonl": {
+      "rows": 1938,
+      "sha256": "b19a9bcd38386126e48140daa43aac06480ace8ffba3be5537465f84b6be94bd",
+      "bytes": 398353
+    },
+    "ai_playerbot_names.jsonl": {
+      "rows": 100000,
+      "sha256": "8e7f6b3b7ba71391cad7e69c016c9dd1973f6c4ef43c5c5f1d4e0cddfa5724aa",
+      "bytes": 6319881
+    },
+    "ai_playerbot_guild_names.jsonl": {
+      "rows": 400,
+      "sha256": "0ebbd5ff71f81c1b2f7be8585fc386dc8f9d5eb27bd1798cbd4864adc86203dc",
+      "bytes": 21989
+    },
+    "ai_playerbot_arena_team_names.jsonl": {
+      "rows": 300,
+      "sha256": "40d4c2b591821873a925b7e248d63fad6ab6cc7f975aa2a6e643e4ee0e938dc6",
+      "bytes": 17853
+    },
+    "legacy_instance_labels.jsonl": {
+      "rows": 32,
+      "sha256": "a438e109935520f147732680f33eb000e1669be66d7830a3301f6af32ebfa913",
+      "bytes": 2991
+    }
+  },
+  "excluded": {
+    "texts_non_korean_or_marker": 5
+  }
+}
